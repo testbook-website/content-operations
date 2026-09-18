@@ -3,33 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Content Team Executive Portal - Roster & Productivity</title>
-  <meta name="description" content="Comprehensive Content Team Dashboard featuring Q4 2026 Roster, Night Updates, Daily Productivity, and Category Analytics.">
-  
-  <!-- Modern Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
+  <title>Content Team Portal</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Ambient background mesh -->
-  <div class="bg-mesh"></div>
 
-  <!-- =========================================================================
-       Security Passcode Modal (PIN: 7730)
-       ========================================================================= -->
+  <!-- Passcode Screen (PIN: 7730) -->
   <div id="lockScreen">
     <div class="lock-card">
-      <div class="lock-icon-wrap">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-      </div>
-      <h2 class="lock-title">Content Team Portal</h2>
-      <p class="lock-subtitle">Enter your 4-digit security passcode to unlock</p>
+      <h2>Content Team Portal</h2>
+      <p>Enter 4-digit passcode to unlock</p>
 
       <div class="pin-dots">
         <div class="pin-dot"></div>
@@ -54,292 +37,184 @@
       </div>
 
       <div class="lock-feedback" id="lockFeedback"></div>
-      <p style="font-size:0.75rem; color:#94a3b8; margin-top:1rem;">Hint: Default Passcode is <strong>7730</strong></p>
+      <p style="font-size:0.75rem; color:#9ca3af; margin-top:0.85rem;">Passcode: <strong>7730</strong></p>
     </div>
   </div>
 
-  <!-- =========================================================================
-       Application Header
-       ========================================================================= -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="brand-section">
-        <div class="brand-logo">CT</div>
-        <div class="brand-info">
-          <h1>
-            Content Operations Hub
-            <span class="quarter-badge">Q4 2026</span>
-          </h1>
-          <p>Live Team Roster, Productivity, & Category Analytics</p>
-        </div>
+  <!-- Header -->
+  <header class="simple-header">
+    <div class="header-row">
+      <div class="logo-text">
+        <span>Content Team Portal</span>
+        <span class="logo-badge">Q4 2026</span>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="header-nav">
-        <button class="nav-tab-btn active" data-tab="roster" id="navTabRoster">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          Content Roster (Q4)
-        </button>
-
-        <button class="nav-tab-btn" data-tab="productivity" id="navTabProductivity">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-          </svg>
-          Productivity Portal
-        </button>
-
-        <button class="nav-tab-btn" data-tab="category" id="navTabCategory">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-          </svg>
-          Category Wise Date
-        </button>
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-tab="roster" id="navTabRoster">📅 Roster Plan</button>
+        <button class="nav-btn" data-tab="productivity" id="navTabProductivity">📊 Productivity</button>
+        <button class="nav-btn" data-tab="category" id="navTabCategory">📂 Category Wise Date</button>
       </nav>
 
-      <!-- Live Sync Controls & Lock -->
-      <div class="header-controls">
-        <div class="refresh-indicator" title="Auto-refreshing every 5 minutes from Google Sheets">
-          <span class="pulse-dot"></span>
-          <span>Sync in <strong id="syncCountdown">5:00</strong></span>
-        </div>
-
-        <button class="btn-icon" id="btnSync" title="Sync live updates from Google Sheets">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 4 23 10 17 10"></polyline>
-            <polyline points="1 20 1 14 7 14"></polyline>
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-          </svg>
-          Sync Now
-        </button>
-
-        <span id="lastSyncText" style="font-size:0.75rem; color:#64748b; font-weight:500;">Synced</span>
-
-        <button class="btn-icon" id="btnLock" title="Lock Dashboard">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          Lock
-        </button>
+      <div class="header-meta">
+        <span class="sync-pill">Sync: <strong id="syncCountdown">5:00</strong></span>
+        <button class="btn-simple" id="btnSync">Sync Now</button>
+        <button class="btn-simple" id="btnLock">Lock</button>
       </div>
     </div>
   </header>
 
-  <!-- =========================================================================
-       Main Content Container
-       ========================================================================= -->
-  <main class="main-wrapper">
-    
-    <!-- Active Duty Callout Banner -->
-    <section class="active-duty-banner" id="activeDutyBanner">
-      <!-- Dynamically filled by app.js -->
-    </section>
+  <!-- Main Container -->
+  <main class="container">
 
-    <!-- =======================================================================
-         TAB 1: CONTENT ROSTER (1st Oct - 31st Dec 2026)
-         ======================================================================= -->
+    <!-- =====================================================================
+         TAB 1: ROSTER PLAN
+         ===================================================================== -->
     <section id="rosterSection">
-      <!-- Roster Controls & Filters -->
-      <div class="roster-controls-bar">
-        <div class="view-mode-toggle">
-          <button class="mode-btn active" data-mode="cards" id="btnModeCards">Week Cards</button>
-          <button class="mode-btn" data-mode="matrix" id="btnModeMatrix">Full Master Matrix</button>
+      
+      <!-- Week Duty Summary -->
+      <div class="simple-duty-box" id="activeDutyBanner"></div>
+
+      <!-- Night Shift Daily Rotation Box (Not one person doing whole week) -->
+      <div class="night-shift-box">
+        <div class="night-shift-title">
+          <span>🌙 Night Shift Daily Allotment (Monday to Sunday)</span>
+          <small style="font-weight:normal; color:#6b7280;">Rotated day-by-day across the 5 members</small>
         </div>
+        <div class="night-daily-grid" id="nightShiftGrid"></div>
+      </div>
 
-        <div class="filter-group">
-          <label style="font-size:0.8rem; font-weight:600; color:#64748b;">Select Week:</label>
-          <select class="select-control" id="weekSelect"></select>
-
-          <label style="font-size:0.8rem; font-weight:600; color:#64748b;">Team:</label>
-          <select class="select-control" id="teamFilter">
+      <!-- Controls -->
+      <div class="simple-controls-bar">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <label style="font-size:0.85rem; font-weight:600;">Week:</label>
+          <select class="select-clean" id="weekSelect"></select>
+          <select class="select-clean" id="teamFilter">
             <option value="all">All Teams</option>
-            <option value="teamA">Team A Only</option>
-            <option value="teamB">Team B Only (with Trishala)</option>
+            <option value="teamA">Team A</option>
+            <option value="teamB">Team B (with Trishala)</option>
           </select>
+        </div>
 
-          <div class="search-input-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="rosterSearchInput" placeholder="Filter member name...">
-          </div>
-
-          <button class="btn-icon" id="btnExportRoster">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Export CSV
-          </button>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <input type="text" class="input-clean" id="rosterSearchInput" placeholder="Filter member name...">
+          <button class="btn-simple" id="btnToggleMatrix">Switch to Full 13-Week Grid</button>
+          <button class="btn-simple" id="btnExportRoster">Export CSV</button>
         </div>
       </div>
 
-      <!-- Task Legend -->
-      <div class="task-legend">
-        <span class="legend-title">Task Key:</span>
-        <span class="legend-item task-badge news">📰 News (Event Pages)</span>
-        <span class="legend-item task-badge night">🌙 Night Updates Lead</span>
-        <span class="legend-item task-badge seo">⚡ SEO Optimization</span>
-        <span class="legend-item task-badge intent">🎯 High Intent</span>
-        <span class="legend-item task-badge child">📄 Child Pages</span>
-        <span class="legend-item task-badge upcoming">⏳ Upcoming Drafts</span>
+      <!-- Weekly Table View -->
+      <div class="simple-card-table" id="weekTableView">
+        <table class="clean-table">
+          <thead>
+            <tr>
+              <th>Team Member</th>
+              <th>Team</th>
+              <th>Assigned Work</th>
+              <th>Night Shift Days</th>
+            </tr>
+          </thead>
+          <tbody id="weekTableBody"></tbody>
+        </table>
       </div>
 
-      <!-- Container: Week Cards -->
-      <div class="week-cards-grid" id="weekCardsContainer">
-        <!-- Injected via JavaScript -->
+      <!-- Full 13-Week Grid (Hidden by default, toggleable) -->
+      <div class="simple-card-table" id="masterMatrixContainer" style="display:none; overflow-x:auto;">
+        <!-- Injected by JavaScript -->
       </div>
 
-      <!-- Container: Full Master Matrix Table -->
-      <div id="masterMatrixContainer" style="display:none;">
-        <!-- Injected via JavaScript -->
-      </div>
-
-      <!-- Category Mentors & Prep Team Directory -->
-      <div class="directory-section">
-        <div class="directory-card">
-          <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            Team Mentors & Category Ownership
-          </h4>
-          <p>Subject matter experts leading content categories</p>
-          <div class="directory-grid" id="mentorsGrid"></div>
+      <!-- Category Mentors & Prep Team List -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.5rem;" id="mentorsSection">
+        <div class="simple-card-table" style="padding:1rem;">
+          <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">Category Mentors</h4>
+          <div id="mentorsList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.82rem;"></div>
         </div>
 
-        <div class="directory-card">
-          <h4>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-            </svg>
-            Exam Prep Operations Team
-          </h4>
-          <p>Specialized domain leads across UGC NET, Engineering, and UPSC</p>
-          <div class="directory-grid" id="prepGrid"></div>
+        <div class="simple-card-table" style="padding:1rem;">
+          <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">Exam Prep Operations Team</h4>
+          <div id="prepList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.82rem;"></div>
         </div>
       </div>
+
     </section>
 
-    <!-- =======================================================================
-         TAB 2: PRODUCTIVITY PORTAL (Sheets 1, 2, 3)
-         ======================================================================= -->
+    <!-- =====================================================================
+         TAB 2: PRODUCTIVITY
+         ===================================================================== -->
     <section id="productivitySection" style="display:none;">
-      <!-- KPI Stats Header Cards -->
-      <div class="stats-cards-grid" id="statsCardsGrid"></div>
+      
+      <!-- Stats Summary -->
+      <div class="stats-row" id="statsCardsGrid"></div>
 
-      <!-- Productivity Sub-navigation -->
-      <div class="productivity-subnav">
-        <button class="subnav-btn active" data-subtab="daily" id="subtabBtnDaily">
-          <span>📅</span> Daily Performance
-        </button>
-        <button class="subnav-btn" data-subtab="weekly" id="subtabBtnWeekly">
-          <span>📊</span> Weekly Trends
-        </button>
-        <button class="subnav-btn" data-subtab="monthly" id="subtabBtnMonthly">
-          <span>📈</span> Monthly Volumes
-        </button>
-        <button class="subnav-btn" data-subtab="kpi" id="subtabBtnKpi">
-          <span>🎯</span> KPI & Leaderboard
-        </button>
+      <!-- Productivity Subnav -->
+      <div class="simple-subnav">
+        <button class="subnav-tab active" data-subtab="daily">Daily Output</button>
+        <button class="subnav-tab" data-subtab="weekly">Weekly Trends</button>
+        <button class="subnav-tab" data-subtab="monthly">Monthly Volumes</button>
+        <button class="subnav-tab" data-subtab="kpi">KPI & Leaderboard</button>
 
-        <div style="margin-left:auto; display:flex; align-items:center; gap:0.5rem;">
-          <div class="search-input-wrap" style="min-width:200px;">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="prodSearchInput" placeholder="Search writer...">
-          </div>
-        </div>
+        <input type="text" class="input-clean" id="prodSearchInput" placeholder="Search writer..." style="margin-left:auto;">
       </div>
 
-      <!-- Subtab Contents -->
       <div class="prod-subtab-content" id="prodTab-daily">
-        <div id="dailyTableContainer"></div>
+        <div class="simple-card-table" id="dailyTableContainer"></div>
       </div>
 
       <div class="prod-subtab-content" id="prodTab-weekly" style="display:none;">
-        <div id="weeklyTableContainer"></div>
+        <div class="simple-card-table" id="weeklyTableContainer"></div>
       </div>
 
       <div class="prod-subtab-content" id="prodTab-monthly" style="display:none;">
-        <div id="monthlyTableContainer"></div>
+        <div class="simple-card-table" id="monthlyTableContainer"></div>
       </div>
 
       <div class="prod-subtab-content" id="prodTab-kpi" style="display:none;">
-        <div id="kpiTableContainer"></div>
+        <div class="simple-card-table" id="kpiTableContainer"></div>
       </div>
     </section>
 
-    <!-- =======================================================================
-         TAB 3: CATEGORY WISE DATE (Category Wise AMJ)
-         ======================================================================= -->
+    <!-- =====================================================================
+         TAB 3: CATEGORY WISE DATE
+         ===================================================================== -->
     <section id="categorySection" style="display:none;">
-      <div class="table-header-tools" style="background:#fff; border-radius:12px; margin-bottom:1.25rem; border:1px solid var(--border-light);">
-        <div class="table-title">
-          <h3>Category Wise Date Analytics</h3>
-          <p>Daily breakdown of published content across exam categories (Derived from Category Wise AMJ)</p>
-        </div>
-        <div class="filter-group">
-          <label style="font-size:0.8rem; font-weight:600; color:#64748b;">Filter Date:</label>
-          <select class="select-control" id="catDateSelect">
+      
+      <div class="simple-controls-bar">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <label style="font-size:0.85rem; font-weight:600;">Date:</label>
+          <select class="select-clean" id="catDateSelect">
             <option value="all">All Dates</option>
           </select>
 
-          <label style="font-size:0.8rem; font-weight:600; color:#64748b;">Filter Category:</label>
-          <select class="select-control" id="catCategorySelect">
+          <label style="font-size:0.85rem; font-weight:600;">Category:</label>
+          <select class="select-clean" id="catCategorySelect">
             <option value="all">All Categories</option>
           </select>
+        </div>
 
-          <div class="search-input-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="catSearchInput" placeholder="Search date or category...">
-          </div>
-
-          <button class="btn-icon" id="btnExportCategoryCSV">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Export CSV
-          </button>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <input type="text" class="input-clean" id="catSearchInput" placeholder="Search category...">
+          <button class="btn-simple" id="btnExportCategoryCSV">Export CSV</button>
         </div>
       </div>
 
-      <!-- Category Summary Cards -->
-      <div class="stats-cards-grid" id="catStatsCardsGrid" style="margin-bottom:1.5rem;"></div>
+      <div class="stats-row" id="catStatsCardsGrid"></div>
 
-      <!-- Category Table -->
-      <div class="master-table-container">
-        <div class="table-responsive">
-          <table class="master-table" id="catTable">
-            <thead>
-              <tr>
-                <th style="width:140px;">Date</th>
-                <th>Category Name</th>
-                <th style="width:160px;">Articles Count</th>
-                <th>Share / Volume Indicator</th>
-              </tr>
-            </thead>
-            <tbody id="catTableBody">
-              <!-- Injected by JavaScript -->
-            </tbody>
-          </table>
-        </div>
+      <div class="simple-card-table">
+        <table class="clean-table" id="catTable">
+          <thead>
+            <tr>
+              <th style="width:140px;">Date</th>
+              <th>Category Name</th>
+              <th style="width:180px;">Articles Count</th>
+            </tr>
+          </thead>
+          <tbody id="catTableBody"></tbody>
+        </table>
       </div>
+
     </section>
 
   </main>
 
-  <!-- Data and Application Scripts -->
   <script src="roster-data.js"></script>
   <script src="sheets-data.js"></script>
   <script src="category-data.js"></script>
