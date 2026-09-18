@@ -392,8 +392,11 @@ body {
   z-index: 4;
 }
 
-.data-table .num-cell {
-  text-align: right;
+.data-table .num-cell,
+.data-table .col-center,
+.data-table th.num-cell,
+.data-table th.col-center {
+  text-align: center;
   font-variant-numeric: tabular-nums;
 }
 

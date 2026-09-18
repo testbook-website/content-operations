@@ -17,7 +17,7 @@
     enteredPin: '',
     correctPin: '7730',
     activeNavTab: 'roster', // 'roster' | 'productivity' | 'category'
-    activeProdSubTab: 'weekly', // DEFAULT: Weekly view as requested!
+    activeProdSubTab: 'daily', // DEFAULT: Daily Output as requested!
     selectedWeekId: 1,
     isMatrixView: false,
     rosterTeamFilter: 'all',
@@ -512,48 +512,86 @@
     const s1 = data.sheet1_published.summary;
     const s2 = data.sheet2_wordcount.summary;
     const s3 = data.sheet3_picked.summary;
-
-    const words7D = sumObj(s2['Last 7 Days']);
-    const pub7D = sumObj(s1['Last 7 Days']);
-    const pick7D = sumObj(s3['Last 7 Days']);
-    
-    // Find top writer in last 7 days
-    let topWriter = '-';
-    let topWords = 0;
     const writers = data.sheet1_published.headers || [];
-    writers.forEach(w => {
-      const num = parseInt(s2['Last 7 Days']?.[w] || '0', 10);
-      if (num > topWords) {
-        topWords = num;
-        topWriter = w;
-      }
-    });
 
-    els.prodKpiCards.innerHTML = `
-      <div class="kpi-card">
-        <div class="kpi-label">Weekly Words (Last 7 Days)</div>
-        <div class="kpi-val">${words7D.toLocaleString()}</div>
-        <div class="kpi-sub">Total team volume</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Articles Published (Last 7D)</div>
-        <div class="kpi-val">${pub7D.toLocaleString()}</div>
-        <div class="kpi-sub">Published to live</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Articles Picked (Last 7D)</div>
-        <div class="kpi-val">${pick7D.toLocaleString()}</div>
-        <div class="kpi-sub">Articles in work</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Top Weekly Writer</div>
-        <div class="kpi-val" style="font-size:1.15rem; color:#1d4ed8;">${topWriter}</div>
-        <div class="kpi-sub">${topWords.toLocaleString()} words this week</div>
-      </div>
-    `;
+    if (state.activeProdSubTab === 'daily') {
+      const pickT = sumObj(s3['Today']);
+      const pubT = sumObj(s1['Today']);
+      const wordT = sumObj(s2['Today']);
+
+      let topWriter = '-';
+      let topWords = 0;
+      writers.forEach(w => {
+        const num = parseInt(s2['Today']?.[w] || '0', 10);
+        if (num > topWords) {
+          topWords = num;
+          topWriter = w;
+        }
+      });
+
+      els.prodKpiCards.innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">Picked Today</div>
+          <div class="kpi-val">${pickT.toLocaleString()}</div>
+          <div class="kpi-sub">Articles picked today</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Published Today</div>
+          <div class="kpi-val" style="color:#1d4ed8;">${pubT.toLocaleString()}</div>
+          <div class="kpi-sub">Articles published live</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Word Count Today</div>
+          <div class="kpi-val">${wordT.toLocaleString()}</div>
+          <div class="kpi-sub">Daily team volume</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Top Writer Today</div>
+          <div class="kpi-val" style="font-size:1.15rem; color:#059669;">${topWriter}</div>
+          <div class="kpi-sub">${topWords.toLocaleString()} words today</div>
+        </div>
+      `;
+    } else {
+      const words7D = sumObj(s2['Last 7 Days']);
+      const pub7D = sumObj(s1['Last 7 Days']);
+      const pick7D = sumObj(s3['Last 7 Days']);
+      
+      let topWriter = '-';
+      let topWords = 0;
+      writers.forEach(w => {
+        const num = parseInt(s2['Last 7 Days']?.[w] || '0', 10);
+        if (num > topWords) {
+          topWords = num;
+          topWriter = w;
+        }
+      });
+
+      els.prodKpiCards.innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">Picked (Last 7 Days)</div>
+          <div class="kpi-val">${pick7D.toLocaleString()}</div>
+          <div class="kpi-sub">Articles in work</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Published (Last 7 Days)</div>
+          <div class="kpi-val" style="color:#1d4ed8;">${pub7D.toLocaleString()}</div>
+          <div class="kpi-sub">Articles published live</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Words (Last 7 Days)</div>
+          <div class="kpi-val">${words7D.toLocaleString()}</div>
+          <div class="kpi-sub">Total 7-day team volume</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Top Writer (Last 7 Days)</div>
+          <div class="kpi-val" style="font-size:1.15rem; color:#059669;">${topWriter}</div>
+          <div class="kpi-sub">${topWords.toLocaleString()} words this week</div>
+        </div>
+      `;
+    }
   }
 
-  // DEFAULT VIEW: Weekly Output
+  // Last 7 Days (Formerly Weekly Output)
   function renderWeeklyTable(data) {
     if (!els.prodTableContainer) return;
     const writers = data.sheet1_published.headers;
@@ -580,11 +618,11 @@
       return `
         <tr>
           <td><strong>${w}</strong></td>
-          <td class="num-cell"><strong>${w7.toLocaleString()}</strong></td>
-          <td class="num-cell" style="color:#6b7280;">${wp.toLocaleString()}</td>
-          <td class="num-cell"><span class="pos-val">${p7}</span></td>
-          <td class="num-cell">${pk}</td>
-          <td class="num-cell" style="color:#6b7280;">${avg > 0 ? avg.toLocaleString() + ' w/a' : '-'}</td>
+          <td class="col-center"><strong>${w7 > 0 ? w7.toLocaleString() : '<span class="zero-val">0</span>'}</strong></td>
+          <td class="col-center" style="color:#6b7280;">${wp > 0 ? wp.toLocaleString() : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${p7 > 0 ? `<strong style="color:#1d4ed8;">${p7}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${pk > 0 ? `<strong>${pk}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center" style="color:#6b7280;">${avg > 0 ? avg.toLocaleString() + ' w/a' : '-'}</td>
         </tr>
       `;
     }).join('');
@@ -594,21 +632,21 @@
         <thead>
           <tr>
             <th>Writer</th>
-            <th class="num-cell">Words (Last 7 Days)</th>
-            <th class="num-cell">Words (Prev 7 Days)</th>
-            <th class="num-cell">Articles Published (7D)</th>
-            <th class="num-cell">Articles Picked (7D)</th>
-            <th class="num-cell">Avg Words/Article</th>
+            <th class="col-center">Words (Last 7 Days)</th>
+            <th class="col-center">Words (Prev 7 Days)</th>
+            <th class="col-center">Articles Published (7D)</th>
+            <th class="col-center">Articles Picked (7D)</th>
+            <th class="col-center">Avg Words/Article</th>
           </tr>
         </thead>
         <tbody>
           <tr class="total-row">
             <td>TOTAL (${filtered.length} Writers)</td>
-            <td class="num-cell">${totWords7D.toLocaleString()}</td>
-            <td class="num-cell">${totWordsPrev.toLocaleString()}</td>
-            <td class="num-cell">${totPub7D.toLocaleString()}</td>
-            <td class="num-cell">${totPick7D.toLocaleString()}</td>
-            <td class="num-cell">${totPub7D > 0 ? Math.round(totWords7D / totPub7D).toLocaleString() + ' w/a' : '-'}</td>
+            <td class="col-center">${totWords7D.toLocaleString()}</td>
+            <td class="col-center">${totWordsPrev.toLocaleString()}</td>
+            <td class="col-center">${totPub7D.toLocaleString()}</td>
+            <td class="col-center">${totPick7D.toLocaleString()}</td>
+            <td class="col-center">${totPub7D > 0 ? Math.round(totWords7D / totPub7D).toLocaleString() + ' w/a' : '-'}</td>
           </tr>
           ${rowsHtml || '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#9ca3af;">No writers found matching search.</td></tr>'}
         </tbody>
@@ -618,6 +656,7 @@
     els.prodTableContainer.innerHTML = html;
   }
 
+  // DEFAULT VIEW: Daily Output (Picked Today | Published Today | Word Count)
   function renderDailyTable(data) {
     if (!els.prodTableContainer) return;
     const writers = data.sheet1_published.headers;
@@ -626,32 +665,24 @@
     const pubT = data.sheet1_published.summary['Today'] || {};
     const wordT = data.sheet2_wordcount.summary['Today'] || {};
     const pickT = data.sheet3_picked.summary['Today'] || {};
-    const pubY = data.sheet1_published.summary['Yesterday'] || {};
-    const wordY = data.sheet2_wordcount.summary['Yesterday'] || {};
 
-    let sumPubT = 0, sumWordT = 0, sumPickT = 0, sumPubY = 0, sumWordY = 0;
+    let sumPickT = 0, sumPubT = 0, sumWordT = 0;
 
     const rowsHtml = filtered.map(w => {
+      const pkt = parseInt(pickT[w] || '0', 10);
       const pt = parseInt(pubT[w] || '0', 10);
       const wt = parseInt(wordT[w] || '0', 10);
-      const pkt = parseInt(pickT[w] || '0', 10);
-      const py = parseInt(pubY[w] || '0', 10);
-      const wy = parseInt(wordY[w] || '0', 10);
 
+      sumPickT += pkt;
       sumPubT += pt;
       sumWordT += wt;
-      sumPickT += pkt;
-      sumPubY += py;
-      sumWordY += wy;
 
       return `
         <tr>
           <td><strong>${w}</strong></td>
-          <td class="num-cell"><strong style="color:#1d4ed8;">${pt}</strong></td>
-          <td class="num-cell"><strong>${wt > 0 ? wt.toLocaleString() : '<span class="zero-val">0</span>'}</strong></td>
-          <td class="num-cell">${pkt}</td>
-          <td class="num-cell">${py}</td>
-          <td class="num-cell" style="color:#6b7280;">${wy > 0 ? wy.toLocaleString() : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${pkt > 0 ? `<strong>${pkt}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${pt > 0 ? `<strong style="color:#1d4ed8;">${pt}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${wt > 0 ? `<strong>${wt.toLocaleString()}</strong>` : '<span class="zero-val">0</span>'}</td>
         </tr>
       `;
     }).join('');
@@ -661,23 +692,19 @@
         <thead>
           <tr>
             <th>Writer</th>
-            <th class="num-cell">Published Today</th>
-            <th class="num-cell">Words Today</th>
-            <th class="num-cell">Picked Today</th>
-            <th class="num-cell">Published Yest.</th>
-            <th class="num-cell">Words Yest.</th>
+            <th class="col-center">Picked Today</th>
+            <th class="col-center">Published Today</th>
+            <th class="col-center">Word Count</th>
           </tr>
         </thead>
         <tbody>
           <tr class="total-row">
             <td>TOTAL (${filtered.length} Writers)</td>
-            <td class="num-cell">${sumPubT.toLocaleString()}</td>
-            <td class="num-cell">${sumWordT.toLocaleString()}</td>
-            <td class="num-cell">${sumPickT.toLocaleString()}</td>
-            <td class="num-cell">${sumPubY.toLocaleString()}</td>
-            <td class="num-cell">${sumWordY.toLocaleString()}</td>
+            <td class="col-center">${sumPickT.toLocaleString()}</td>
+            <td class="col-center">${sumPubT.toLocaleString()}</td>
+            <td class="col-center">${sumWordT.toLocaleString()}</td>
           </tr>
-          ${rowsHtml || '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#9ca3af;">No writers found.</td></tr>'}
+          ${rowsHtml || '<tr><td colspan="4" style="text-align:center; padding:1.5rem; color:#9ca3af;">No writers found.</td></tr>'}
         </tbody>
       </table>
     `;
