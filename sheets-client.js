@@ -15,13 +15,18 @@ const SHEETS_CONFIG = {
   sheet1_gid: '0',
   sheet2_gid: '1647859064',
   sheet3_gid: '990952275',
+  upcomingSpreadsheetId: '1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A',
+  upcoming_gid: '1107724151',
   refreshIntervalMs: 5 * 60 * 1000 // 5 minutes
 };
 
 class SheetsClient {
   constructor() {
-    this.data = typeof BASELINE_SHEETS_DATA !== 'undefined' ? BASELINE_SHEETS_DATA : null;
-    this.lastSync = this.data ? new Date(this.data.timestamp) : new Date();
+    this.data = typeof BASELINE_SHEETS_DATA !== 'undefined' ? JSON.parse(JSON.stringify(BASELINE_SHEETS_DATA)) : {};
+    if (typeof BASELINE_UPCOMING_DATA !== 'undefined') {
+      this.data.upcoming_events = BASELINE_UPCOMING_DATA;
+    }
+    this.lastSync = this.data && this.data.timestamp ? new Date(this.data.timestamp) : new Date();
     this.subscribers = [];
     this.countdownSeconds = 300;
     this.timerInterval = null;
@@ -52,8 +57,8 @@ class SheetsClient {
     });
   }
 
-  // CSV parsing function that handles quotes, commas and newlines
-  parseCSV(text) {
+  // CSV raw row parser supporting quotes and multiline fields
+  parseCSVRows(text) {
     const lines = [];
     let row = [];
     let cell = '';
@@ -93,7 +98,12 @@ class SheetsClient {
         lines.push(row);
       }
     }
+    return lines;
+  }
 
+  // CSV parsing function that handles Productivity sheets (Sheet 1, 2, 3)
+  parseCSV(text) {
+    const lines = this.parseCSVRows(text);
     if (lines.length === 0) return { headers: [], summary: {}, daily: [] };
 
     const headers = lines[0].slice(1).map(h => h.trim()).filter(Boolean);
@@ -143,9 +153,61 @@ class SheetsClient {
     return { headers, summary, daily };
   }
 
+  // Parser for Upcoming Events sheet (gid: 1107724151)
+  // Col A: Date, Col B: Assigned By, Col C: Date Picked, Col E: Picked By, Col F: Priority,
+  // Col G: Category, Col H: Topic (Page), Col I: Type, Col N: Status, Col P: URL
+  parseUpcomingCSV(text) {
+    const rows = this.parseCSVRows(text);
+    if (rows.length <= 1) return [];
+
+    const items = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length === 0) continue;
+      const date = (r[0] || '').trim();
+      const topic = (r[7] || '').trim();
+      if (!date && !topic) continue;
+
+      let cat = (r[6] || 'Others').trim();
+      if (!cat) cat = 'Others';
+      if (cat === 'Insuarnce') cat = 'Insurance';
+      if (cat === 'Railways') cat = 'Railway';
+      if (cat === 'Other') cat = 'Others';
+      if (cat === 'state' || cat === 'State') cat = 'State Exams';
+      if (cat === 'State psc') cat = 'State PSC';
+      if (cat === 'teaching') cat = 'Teaching';
+      if (cat === 'police') cat = 'Police';
+      if (cat === 'UGC') cat = 'UGC NET';
+
+      const status = (r[13] || '').trim();
+      const pickedBy = (r[4] || '').trim();
+      const priority = (r[5] || '').trim();
+      const type = (r[8] || '').trim();
+      let url = (r[15] || '').trim();
+      if (!url && r[10] && r[10].startsWith('http')) url = r[10].trim();
+
+      items.push({
+        date,
+        category: cat,
+        topic,
+        status,
+        pickedBy,
+        priority,
+        type,
+        url,
+        assignedBy: (r[1] || '').trim(),
+        datePicked: (r[2] || '').trim(),
+        keywords: (r[11] || '').trim(),
+        seoSuggestion: (r[12] || '').trim(),
+        expectedEventDate: (r[19] || '').trim()
+      });
+    }
+    return items;
+  }
+
   // Fetch sheet CSV with cors proxy fallback
-  async fetchSheetCSV(gid) {
-    const directUrl = `https://docs.google.com/spreadsheets/d/${SHEETS_CONFIG.spreadsheetId}/export?format=csv&gid=${gid}`;
+  async fetchSheetCSV(gid, spreadsheetId = SHEETS_CONFIG.spreadsheetId) {
+    const directUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
     
     // Try direct fetch first
     try {
@@ -177,28 +239,31 @@ class SheetsClient {
     throw new Error(`Unable to fetch sheet data for gid: ${gid}`);
   }
 
-  // Refresh all 3 sheets
+  // Refresh all sheets (Productivity + Upcoming Events)
   async refreshData() {
     if (this.isFetching) return;
     this.isFetching = true;
 
     try {
       console.log("Fetching live updates from Google Sheets...");
-      const [csv1, csv2, csv3] = await Promise.all([
+      const [csv1, csv2, csv3, csvUpcoming] = await Promise.all([
         this.fetchSheetCSV(SHEETS_CONFIG.sheet1_gid),
         this.fetchSheetCSV(SHEETS_CONFIG.sheet2_gid),
-        this.fetchSheetCSV(SHEETS_CONFIG.sheet3_gid)
+        this.fetchSheetCSV(SHEETS_CONFIG.sheet3_gid),
+        this.fetchSheetCSV(SHEETS_CONFIG.upcoming_gid, SHEETS_CONFIG.upcomingSpreadsheetId)
       ]);
 
       const s1 = this.parseCSV(csv1);
       const s2 = this.parseCSV(csv2);
       const s3 = this.parseCSV(csv3);
+      const upcoming = this.parseUpcomingCSV(csvUpcoming);
 
       this.data = {
         timestamp: new Date().toISOString(),
         sheet1_published: s1,
         sheet2_wordcount: s2,
-        sheet3_picked: s3
+        sheet3_picked: s3,
+        upcoming_events: upcoming.length > 0 ? upcoming : (typeof BASELINE_UPCOMING_DATA !== 'undefined' ? BASELINE_UPCOMING_DATA : [])
       };
 
       this.lastSync = new Date();
@@ -208,7 +273,13 @@ class SheetsClient {
       return { success: true, timestamp: this.lastSync };
     } catch (err) {
       console.warn("Auto-sync could not reach Google Sheets. Utilizing local snapshot fallback.", err);
-      // Fallback remains active
+      // Ensure fallback data is retained
+      if (!this.data || !this.data.upcoming_events) {
+        if (typeof BASELINE_UPCOMING_DATA !== 'undefined') {
+          this.data = this.data || {};
+          this.data.upcoming_events = BASELINE_UPCOMING_DATA;
+        }
+      }
       this.lastSync = new Date();
       this.countdownSeconds = 300;
       this.notify();

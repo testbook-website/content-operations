@@ -25,6 +25,10 @@
     prodSearch: '',
     catMonthFilter: 'all',
     catDateSearch: '',
+    upcomingDateFilter: 'last7days', // 'last7days' | 'today' | 'last3days' | 'last14days' | 'last30days' | 'all'
+    upcomingCategoryFilter: 'all',
+    upcomingStatusFilter: 'all', // 'all' | 'done' | 'pending' | 'draft'
+    upcomingSearch: '',
     sheetsData: null,
     lastSyncTime: null
   };
@@ -45,17 +49,12 @@
     sectionCategory: document.getElementById('sectionCategory'),
 
     // Roster
-    dutyBanner: document.getElementById('dutyBanner'),
     nightShiftRow: document.getElementById('nightShiftRow'),
-    weekSelect: document.getElementById('weekSelect'),
+    nightWeekSelect: document.getElementById('nightWeekSelect'),
     teamFilter: document.getElementById('teamFilter'),
     rosterSearch: document.getElementById('rosterSearch'),
-    btnToggleMatrix: document.getElementById('btnToggleMatrix'),
     btnExportRoster: document.getElementById('btnExportRoster'),
-    weekTableWrap: document.getElementById('weekTableWrap'),
-    weekTableBody: document.getElementById('weekTableBody'),
-    matrixTableWrap: document.getElementById('matrixTableWrap'),
-    matrixTable: document.getElementById('matrixTable'),
+    rosterTeamsContainer: document.getElementById('rosterTeamsContainer'),
     mentorsList: document.getElementById('mentorsList'),
     prepList: document.getElementById('prepList'),
 
@@ -71,7 +70,20 @@
     catStatsLabel: document.getElementById('catStatsLabel'),
     catGridHead: document.getElementById('catGridHead'),
     catGridBody: document.getElementById('catGridBody'),
-    btnExportCategoryCSV: document.getElementById('btnExportCategoryCSV')
+    btnExportCategoryCSV: document.getElementById('btnExportCategoryCSV'),
+
+    // Upcoming Events
+    sectionUpcoming: document.getElementById('sectionUpcoming'),
+    upcomingKpiCards: document.getElementById('upcomingKpiCards'),
+    upcomingCatBreakdown: document.getElementById('upcomingCatBreakdown'),
+    upcomingDateFilter: document.getElementById('upcomingDateFilter'),
+    upcomingCategoryFilter: document.getElementById('upcomingCategoryFilter'),
+    upcomingStatusFilter: document.getElementById('upcomingStatusFilter'),
+    upcomingSearch: document.getElementById('upcomingSearch'),
+    upcomingCountLabel: document.getElementById('upcomingCountLabel'),
+    upcomingTableBody: document.getElementById('upcomingTableBody'),
+    btnExportUpcomingCSV: document.getElementById('btnExportUpcomingCSV'),
+    upcomingLiveBadge: document.getElementById('upcomingLiveBadge')
   };
 
   // =========================================================================
@@ -178,8 +190,9 @@
       sheetsClient.onUpdate((data, syncTime) => {
         state.sheetsData = data;
         state.lastSyncTime = syncTime;
-        if (state.isAuthenticated && state.activeNavTab === 'productivity') {
-          renderProductivity();
+        if (state.isAuthenticated) {
+          if (state.activeNavTab === 'productivity') renderProductivity();
+          if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
         }
       });
 
@@ -214,32 +227,24 @@
     });
 
     // Roster Controls
-    if (els.weekSelect) {
-      els.weekSelect.addEventListener('change', (e) => {
+    if (els.nightWeekSelect) {
+      els.nightWeekSelect.addEventListener('change', (e) => {
         state.selectedWeekId = parseInt(e.target.value, 10);
-        renderRoster();
+        renderNightShiftDaily();
       });
     }
 
     if (els.teamFilter) {
       els.teamFilter.addEventListener('change', (e) => {
         state.rosterTeamFilter = e.target.value;
-        renderRoster();
+        renderTeamsMatrix();
       });
     }
 
     if (els.rosterSearch) {
       els.rosterSearch.addEventListener('input', (e) => {
         state.rosterSearch = e.target.value.toLowerCase().trim();
-        renderRoster();
-      });
-    }
-
-    if (els.btnToggleMatrix) {
-      els.btnToggleMatrix.addEventListener('click', () => {
-        state.isMatrixView = !state.isMatrixView;
-        els.btnToggleMatrix.textContent = state.isMatrixView ? 'Switch to Weekly View' : 'Switch to 13-Week Grid';
-        renderRoster();
+        renderTeamsMatrix();
       });
     }
 
@@ -273,6 +278,39 @@
     if (els.btnExportCategoryCSV) {
       els.btnExportCategoryCSV.addEventListener('click', exportCategoryGridCSV);
     }
+
+    // Upcoming Events Controls
+    if (els.upcomingDateFilter) {
+      els.upcomingDateFilter.addEventListener('change', (e) => {
+        state.upcomingDateFilter = e.target.value;
+        renderUpcomingEvents(true);
+      });
+    }
+
+    if (els.upcomingCategoryFilter) {
+      els.upcomingCategoryFilter.addEventListener('change', (e) => {
+        state.upcomingCategoryFilter = e.target.value;
+        renderUpcomingEvents(false);
+      });
+    }
+
+    if (els.upcomingStatusFilter) {
+      els.upcomingStatusFilter.addEventListener('change', (e) => {
+        state.upcomingStatusFilter = e.target.value;
+        renderUpcomingEvents(false);
+      });
+    }
+
+    if (els.upcomingSearch) {
+      els.upcomingSearch.addEventListener('input', (e) => {
+        state.upcomingSearch = e.target.value.toLowerCase().trim();
+        renderUpcomingEvents(false);
+      });
+    }
+
+    if (els.btnExportUpcomingCSV) {
+      els.btnExportUpcomingCSV.addEventListener('click', exportUpcomingCSV);
+    }
   }
 
   function switchNavTab(tab) {
@@ -282,10 +320,12 @@
     if (els.sectionRoster) els.sectionRoster.style.display = tab === 'roster' ? 'block' : 'none';
     if (els.sectionProductivity) els.sectionProductivity.style.display = tab === 'productivity' ? 'block' : 'none';
     if (els.sectionCategory) els.sectionCategory.style.display = tab === 'category' ? 'block' : 'none';
+    if (els.sectionUpcoming) els.sectionUpcoming.style.display = tab === 'upcoming' ? 'block' : 'none';
 
     if (tab === 'roster') renderRoster();
     if (tab === 'productivity') renderProductivity();
     if (tab === 'category') renderCategoryGrid();
+    if (tab === 'upcoming') renderUpcomingEvents();
   }
 
   function switchProdSubTab(subtab) {
@@ -295,54 +335,26 @@
   }
 
   // =========================================================================
-  // TAB 1: Roster Plan Rendering (Q4 2026)
+  // TAB 1: Roster Plan Rendering (Q4 2026 - Master Matrix Layout)
   // =========================================================================
   function renderRoster() {
     if (typeof ROSTER_CONFIG === 'undefined') return;
 
-    populateWeekSelect();
-    renderDutyBanner();
+    populateNightWeekSelect();
     renderNightShiftDaily();
-
-    if (state.isMatrixView) {
-      if (els.weekTableWrap) els.weekTableWrap.style.display = 'none';
-      if (els.matrixTableWrap) els.matrixTableWrap.style.display = 'block';
-      renderMasterMatrix();
-    } else {
-      if (els.weekTableWrap) els.weekTableWrap.style.display = 'block';
-      if (els.matrixTableWrap) els.matrixTableWrap.style.display = 'none';
-      renderWeekTable();
-    }
-
+    renderTeamsMatrix();
     renderMentorsAndPrep();
   }
 
-  function populateWeekSelect() {
-    if (!els.weekSelect || els.weekSelect.children.length > 0) return;
+  function populateNightWeekSelect() {
+    if (!els.nightWeekSelect || els.nightWeekSelect.children.length > 0) return;
     ROSTER_CONFIG.weeks.forEach(w => {
       const opt = document.createElement('option');
       opt.value = w.id;
-      opt.textContent = `${w.name} (${w.dateRange}) — ${w.newsTeam} on News`;
+      opt.textContent = `${w.name} (${w.dateRange}) — News: ${w.newsTeam} (Lead: ${w.nightLead || 'Team'})`;
       if (w.id === state.selectedWeekId) opt.selected = true;
-      els.weekSelect.appendChild(opt);
+      els.nightWeekSelect.appendChild(opt);
     });
-  }
-
-  function renderDutyBanner() {
-    if (!els.dutyBanner) return;
-    const week = ROSTER_CONFIG.weeks.find(w => w.id === state.selectedWeekId) || ROSTER_CONFIG.weeks[0];
-
-    els.dutyBanner.innerHTML = `
-      <div class="banner-left">
-        <h3>${week.name}: ${week.dateRange}</h3>
-        <p>Q4 2026 Content Operations Schedule</p>
-      </div>
-      <div class="banner-tags">
-        <span class="simple-tag tag-news">📰 <strong>${week.newsTeam}</strong> on News</span>
-        <span class="simple-tag tag-content">✍️ <strong>${week.contentTeam}</strong> on Content (Child / SEO / Intent)</span>
-        <span class="simple-tag tag-night">🌙 <strong>Daily Night Shift Allotment</strong></span>
-      </div>
-    `;
   }
 
   function renderNightShiftDaily() {
@@ -350,11 +362,14 @@
     const week = ROSTER_CONFIG.weeks.find(w => w.id === state.selectedWeekId) || ROSTER_CONFIG.weeks[0];
 
     let html = '';
+    // Mon to Sat (6 days) - Sunday is strictly deleted!
     week.nightShiftDaily.forEach(item => {
+      const isLead = week.nightLead && item.member === week.nightLead;
       html += `
-        <div class="night-card">
-          <div class="day">${item.day}</div>
-          <div class="name">${item.member}</div>
+        <div class="night-day-box ${isLead ? 'is-lead' : ''}">
+          <div class="night-day-name">${escapeHtml(item.day)}</div>
+          <div class="night-member-name">${escapeHtml(item.member)}</div>
+          ${isLead ? '<span class="night-role-tag">Night Lead</span>' : '<span style="display:inline-block; margin-top:0.25rem; font-size:0.68rem; color:#64748b;">On Call</span>'}
         </div>
       `;
     });
@@ -362,91 +377,143 @@
     els.nightShiftRow.innerHTML = html;
   }
 
-  function getTaskBadge(task) {
-    if (task.includes('News')) return '<span class="task-pill task-news">📰 News</span>';
-    if (task.includes('SEO')) return '<span class="task-pill task-seo">🔍 SEO Optimization</span>';
-    if (task.includes('High Intent')) return '<span class="task-pill task-intent">🎯 High Intent</span>';
-    if (task.includes('Child')) return '<span class="task-pill task-child">📄 Child Pages</span>';
-    if (task.includes('Upcoming')) return '<span class="task-pill task-upcoming">📑 Upcoming Drafts</span>';
-    return `<span class="task-pill">${task}</span>`;
+  function getRosterMatrixBadge(taskInfo) {
+    if (!taskInfo || !taskInfo.task || taskInfo.task === '-') {
+      return '<div class="grid-badge" style="background:#f8fafc; color:#94a3b8;">—</div>';
+    }
+
+    const t = taskInfo.task;
+
+    if (t === 'Night Update') {
+      return `
+        <div class="grid-badge badge-night" title="${escapeHtml(taskInfo.nightDays ? 'Night shifts: ' + taskInfo.nightDays : 'Weekly Night Lead')}">
+          <span class="night-icon">🌙</span>
+          <span class="night-label">
+            <span>Night</span>
+            <span>Update</span>
+          </span>
+        </div>
+      `;
+    }
+
+    if (t === 'Child Pages') {
+      return '<div class="grid-badge badge-child">Child Pages</div>';
+    }
+
+    if (t === 'High Intent') {
+      return '<div class="grid-badge badge-intent">High Intent</div>';
+    }
+
+    if (t === 'SEO Optimization') {
+      return '<div class="grid-badge badge-seo">SEO Optimization</div>';
+    }
+
+    if (t === 'Event Pages') {
+      return '<div class="grid-badge badge-event">Event Pages</div>';
+    }
+
+    if (t === 'Upcoming Drafts') {
+      return '<div class="grid-badge badge-upcoming">Upcoming Drafts</div>';
+    }
+
+    return `<div class="grid-badge">${escapeHtml(t)}</div>`;
   }
 
-  function renderWeekTable() {
-    if (!els.weekTableBody) return;
-    const week = ROSTER_CONFIG.weeks.find(w => w.id === state.selectedWeekId) || ROSTER_CONFIG.weeks[0];
+  function renderTeamsMatrix() {
+    if (!els.rosterTeamsContainer) return;
 
-    const allMembers = [
-      ...ROSTER_CONFIG.teams.teamA.members.map(m => ({ name: m, team: 'Team A' })),
-      ...ROSTER_CONFIG.teams.teamB.members.map(m => ({ name: m, team: 'Team B' })),
-      { name: 'Archana', team: 'Upcoming' }
-    ];
+    const teamGroups = [];
 
-    let filtered = allMembers;
-    if (state.rosterTeamFilter === 'teamA') filtered = allMembers.filter(m => m.team === 'Team A');
-    if (state.rosterTeamFilter === 'teamB') filtered = allMembers.filter(m => m.team === 'Team B');
-    if (state.rosterSearch) filtered = filtered.filter(m => m.name.toLowerCase().includes(state.rosterSearch));
+    if (state.rosterTeamFilter === 'all' || state.rosterTeamFilter === 'teamA') {
+      teamGroups.push({
+        id: 'teamA',
+        title: 'Team A',
+        meta: '5 writers · alternates News / Content weekly',
+        members: ROSTER_CONFIG.teams.teamA.members
+      });
+    }
 
+    if (state.rosterTeamFilter === 'all' || state.rosterTeamFilter === 'teamB') {
+      teamGroups.push({
+        id: 'teamB',
+        title: 'Team B',
+        meta: '5 writers · alternates News / Content weekly (Trishala replaces Shilpa Singh)',
+        members: ROSTER_CONFIG.teams.teamB.members
+      });
+    }
+
+    if (state.rosterTeamFilter === 'all') {
+      teamGroups.push({
+        id: 'upcoming',
+        title: 'Upcoming Drafts & News Support',
+        meta: '1 dedicated writer · alternates Event Pages & Upcoming Drafts weekly',
+        members: ROSTER_CONFIG.teams.upcoming.members
+      });
+    }
+
+    const searchQuery = state.rosterSearch;
+    let anyWriterRendered = false;
     let html = '';
-    filtered.forEach(m => {
-      const taskInfo = week.tasks[m.name] || { task: '-', nightDays: '-' };
+
+    teamGroups.forEach(grp => {
+      let filteredMembers = grp.members;
+      if (searchQuery) {
+        filteredMembers = filteredMembers.filter(m => m.toLowerCase().includes(searchQuery));
+      }
+
+      if (filteredMembers.length === 0) return;
+      anyWriterRendered = true;
 
       html += `
-        <tr>
-          <td>
-            <strong>${m.name}</strong>
-            ${m.name === 'Trishala' ? '<span style="color:#059669; font-size:0.75rem; font-weight:600; margin-left:4px;">(Replaces Shilpa Singh)</span>' : ''}
-          </td>
-          <td>${m.team}</td>
-          <td>${getTaskBadge(taskInfo.task)}</td>
-          <td>
-            ${taskInfo.nightDays !== '-'
-              ? `<span style="background:#fef3c7; color:#92400e; padding:0.15rem 0.5rem; border-radius:4px; font-weight:600; font-size:0.75rem;">🌙 ${taskInfo.nightDays}</span>`
-              : '<span style="color:#9ca3af;">-</span>'}
-          </td>
-        </tr>
+        <div class="team-roster-section">
+          <div class="team-roster-header">
+            <h2 class="team-title">${escapeHtml(grp.title)}</h2>
+            <div class="team-meta">${escapeHtml(grp.meta)}</div>
+          </div>
+
+          <div class="roster-table-card">
+            <table class="roster-matrix-table">
+              <thead>
+                <tr>
+                  <th class="col-writer">Writer</th>
+                  ${ROSTER_CONFIG.weeks.map(w => `
+                    <th class="col-week">
+                      <div class="wk-name">${escapeHtml(w.name)}</div>
+                      <div class="wk-sub">${escapeHtml(w.dateRange)}</div>
+                    </th>
+                  `).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredMembers.map(member => `
+                  <tr>
+                    <td class="cell-writer">
+                      ${escapeHtml(member)}
+                      ${member === 'Trishala' ? '<span style="display:block; font-size:0.68rem; color:#059669; font-weight:600; margin-top:2px;">(Replaces Shilpa Singh)</span>' : ''}
+                    </td>
+                    ${ROSTER_CONFIG.weeks.map(w => {
+                      const taskInfo = w.tasks[member] || { task: '-' };
+                      return `<td class="cell-task">${getRosterMatrixBadge(taskInfo)}</td>`;
+                    }).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
       `;
     });
 
-    els.weekTableBody.innerHTML = html;
-  }
+    if (!anyWriterRendered) {
+      html = `
+        <div style="background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; padding:3rem 1.5rem; text-align:center; color:#64748b;">
+          <p style="font-size:1rem; font-weight:600; color:#334155;">No writers found matching "${escapeHtml(searchQuery)}"</p>
+          <p style="font-size:0.8rem; margin-top:0.35rem;">Try clearing the search or changing the team filter.</p>
+        </div>
+      `;
+    }
 
-  function renderMasterMatrix() {
-    if (!els.matrixTable) return;
-
-    const allMembers = [
-      ...ROSTER_CONFIG.teams.teamA.members.map(m => ({ name: m, team: 'Team A' })),
-      ...ROSTER_CONFIG.teams.teamB.members.map(m => ({ name: m, team: 'Team B' })),
-      { name: 'Archana', team: 'Upcoming' }
-    ];
-
-    let filtered = allMembers;
-    if (state.rosterTeamFilter === 'teamA') filtered = allMembers.filter(m => m.team === 'Team A');
-    if (state.rosterTeamFilter === 'teamB') filtered = allMembers.filter(m => m.team === 'Team B');
-    if (state.rosterSearch) filtered = filtered.filter(m => m.name.toLowerCase().includes(state.rosterSearch));
-
-    let html = `
-      <thead>
-        <tr>
-          <th class="col-sticky">Member</th>
-          <th>Team</th>
-          ${ROSTER_CONFIG.weeks.map(w => `<th>${w.name}</th>`).join('')}
-        </tr>
-      </thead>
-      <tbody>
-        ${filtered.map(m => `
-          <tr>
-            <td class="col-sticky"><strong>${m.name}</strong></td>
-            <td>${m.team}</td>
-            ${ROSTER_CONFIG.weeks.map(w => {
-              const info = w.tasks[m.name] || { task: '-' };
-              return `<td>${getTaskBadge(info.task)}</td>`;
-            }).join('')}
-          </tr>
-        `).join('')}
-      </tbody>
-    `;
-
-    els.matrixTable.innerHTML = html;
+    els.rosterTeamsContainer.innerHTML = html;
   }
 
   function renderMentorsAndPrep() {
@@ -879,12 +946,437 @@
   }
 
   // =========================================================================
+  // TAB 4: UPCOMING EVENTS RENDERING
+  // =========================================================================
+  const MONTH_MAP = {
+    'january': 0, 'jan': 0,
+    'february': 1, 'feb': 1,
+    'march': 2, 'mar': 2,
+    'april': 3, 'apr': 3,
+    'may': 4,
+    'june': 5, 'jun': 5,
+    'july': 6, 'jul': 6,
+    'august': 7, 'aug': 7,
+    'september': 8, 'sept': 8, 'sep': 8,
+    'october': 9, 'oct': 9,
+    'november': 10, 'nov': 10,
+    'december': 11, 'dec': 11
+  };
+
+  function parseUpcomingDate(str) {
+    if (!str || typeof str !== 'string') return null;
+    const clean = str.trim();
+    // match: "18th September 2026" or "1-April-2026"
+    const dmMatch = clean.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-]+([A-Za-z]+)[\s\-]+(\d{4})/i);
+    if (dmMatch) {
+      const day = parseInt(dmMatch[1], 10);
+      const mStr = dmMatch[2].toLowerCase();
+      const month = MONTH_MAP[mStr] !== undefined ? MONTH_MAP[mStr] : 8;
+      const year = parseInt(dmMatch[3], 10);
+      return new Date(year, month, day);
+    }
+    // match: "19th May" (assume 2026)
+    const shortMatch = clean.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-]+([A-Za-z]+)$/i);
+    if (shortMatch) {
+      const day = parseInt(shortMatch[1], 10);
+      const mStr = shortMatch[2].toLowerCase();
+      const month = MONTH_MAP[mStr] !== undefined ? MONTH_MAP[mStr] : 4;
+      return new Date(2026, month, day);
+    }
+    // match: MM/DD/YYYY
+    const slashMatch = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (slashMatch) {
+      return new Date(parseInt(slashMatch[3], 10), parseInt(slashMatch[1], 10) - 1, parseInt(slashMatch[2], 10));
+    }
+    return null;
+  }
+
+  function isStatusDone(status) {
+    if (!status) return false;
+    const s = String(status).toLowerCase().trim();
+    return s.includes('done') || s.includes('live') || s === 'dond';
+  }
+
+  function isStatusDraft(status) {
+    if (!status) return false;
+    const s = String(status).toLowerCase().trim();
+    return s.includes('draft') || s === 'picked' || s.includes('added in publishing');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function getUpcomingEventsList() {
+    if (state.sheetsData && Array.isArray(state.sheetsData.upcoming_events) && state.sheetsData.upcoming_events.length > 0) {
+      return state.sheetsData.upcoming_events;
+    }
+    if (typeof BASELINE_UPCOMING_DATA !== 'undefined' && Array.isArray(BASELINE_UPCOMING_DATA)) {
+      return BASELINE_UPCOMING_DATA;
+    }
+    return [];
+  }
+
+  function getUpcomingEventsForDateScope(events) {
+    if (!events || events.length === 0) return [];
+
+    // Find max date timestamp
+    let maxTime = 0;
+    const timestamps = [];
+    events.forEach(e => {
+      const d = parseUpcomingDate(e.date);
+      if (d) {
+        const t = d.getTime();
+        if (t > maxTime) maxTime = t;
+        timestamps.push(t);
+      }
+    });
+
+    const uniqueTimesDesc = [...new Set(timestamps)].sort((a, b) => b - a);
+    const top7DateTimes = new Set(uniqueTimesDesc.slice(0, 7));
+
+    const dayMs = 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = maxTime - (7 * dayMs);
+    const threeDaysAgo = maxTime - (3 * dayMs);
+    const fourteenDaysAgo = maxTime - (14 * dayMs);
+    const thirtyDaysAgo = maxTime - (30 * dayMs);
+
+    return events.filter(e => {
+      const d = parseUpcomingDate(e.date);
+      const time = d ? d.getTime() : null;
+
+      if (state.upcomingDateFilter === 'last7days') {
+        if (!time) return false;
+        // Priority: Include top 7 active dates from Col A or within last 7 calendar days
+        if (!top7DateTimes.has(time) && time < sevenDaysAgo) return false;
+        return true;
+      } else if (state.upcomingDateFilter === 'today') {
+        if (!time || time !== maxTime) return false;
+        return true;
+      } else if (state.upcomingDateFilter === 'last3days') {
+        if (!time || time < threeDaysAgo) return false;
+        return true;
+      } else if (state.upcomingDateFilter === 'last14days') {
+        if (!time || time < fourteenDaysAgo) return false;
+        return true;
+      } else if (state.upcomingDateFilter === 'last30days') {
+        if (!time || time < thirtyDaysAgo) return false;
+        return true;
+      } else if (state.upcomingDateFilter === 'all') {
+        return true;
+      }
+      return true;
+    });
+  }
+
+  function renderUpcomingEvents(rebuildCategories = true) {
+    if (!els.sectionUpcoming) return;
+
+    const allEvents = getUpcomingEventsList();
+    const dateScopedEvents = getUpcomingEventsForDateScope(allEvents);
+
+    // If rebuildCategories is requested (e.g. date filter changed)
+    if (rebuildCategories) {
+      populateUpcomingCategoryFilter(dateScopedEvents);
+      renderUpcomingCategoryChips(dateScopedEvents);
+    }
+
+    // Now filter by category, status, and search
+    const filteredEvents = dateScopedEvents.filter(e => {
+      // Category Filter
+      if (state.upcomingCategoryFilter !== 'all' && e.category !== state.upcomingCategoryFilter) {
+        return false;
+      }
+
+      // Status Filter
+      if (state.upcomingStatusFilter === 'done') {
+        if (!isStatusDone(e.status)) return false;
+      } else if (state.upcomingStatusFilter === 'pending') {
+        if (isStatusDone(e.status) || isStatusDraft(e.status)) return false;
+      } else if (state.upcomingStatusFilter === 'draft') {
+        if (!isStatusDraft(e.status)) return false;
+      }
+
+      // Search Query
+      if (state.upcomingSearch) {
+        const q = state.upcomingSearch.toLowerCase();
+        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.pickedBy && e.pickedBy.toLowerCase().includes(q)) ||
+                      (e.keywords && e.keywords.toLowerCase().includes(q)) ||
+                      (e.date && e.date.toLowerCase().includes(q)) ||
+                      (e.status && e.status.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+
+      return true;
+    });
+
+    // Render KPI Cards (Number of Events Planned - Number of Articles Done)
+    renderUpcomingKpis(filteredEvents, dateScopedEvents.length);
+
+    // Render Table
+    renderUpcomingTable(filteredEvents);
+
+    // Update count label
+    if (els.upcomingCountLabel) {
+      els.upcomingCountLabel.textContent = `Showing ${filteredEvents.length} of ${dateScopedEvents.length} events`;
+    }
+  }
+
+  function renderUpcomingKpis(filteredEvents, totalInDateScope) {
+    if (!els.upcomingKpiCards) return;
+
+    const planned = filteredEvents.length;
+    const done = filteredEvents.filter(e => isStatusDone(e.status)).length;
+    const pending = planned - done;
+    const rate = planned > 0 ? Math.round((done / planned) * 100) : 0;
+
+    els.upcomingKpiCards.innerHTML = `
+      <div class="kpi-card kpi-planned">
+        <div class="kpi-label">📌 Events Planned</div>
+        <div class="kpi-val" style="color:#1d4ed8;">${planned}</div>
+        <div class="kpi-sub">${state.upcomingCategoryFilter !== 'all' ? state.upcomingCategoryFilter : 'All Categories'}</div>
+      </div>
+      <div class="kpi-card kpi-done">
+        <div class="kpi-label">✅ Articles Done</div>
+        <div class="kpi-val" style="color:#15803d;">${done}</div>
+        <div class="kpi-sub">Status: Done / Live</div>
+      </div>
+      <div class="kpi-card kpi-pending">
+        <div class="kpi-label">⏳ Pending Deficit</div>
+        <div class="kpi-val" style="color:#c2410c;">${pending}</div>
+        <div class="kpi-sub">Planned − Done</div>
+      </div>
+      <div class="kpi-card kpi-rate">
+        <div class="kpi-label">🎯 Completion Rate</div>
+        <div class="kpi-val" style="color:#7c3aed;">${rate}%</div>
+        <div class="kpi-sub">${done} / ${planned} completed</div>
+      </div>
+    `;
+  }
+
+  function populateUpcomingCategoryFilter(dateScopedEvents) {
+    if (!els.upcomingCategoryFilter) return;
+
+    const catCounts = {};
+    dateScopedEvents.forEach(e => {
+      const cat = e.category || 'Others';
+      catCounts[cat] = (catCounts[cat] || 0) + 1;
+    });
+
+    const sortedCats = Object.keys(catCounts).sort((a, b) => catCounts[b] - catCounts[a]);
+
+    const currentVal = state.upcomingCategoryFilter;
+    els.upcomingCategoryFilter.innerHTML = `<option value="all">All Categories (${dateScopedEvents.length} Events)</option>`;
+
+    sortedCats.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = `${cat} (${catCounts[cat]})`;
+      if (cat === currentVal) opt.selected = true;
+      els.upcomingCategoryFilter.appendChild(opt);
+    });
+
+    // If current selected category is not in this scope, reset to 'all'
+    if (currentVal !== 'all' && !catCounts[currentVal]) {
+      state.upcomingCategoryFilter = 'all';
+      els.upcomingCategoryFilter.value = 'all';
+    }
+  }
+
+  function renderUpcomingCategoryChips(dateScopedEvents) {
+    if (!els.upcomingCatBreakdown) return;
+
+    const catStats = {};
+    dateScopedEvents.forEach(e => {
+      const cat = e.category || 'Others';
+      if (!catStats[cat]) catStats[cat] = { total: 0, done: 0 };
+      catStats[cat].total++;
+      if (isStatusDone(e.status)) catStats[cat].done++;
+    });
+
+    const sortedCats = Object.keys(catStats).sort((a, b) => catStats[b].total - catStats[a].total);
+
+    if (sortedCats.length === 0) {
+      els.upcomingCatBreakdown.innerHTML = '';
+      return;
+    }
+
+    let chipsHtml = `
+      <div class="upcoming-cat-chip ${state.upcomingCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">
+        <div class="cat-chip-name">
+          <span>All Categories</span>
+          <span>${dateScopedEvents.length}</span>
+        </div>
+        <div class="cat-chip-counts">
+          <span>Total Planned</span>
+          <span style="font-weight:700; color:#1d4ed8;">${dateScopedEvents.length}</span>
+        </div>
+        <div class="cat-progress-bar">
+          <div class="cat-progress-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+    `;
+
+    sortedCats.forEach(cat => {
+      const stat = catStats[cat];
+      const rate = stat.total > 0 ? Math.round((stat.done / stat.total) * 100) : 0;
+      const isActive = state.upcomingCategoryFilter === cat;
+
+      chipsHtml += `
+        <div class="upcoming-cat-chip ${isActive ? 'active' : ''}" data-cat="${escapeHtml(cat)}">
+          <div class="cat-chip-name">
+            <span>${escapeHtml(cat)}</span>
+            <span>${stat.total}</span>
+          </div>
+          <div class="cat-chip-counts">
+            <span>${stat.done} Done / ${stat.total - stat.done} Left</span>
+            <span style="font-weight:700;">${rate}%</span>
+          </div>
+          <div class="cat-progress-bar">
+            <div class="cat-progress-fill" style="width: ${rate}%;"></div>
+          </div>
+        </div>
+      `;
+    });
+
+    els.upcomingCatBreakdown.innerHTML = chipsHtml;
+
+    // Attach click listeners to chips
+    els.upcomingCatBreakdown.querySelectorAll('.upcoming-cat-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const cat = chip.dataset.cat;
+        state.upcomingCategoryFilter = cat;
+        if (els.upcomingCategoryFilter) els.upcomingCategoryFilter.value = cat;
+        renderUpcomingEvents(false);
+        // Highlight active chip
+        els.upcomingCatBreakdown.querySelectorAll('.upcoming-cat-chip').forEach(c => {
+          c.classList.toggle('active', c.dataset.cat === cat);
+        });
+      });
+    });
+  }
+
+  function renderUpcomingTable(filteredEvents) {
+    if (!els.upcomingTableBody) return;
+
+    if (filteredEvents.length === 0) {
+      els.upcomingTableBody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; padding:2rem; color:#6b7280; font-size:0.85rem;">
+            No upcoming events match the selected filters.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    let rowsHtml = '';
+    filteredEvents.forEach(e => {
+      // Status formatting
+      let statusBadge = '';
+      if (isStatusDone(e.status)) {
+        statusBadge = `<span class="badge-status status-done">✅ Done</span>`;
+      } else if (isStatusDraft(e.status)) {
+        statusBadge = `<span class="badge-status status-draft">📝 ${escapeHtml(e.status || 'Drafted')}</span>`;
+      } else {
+        statusBadge = `<span class="badge-status status-pending">⏳ Pending</span>`;
+      }
+
+      // Priority formatting
+      let priorityBadge = '—';
+      if (e.priority === 'P0') {
+        priorityBadge = `<span class="badge-p0">P0</span>`;
+      } else if (e.priority === 'P1') {
+        priorityBadge = `<span class="badge-p1">P1</span>`;
+      } else if (e.priority) {
+        priorityBadge = escapeHtml(e.priority);
+      }
+
+      // URL Action
+      let linkHtml = '—';
+      if (e.url) {
+        linkHtml = `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener noreferrer" class="btn-link-action">View Post ↗</a>`;
+      }
+
+      rowsHtml += `
+        <tr>
+          <td style="font-weight:600; color:#334155; white-space:nowrap;">${escapeHtml(e.date)}</td>
+          <td><span class="badge-cat">${escapeHtml(e.category)}</span></td>
+          <td>
+            <div style="font-weight:600; color:#0f172a; line-height:1.35;">${escapeHtml(e.topic)}</div>
+            ${e.seoSuggestion ? `<div style="font-size:0.72rem; color:#64748b; margin-top:0.2rem;">${escapeHtml(e.seoSuggestion)}</div>` : ''}
+          </td>
+          <td>${statusBadge}</td>
+          <td style="font-weight:500;">${e.pickedBy ? escapeHtml(e.pickedBy) : '<span style="color:#94a3b8;">—</span>'}</td>
+          <td>${priorityBadge}</td>
+          <td style="font-size:0.78rem; color:#64748b;">${escapeHtml(e.type || 'News')}</td>
+          <td>${linkHtml}</td>
+        </tr>
+      `;
+    });
+
+    els.upcomingTableBody.innerHTML = rowsHtml;
+  }
+
+  function exportUpcomingCSV() {
+    const allEvents = getUpcomingEventsList();
+    const dateScopedEvents = getUpcomingEventsForDateScope(allEvents);
+
+    const filteredEvents = dateScopedEvents.filter(e => {
+      if (state.upcomingCategoryFilter !== 'all' && e.category !== state.upcomingCategoryFilter) return false;
+      if (state.upcomingStatusFilter === 'done' && !isStatusDone(e.status)) return false;
+      if (state.upcomingStatusFilter === 'pending' && (isStatusDone(e.status) || isStatusDraft(e.status))) return false;
+      if (state.upcomingStatusFilter === 'draft' && !isStatusDraft(e.status)) return false;
+      if (state.upcomingSearch) {
+        const q = state.upcomingSearch.toLowerCase();
+        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.pickedBy && e.pickedBy.toLowerCase().includes(q)) ||
+                      (e.date && e.date.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    const headers = ['Date', 'Category', 'Topic', 'Status', 'Status_Type', 'Picked_By', 'Priority', 'Type', 'URL'];
+    const csvLines = [headers.join(',')];
+
+    filteredEvents.forEach(e => {
+      const statusType = isStatusDone(e.status) ? 'Done' : (isStatusDraft(e.status) ? 'Drafted' : 'Pending');
+      const row = [
+        `"${(e.date || '').replace(/"/g, '""')}"`,
+        `"${(e.category || '').replace(/"/g, '""')}"`,
+        `"${(e.topic || '').replace(/"/g, '""')}"`,
+        `"${(e.status || '').replace(/"/g, '""')}"`,
+        `"${statusType}"`,
+        `"${(e.pickedBy || '').replace(/"/g, '""')}"`,
+        `"${(e.priority || '').replace(/"/g, '""')}"`,
+        `"${(e.type || '').replace(/"/g, '""')}"`,
+        `"${(e.url || '').replace(/"/g, '""')}"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    const filename = `Upcoming_Events_${state.upcomingDateFilter}_${state.upcomingCategoryFilter}.csv`;
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
   // Master Initialization
   // =========================================================================
   function renderApp() {
     renderRoster();
     renderProductivity();
     renderCategoryGrid();
+    renderUpcomingEvents();
   }
 
   function init() {

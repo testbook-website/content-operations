@@ -3,8 +3,9 @@
  * 
  * Rules applied:
  * 1. Team A & Team B alternate weekly between News ("Event Pages") and Content.
- * 2. In News weeks: Night shift is NOT done by one person for the complete week.
- *    Instead, the 5 team members rotate day-by-day (Mon, Tue, Wed, Thu, Fri, Sat, Sun).
+ * 2. In News weeks: Exactly one writer leads Night Update on call.
+ *    Daily night shifts rotate Monday to Saturday (6 days).
+ *    *** SUNDAY IS DELETED - NO ONE WORKS ON SUNDAY ***
  * 3. In Content weeks, members are assigned to Child Pages, SEO Optimization, or High Intent.
  * 4. Strictly guaranteed: No member receives the same content task on consecutive content weeks.
  * 5. In Team B, Trishala replaces Shilpa Singh.
@@ -55,28 +56,30 @@ const ROSTER_CONFIG = {
   ],
 
   weeks: [
+    // -------------------------------------------------------------------------
+    // Week 1: 05 Oct - 11 Oct 2026 (News: Team A | Night Lead: Sonika)
+    // -------------------------------------------------------------------------
     {
       id: 1,
-      name: "Week 1",
-      dateRange: "05 Oct - 11 Oct 2026",
+      name: "Wk 1",
+      dateRange: "5 Oct–11 Oct",
       newsTeam: "Team A",
       contentTeam: "Team B",
-      // Daily night shift rotation for Team A (News week)
+      nightLead: "Sonika",
       nightShiftDaily: [
-        { day: "Monday (05 Oct)", member: "Sonika" },
-        { day: "Tuesday (06 Oct)", member: "Archita" },
-        { day: "Wednesday (07 Oct)", member: "Shemaila" },
-        { day: "Thursday (08 Oct)", member: "Somya" },
-        { day: "Friday (09 Oct)", member: "Atul" },
-        { day: "Saturday (10 Oct)", member: "Sonika" },
-        { day: "Sunday (11 Oct)", member: "Archita" }
+        { day: "Mon (05 Oct)", member: "Sonika" },
+        { day: "Tue (06 Oct)", member: "Archita" },
+        { day: "Wed (07 Oct)", member: "Shemaila" },
+        { day: "Thu (08 Oct)", member: "Somya" },
+        { day: "Fri (09 Oct)", member: "Atul" },
+        { day: "Sat (10 Oct)", member: "Sonika" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Mon, Sat" },
-        "Archita": { team: "Team A", task: "News", nightDays: "Tue, Sun" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Wed" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Thu" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Fri" },
+        "Sonika": { team: "Team A", task: "Night Update", nightDays: "Mon, Sat" },
+        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Atul": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
@@ -84,62 +87,69 @@ const ROSTER_CONFIG = {
         "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Trishala": { team: "Team B", task: "Child Pages", nightDays: "-" },
 
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 2: 12 Oct - 18 Oct 2026 (News: Team B | Night Lead: Nadeem)
+    // -------------------------------------------------------------------------
     {
       id: 2,
-      name: "Week 2",
-      dateRange: "12 Oct - 18 Oct 2026",
+      name: "Wk 2",
+      dateRange: "12 Oct–18 Oct",
       newsTeam: "Team B",
       contentTeam: "Team A",
-      // Daily night shift rotation for Team B (News week)
+      nightLead: "Nadeem",
       nightShiftDaily: [
-        { day: "Monday (12 Oct)", member: "Nadeem" },
-        { day: "Tuesday (13 Oct)", member: "Shilpa Kohli" },
-        { day: "Wednesday (14 Oct)", member: "Aditi" },
-        { day: "Thursday (15 Oct)", member: "Mohit" },
-        { day: "Friday (16 Oct)", member: "Trishala" },
-        { day: "Saturday (17 Oct)", member: "Nadeem" },
-        { day: "Sunday (18 Oct)", member: "Shilpa Kohli" }
+        { day: "Mon (12 Oct)", member: "Nadeem" },
+        { day: "Tue (13 Oct)", member: "Shilpa Kohli" },
+        { day: "Wed (14 Oct)", member: "Aditi" },
+        { day: "Thu (15 Oct)", member: "Mohit" },
+        { day: "Fri (16 Oct)", member: "Trishala" },
+        { day: "Sat (17 Oct)", member: "Nadeem" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Sonika": { team: "Team A", task: "Child Pages", nightDays: "-" },
         "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
         "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Somya": { team: "Team A", task: "Child Pages", nightDays: "-" },
         "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
 
-        "Nadeem": { team: "Team B", task: "News", nightDays: "Mon, Sat" },
-        "Shilpa Kohli": { team: "Team B", task: "News", nightDays: "Tue, Sun" },
-        "Aditi": { team: "Team B", task: "News", nightDays: "Wed" },
-        "Mohit": { team: "Team B", task: "News", nightDays: "Thu" },
-        "Trishala": { team: "Team B", task: "News", nightDays: "Fri" },
+        "Nadeem": { team: "Team B", task: "Night Update", nightDays: "Mon, Sat" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
+        "Mohit": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
 
         "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 3: 19 Oct - 25 Oct 2026 (News: Team A | Night Lead: Archita)
+    // -------------------------------------------------------------------------
     {
       id: 3,
-      name: "Week 3",
-      dateRange: "19 Oct - 25 Oct 2026",
+      name: "Wk 3",
+      dateRange: "19 Oct–25 Oct",
       newsTeam: "Team A",
       contentTeam: "Team B",
+      nightLead: "Archita",
       nightShiftDaily: [
-        { day: "Monday (19 Oct)", member: "Shemaila" },
-        { day: "Tuesday (20 Oct)", member: "Somya" },
-        { day: "Wednesday (21 Oct)", member: "Atul" },
-        { day: "Thursday (22 Oct)", member: "Sonika" },
-        { day: "Friday (23 Oct)", member: "Archita" },
-        { day: "Saturday (24 Oct)", member: "Shemaila" },
-        { day: "Sunday (25 Oct)", member: "Somya" }
+        { day: "Mon (19 Oct)", member: "Archita" },
+        { day: "Tue (20 Oct)", member: "Shemaila" },
+        { day: "Wed (21 Oct)", member: "Somya" },
+        { day: "Thu (22 Oct)", member: "Atul" },
+        { day: "Fri (23 Oct)", member: "Sonika" },
+        { day: "Sat (24 Oct)", member: "Archita" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Thu" },
-        "Archita": { team: "Team A", task: "News", nightDays: "Fri" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Mon, Sat" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Tue, Sun" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Wed" },
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
+        "Archita": { team: "Team A", task: "Night Update", nightDays: "Mon, Sat" },
+        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
+        "Atul": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
 
         "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
@@ -147,185 +157,139 @@ const ROSTER_CONFIG = {
         "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
 
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 4: 26 Oct - 01 Nov 2026 (News: Team B | Night Lead: Shilpa Kohli)
+    // -------------------------------------------------------------------------
     {
       id: 4,
-      name: "Week 4",
-      dateRange: "26 Oct - 01 Nov 2026",
+      name: "Wk 4",
+      dateRange: "26 Oct–1 Nov",
       newsTeam: "Team B",
       contentTeam: "Team A",
+      nightLead: "Shilpa Kohli",
       nightShiftDaily: [
-        { day: "Monday (26 Oct)", member: "Aditi" },
-        { day: "Tuesday (27 Oct)", member: "Mohit" },
-        { day: "Wednesday (28 Oct)", member: "Trishala" },
-        { day: "Thursday (29 Oct)", member: "Nadeem" },
-        { day: "Friday (30 Oct)", member: "Shilpa Kohli" },
-        { day: "Saturday (31 Oct)", member: "Aditi" },
-        { day: "Sunday (01 Nov)", member: "Mohit" }
+        { day: "Mon (26 Oct)", member: "Shilpa Kohli" },
+        { day: "Tue (27 Oct)", member: "Aditi" },
+        { day: "Wed (28 Oct)", member: "Mohit" },
+        { day: "Thu (29 Oct)", member: "Trishala" },
+        { day: "Fri (30 Oct)", member: "Nadeem" },
+        { day: "Sat (31 Oct)", member: "Shilpa Kohli" }
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Archita": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Atul": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
-        "Nadeem": { team: "Team B", task: "News", nightDays: "Thu" },
-        "Shilpa Kohli": { team: "Team B", task: "News", nightDays: "Fri" },
-        "Aditi": { team: "Team B", task: "News", nightDays: "Mon, Sat" },
-        "Mohit": { team: "Team B", task: "News", nightDays: "Tue, Sun" },
-        "Trishala": { team: "Team B", task: "News", nightDays: "Wed" },
+        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
+        "Shilpa Kohli": { team: "Team B", task: "Night Update", nightDays: "Mon, Sat" },
+        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Mohit": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
+        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
 
         "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 5: 02 Nov - 08 Nov 2026 (News: Team A | Night Lead: Shemaila)
+    // -------------------------------------------------------------------------
     {
       id: 5,
-      name: "Week 5",
-      dateRange: "02 Nov - 08 Nov 2026",
+      name: "Wk 5",
+      dateRange: "2 Nov–8 Nov",
       newsTeam: "Team A",
       contentTeam: "Team B",
+      nightLead: "Shemaila",
       nightShiftDaily: [
-        { day: "Monday (02 Nov)", member: "Atul" },
-        { day: "Tuesday (03 Nov)", member: "Sonika" },
-        { day: "Wednesday (04 Nov)", member: "Archita" },
-        { day: "Thursday (05 Nov)", member: "Shemaila" },
-        { day: "Friday (06 Nov)", member: "Somya" },
-        { day: "Saturday (07 Nov)", member: "Atul" },
-        { day: "Sunday (08 Nov)", member: "Sonika" }
+        { day: "Mon (02 Nov)", member: "Shemaila" },
+        { day: "Tue (03 Nov)", member: "Somya" },
+        { day: "Wed (04 Nov)", member: "Atul" },
+        { day: "Thu (05 Nov)", member: "Sonika" },
+        { day: "Fri (06 Nov)", member: "Archita" },
+        { day: "Sat (07 Nov)", member: "Shemaila" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Tue, Sun" },
-        "Archita": { team: "Team A", task: "News", nightDays: "Wed" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Thu" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Fri" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Mon, Sat" },
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
+        "Shemaila": { team: "Team A", task: "Night Update", nightDays: "Mon, Sat" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Atul": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
 
-        "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Nadeem": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Mohit": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
 
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 6: 09 Nov - 15 Nov 2026 (News: Team B | Night Lead: Aditi)
+    // -------------------------------------------------------------------------
     {
       id: 6,
-      name: "Week 6",
-      dateRange: "09 Nov - 15 Nov 2026",
+      name: "Wk 6",
+      dateRange: "9 Nov–15 Nov",
       newsTeam: "Team B",
       contentTeam: "Team A",
+      nightLead: "Aditi",
       nightShiftDaily: [
-        { day: "Monday (09 Nov)", member: "Trishala" },
-        { day: "Tuesday (10 Nov)", member: "Nadeem" },
-        { day: "Wednesday (11 Nov)", member: "Shilpa Kohli" },
-        { day: "Thursday (12 Nov)", member: "Aditi" },
-        { day: "Friday (13 Nov)", member: "Mohit" },
-        { day: "Saturday (14 Nov)", member: "Trishala" },
-        { day: "Sunday (15 Nov)", member: "Nadeem" }
+        { day: "Mon (09 Nov)", member: "Aditi" },
+        { day: "Tue (10 Nov)", member: "Mohit" },
+        { day: "Wed (11 Nov)", member: "Trishala" },
+        { day: "Thu (12 Nov)", member: "Nadeem" },
+        { day: "Fri (13 Nov)", member: "Shilpa Kohli" },
+        { day: "Sat (14 Nov)", member: "Aditi" }
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
 
-        "Nadeem": { team: "Team B", task: "News", nightDays: "Tue, Sun" },
-        "Shilpa Kohli": { team: "Team B", task: "News", nightDays: "Wed" },
-        "Aditi": { team: "Team B", task: "News", nightDays: "Thu" },
-        "Mohit": { team: "Team B", task: "News", nightDays: "Fri" },
-        "Trishala": { team: "Team B", task: "News", nightDays: "Mon, Sat" },
+        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
+        "Aditi": { team: "Team B", task: "Night Update", nightDays: "Mon, Sat" },
+        "Mohit": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
 
         "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 7: 16 Nov - 22 Nov 2026 (News: Team A | Night Lead: Somya)
+    // -------------------------------------------------------------------------
     {
       id: 7,
-      name: "Week 7",
-      dateRange: "16 Nov - 22 Nov 2026",
+      name: "Wk 7",
+      dateRange: "16 Nov–22 Nov",
       newsTeam: "Team A",
       contentTeam: "Team B",
+      nightLead: "Somya",
       nightShiftDaily: [
-        { day: "Monday (16 Nov)", member: "Archita" },
-        { day: "Tuesday (17 Nov)", member: "Shemaila" },
-        { day: "Wednesday (18 Nov)", member: "Somya" },
-        { day: "Thursday (19 Nov)", member: "Atul" },
-        { day: "Friday (20 Nov)", member: "Sonika" },
-        { day: "Saturday (21 Nov)", member: "Archita" },
-        { day: "Sunday (22 Nov)", member: "Shemaila" }
+        { day: "Mon (16 Nov)", member: "Somya" },
+        { day: "Tue (17 Nov)", member: "Atul" },
+        { day: "Wed (18 Nov)", member: "Sonika" },
+        { day: "Thu (19 Nov)", member: "Archita" },
+        { day: "Fri (20 Nov)", member: "Shemaila" },
+        { day: "Sat (21 Nov)", member: "Somya" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Fri" },
-        "Archita": { team: "Team A", task: "News", nightDays: "Mon, Sat" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Tue, Sun" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Wed" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Thu" },
-
-        "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
-
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
-      }
-    },
-    {
-      id: 8,
-      name: "Week 8",
-      dateRange: "23 Nov - 29 Nov 2026",
-      newsTeam: "Team B",
-      contentTeam: "Team A",
-      nightShiftDaily: [
-        { day: "Monday (23 Nov)", member: "Shilpa Kohli" },
-        { day: "Tuesday (24 Nov)", member: "Aditi" },
-        { day: "Wednesday (25 Nov)", member: "Mohit" },
-        { day: "Thursday (26 Nov)", member: "Trishala" },
-        { day: "Friday (27 Nov)", member: "Nadeem" },
-        { day: "Saturday (28 Nov)", member: "Shilpa Kohli" },
-        { day: "Sunday (29 Nov)", member: "Aditi" }
-      ],
-      tasks: {
-        "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
-
-        "Nadeem": { team: "Team B", task: "News", nightDays: "Fri" },
-        "Shilpa Kohli": { team: "Team B", task: "News", nightDays: "Mon, Sat" },
-        "Aditi": { team: "Team B", task: "News", nightDays: "Tue, Sun" },
-        "Mohit": { team: "Team B", task: "News", nightDays: "Wed" },
-        "Trishala": { team: "Team B", task: "News", nightDays: "Thu" },
-
-        "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
-      }
-    },
-    {
-      id: 9,
-      name: "Week 9",
-      dateRange: "30 Nov - 06 Dec 2026",
-      newsTeam: "Team A",
-      contentTeam: "Team B",
-      nightShiftDaily: [
-        { day: "Monday (30 Nov)", member: "Somya" },
-        { day: "Tuesday (01 Dec)", member: "Atul" },
-        { day: "Wednesday (02 Dec)", member: "Sonika" },
-        { day: "Thursday (03 Dec)", member: "Archita" },
-        { day: "Friday (04 Dec)", member: "Shemaila" },
-        { day: "Saturday (05 Dec)", member: "Somya" },
-        { day: "Sunday (06 Dec)", member: "Atul" }
-      ],
-      tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Wed" },
-        "Archita": { team: "Team A", task: "News", nightDays: "Thu" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Fri" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Mon, Sat" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Tue, Sun" },
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
+        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
+        "Somya": { team: "Team A", task: "Night Update", nightDays: "Mon, Sat" },
+        "Atul": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
@@ -333,120 +297,207 @@ const ROSTER_CONFIG = {
         "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Trishala": { team: "Team B", task: "Child Pages", nightDays: "-" },
 
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 8: 23 Nov - 29 Nov 2026 (News: Team B | Night Lead: Mohit)
+    // -------------------------------------------------------------------------
     {
-      id: 10,
-      name: "Week 10",
-      dateRange: "07 Dec - 13 Dec 2026",
+      id: 8,
+      name: "Wk 8",
+      dateRange: "23 Nov–29 Nov",
       newsTeam: "Team B",
       contentTeam: "Team A",
+      nightLead: "Mohit",
       nightShiftDaily: [
-        { day: "Monday (07 Dec)", member: "Mohit" },
-        { day: "Tuesday (08 Dec)", member: "Trishala" },
-        { day: "Wednesday (09 Dec)", member: "Nadeem" },
-        { day: "Thursday (10 Dec)", member: "Shilpa Kohli" },
-        { day: "Friday (11 Dec)", member: "Aditi" },
-        { day: "Saturday (12 Dec)", member: "Mohit" },
-        { day: "Sunday (13 Dec)", member: "Trishala" }
+        { day: "Mon (23 Nov)", member: "Mohit" },
+        { day: "Tue (24 Nov)", member: "Trishala" },
+        { day: "Wed (25 Nov)", member: "Nadeem" },
+        { day: "Thu (26 Nov)", member: "Shilpa Kohli" },
+        { day: "Fri (27 Nov)", member: "Aditi" },
+        { day: "Sat (28 Nov)", member: "Mohit" }
+      ],
+      tasks: {
+        "Sonika": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Somya": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
+
+        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
+        "Mohit": { team: "Team B", task: "Night Update", nightDays: "Mon, Sat" },
+        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+
+        "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // Week 9: 30 Nov - 06 Dec 2026 (News: Team A | Night Lead: Atul)
+    // -------------------------------------------------------------------------
+    {
+      id: 9,
+      name: "Wk 9",
+      dateRange: "30 Nov–6 Dec",
+      newsTeam: "Team A",
+      contentTeam: "Team B",
+      nightLead: "Atul",
+      nightShiftDaily: [
+        { day: "Mon (30 Nov)", member: "Atul" },
+        { day: "Tue (01 Dec)", member: "Sonika" },
+        { day: "Wed (02 Dec)", member: "Archita" },
+        { day: "Thu (03 Dec)", member: "Shemaila" },
+        { day: "Fri (04 Dec)", member: "Somya" },
+        { day: "Sat (05 Dec)", member: "Atul" }
+      ],
+      tasks: {
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
+        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
+        "Atul": { team: "Team A", task: "Night Update", nightDays: "Mon, Sat" },
+
+        "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
+
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // Week 10: 07 Dec - 13 Dec 2026 (News: Team B | Night Lead: Trishala)
+    // -------------------------------------------------------------------------
+    {
+      id: 10,
+      name: "Wk 10",
+      dateRange: "7 Dec–13 Dec",
+      newsTeam: "Team B",
+      contentTeam: "Team A",
+      nightLead: "Trishala",
+      nightShiftDaily: [
+        { day: "Mon (07 Dec)", member: "Trishala" },
+        { day: "Tue (08 Dec)", member: "Nadeem" },
+        { day: "Wed (09 Dec)", member: "Shilpa Kohli" },
+        { day: "Thu (10 Dec)", member: "Aditi" },
+        { day: "Fri (11 Dec)", member: "Mohit" },
+        { day: "Sat (12 Dec)", member: "Trishala" }
+      ],
+      tasks: {
+        "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Archita": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
+
+        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
+        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Mohit": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
+        "Trishala": { team: "Team B", task: "Night Update", nightDays: "Mon, Sat" },
+
+        "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // Week 11: 14 Dec - 20 Dec 2026 (News: Team A | Night Lead: Sonika)
+    // -------------------------------------------------------------------------
+    {
+      id: 11,
+      name: "Wk 11",
+      dateRange: "14 Dec–20 Dec",
+      newsTeam: "Team A",
+      contentTeam: "Team B",
+      nightLead: "Sonika",
+      nightShiftDaily: [
+        { day: "Mon (14 Dec)", member: "Sonika" },
+        { day: "Tue (15 Dec)", member: "Archita" },
+        { day: "Wed (16 Dec)", member: "Shemaila" },
+        { day: "Thu (17 Dec)", member: "Somya" },
+        { day: "Fri (18 Dec)", member: "Atul" },
+        { day: "Sat (19 Dec)", member: "Sonika" }
+      ],
+      tasks: {
+        "Sonika": { team: "Team A", task: "Night Update", nightDays: "Mon, Sat" },
+        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Atul": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
+
+        "Nadeem": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Mohit": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
+      }
+    },
+
+    // -------------------------------------------------------------------------
+    // Week 12: 21 Dec - 27 Dec 2026 (News: Team B | Night Lead: Nadeem)
+    // -------------------------------------------------------------------------
+    {
+      id: 12,
+      name: "Wk 12",
+      dateRange: "21 Dec–27 Dec",
+      newsTeam: "Team B",
+      contentTeam: "Team A",
+      nightLead: "Nadeem",
+      nightShiftDaily: [
+        { day: "Mon (21 Dec)", member: "Nadeem" },
+        { day: "Tue (22 Dec)", member: "Shilpa Kohli" },
+        { day: "Wed (23 Dec)", member: "Aditi" },
+        { day: "Thu (24 Dec)", member: "Mohit" },
+        { day: "Fri (25 Dec)", member: "Trishala" },
+        { day: "Sat (26 Dec)", member: "Nadeem" }
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
-
-        "Nadeem": { team: "Team B", task: "News", nightDays: "Wed" },
-        "Shilpa Kohli": { team: "Team B", task: "News", nightDays: "Thu" },
-        "Aditi": { team: "Team B", task: "News", nightDays: "Fri" },
-        "Mohit": { team: "Team B", task: "News", nightDays: "Mon, Sat" },
-        "Trishala": { team: "Team B", task: "News", nightDays: "Tue, Sun" },
-
-        "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
-      }
-    },
-    {
-      id: 11,
-      name: "Week 11",
-      dateRange: "14 Dec - 20 Dec 2026",
-      newsTeam: "Team A",
-      contentTeam: "Team B",
-      nightShiftDaily: [
-        { day: "Monday (14 Dec)", member: "Sonika" },
-        { day: "Tuesday (15 Dec)", member: "Archita" },
-        { day: "Wednesday (16 Dec)", member: "Shemaila" },
-        { day: "Thursday (17 Dec)", member: "Somya" },
-        { day: "Friday (18 Dec)", member: "Atul" },
-        { day: "Saturday (19 Dec)", member: "Sonika" },
-        { day: "Sunday (20 Dec)", member: "Archita" }
-      ],
-      tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Mon, Sat" },
-        "Archita": { team: "Team A", task: "News", nightDays: "Tue, Sun" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Wed" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Thu" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Fri" },
-
-        "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
-
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
-      }
-    },
-    {
-      id: 12,
-      name: "Week 12",
-      dateRange: "21 Dec - 27 Dec 2026",
-      newsTeam: "Team B",
-      contentTeam: "Team A",
-      nightShiftDaily: [
-        { day: "Monday (21 Dec)", member: "Nadeem" },
-        { day: "Tuesday (22 Dec)", member: "Shilpa Kohli" },
-        { day: "Wednesday (23 Dec)", member: "Aditi" },
-        { day: "Thursday (24 Dec)", member: "Mohit" },
-        { day: "Friday (25 Dec)", member: "Trishala" },
-        { day: "Saturday (26 Dec)", member: "Nadeem" },
-        { day: "Sunday (27 Dec)", member: "Shilpa Kohli" }
-      ],
-      tasks: {
-        "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Atul": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
-        "Nadeem": { team: "Team B", task: "News", nightDays: "Mon, Sat" },
-        "Shilpa Kohli": { team: "Team B", task: "News", nightDays: "Tue, Sun" },
-        "Aditi": { team: "Team B", task: "News", nightDays: "Wed" },
-        "Mohit": { team: "Team B", task: "News", nightDays: "Thu" },
-        "Trishala": { team: "Team B", task: "News", nightDays: "Fri" },
+        "Nadeem": { team: "Team B", task: "Night Update", nightDays: "Mon, Sat" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
+        "Mohit": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
 
         "Archana": { team: "Upcoming", task: "Upcoming Drafts", nightDays: "-" }
       }
     },
+
+    // -------------------------------------------------------------------------
+    // Week 13: 28 Dec - 31 Dec 2026 (News: Team A | Night Lead: Archita)
+    // -------------------------------------------------------------------------
     {
       id: 13,
-      name: "Week 13",
-      dateRange: "28 Dec - 31 Dec 2026",
+      name: "Wk 13",
+      dateRange: "28 Dec–31 Dec",
       newsTeam: "Team A",
       contentTeam: "Team B",
+      nightLead: "Archita",
       nightShiftDaily: [
-        { day: "Monday (28 Dec)", member: "Shemaila" },
-        { day: "Tuesday (29 Dec)", member: "Somya" },
-        { day: "Wednesday (30 Dec)", member: "Atul" },
-        { day: "Thursday (31 Dec)", member: "Sonika" }
+        { day: "Mon (28 Dec)", member: "Archita" },
+        { day: "Tue (29 Dec)", member: "Shemaila" },
+        { day: "Wed (30 Dec)", member: "Somya" },
+        { day: "Thu (31 Dec)", member: "Atul" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "News", nightDays: "Thu" },
-        "Archita": { team: "Team A", task: "News", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "News", nightDays: "Mon" },
-        "Somya": { team: "Team A", task: "News", nightDays: "Tue" },
-        "Atul": { team: "Team A", task: "News", nightDays: "Wed" },
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "-" },
+        "Archita": { team: "Team A", task: "Night Update", nightDays: "Mon" },
+        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
+        "Atul": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
@@ -454,12 +505,8 @@ const ROSTER_CONFIG = {
         "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Trishala": { team: "Team B", task: "Child Pages", nightDays: "-" },
 
-        "Archana": { team: "Upcoming", task: "News", nightDays: "-" }
+        "Archana": { team: "Upcoming", task: "Event Pages", nightDays: "-" }
       }
     }
   ]
 };
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = ROSTER_CONFIG;
-}

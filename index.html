@@ -50,6 +50,7 @@
         <button class="tab-btn active" data-tab="roster" id="tabBtnRoster">📅 Roster Plan</button>
         <button class="tab-btn" data-tab="productivity" id="tabBtnProductivity">📊 Productivity</button>
         <button class="tab-btn" data-tab="category" id="tabBtnCategory">📂 Category Wise Date</button>
+        <button class="tab-btn" data-tab="upcoming" id="tabBtnUpcoming">⚡ Upcoming Events</button>
       </div>
 
       <div class="nav-actions">
@@ -64,63 +65,76 @@
   <main class="page-container">
 
     <!-- =====================================================================
-         TAB 1: ROSTER PLAN
+         TAB 1: ROSTER PLAN (Matrix Interface as in Screenshot)
          ===================================================================== -->
     <section id="sectionRoster">
       
-      <!-- Week Summary -->
-      <div class="simple-banner" id="dutyBanner"></div>
-
-      <!-- Daily Night Shift Box (Rotated Day-by-Day across 5 members) -->
-      <div style="margin-bottom:0.75rem;">
-        <div style="font-size:0.82rem; font-weight:700; margin-bottom:0.4rem; display:flex; justify-content:space-between;">
-          <span>🌙 Night Shift Schedule (Monday – Sunday)</span>
-          <span style="font-size:0.75rem; font-weight:normal; color:#6b7280;">Rotated daily across the 5 News team members</span>
+      <!-- Top Legend Bar (Matches Screenshot) -->
+      <div class="roster-legend-bar">
+        <div class="legend-pill pill-child">
+          <span class="legend-dot dot-child"></span>
+          <span>Child Pages</span>
         </div>
-        <div class="night-row" id="nightShiftRow"></div>
+        <div class="legend-pill pill-intent">
+          <span class="legend-dot dot-intent"></span>
+          <span>High Intent</span>
+        </div>
+        <div class="legend-pill pill-seo">
+          <span class="legend-dot dot-seo"></span>
+          <span>SEO Optimization</span>
+        </div>
+        <div class="legend-pill pill-event">
+          <span class="legend-dot dot-event"></span>
+          <span>Event Pages (News week)</span>
+        </div>
+        <div class="legend-pill pill-night">
+          <span style="font-size:0.95rem;">🌙</span>
+          <span>Night Update — one News-week writer on call</span>
+        </div>
       </div>
 
-      <!-- Sub Bar -->
-      <div class="sub-bar">
-        <div style="display:flex; align-items:center; gap:0.4rem;">
-          <label style="font-size:0.8rem; font-weight:600;">Week:</label>
-          <select class="select-simple" id="weekSelect"></select>
+      <!-- Night Shift Schedule Card (Monday - Saturday | Sunday Deleted) -->
+      <div class="night-schedule-card">
+        <div class="night-schedule-header">
+          <div class="night-header-left">
+            <div class="night-title-row">
+              <span style="font-size:1.1rem;">🌙</span>
+              <span class="night-title">Night Shift Schedule (Monday – Saturday)</span>
+              <span class="sunday-off-badge">Sunday OFF</span>
+            </div>
+            <p class="night-subtitle">Rotated daily across active News team members · No one works on Sunday</p>
+          </div>
+          <div class="night-header-right">
+            <label style="font-size:0.8rem; font-weight:600; color:#475569;">Active Week:</label>
+            <select class="select-simple" id="nightWeekSelect" style="font-weight:600;"></select>
+          </div>
+        </div>
+        <!-- 6 Daily Cards: Monday to Saturday -->
+        <div class="night-days-grid" id="nightShiftRow"></div>
+      </div>
+
+      <!-- Controls Sub-Bar -->
+      <div class="sub-bar" style="margin-bottom: 1.25rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <label style="font-size:0.8rem; font-weight:600;">Show Team:</label>
           <select class="select-simple" id="teamFilter">
-            <option value="all">All Teams</option>
-            <option value="teamA">Team A</option>
-            <option value="teamB">Team B (with Trishala)</option>
+            <option value="all">All Teams (Team A & Team B)</option>
+            <option value="teamA">Team A Only</option>
+            <option value="teamB">Team B Only (with Trishala)</option>
           </select>
         </div>
 
         <div style="display:flex; align-items:center; gap:0.4rem;">
-          <input type="text" class="input-simple" id="rosterSearch" placeholder="Search member...">
-          <button class="btn-action" id="btnToggleMatrix">Switch to 13-Week Grid</button>
+          <input type="text" class="input-simple" id="rosterSearch" placeholder="Search writer..." style="width:200px;">
           <button class="btn-action" id="btnExportRoster">Export CSV</button>
         </div>
       </div>
 
-      <!-- Weekly Roster Table -->
-      <div class="table-wrap" id="weekTableWrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width:200px;">Team Member</th>
-              <th style="width:120px;">Team</th>
-              <th>Assigned Work</th>
-              <th>Night Shift Days</th>
-            </tr>
-          </thead>
-          <tbody id="weekTableBody"></tbody>
-        </table>
-      </div>
-
-      <!-- Full Master 13-Week Grid (Toggleable) -->
-      <div class="table-wrap" id="matrixTableWrap" style="display:none;">
-        <table class="data-table" id="matrixTable"></table>
-      </div>
+      <!-- Master Roster Tables (Team A, Team B, Upcoming Drafts) -->
+      <div id="rosterTeamsContainer"></div>
 
       <!-- Mentors & Prep Team -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.8rem;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.8rem; margin-top: 1.5rem;">
         <div class="table-wrap" style="padding:0.75rem;">
           <div style="font-weight:700; margin-bottom:0.5rem;">Category Mentors</div>
           <div id="mentorsList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.35rem;"></div>
@@ -188,12 +202,103 @@
       </div>
     </section>
 
+    <!-- =====================================================================
+         TAB 4: UPCOMING EVENTS (New Sheet Integration)
+         ===================================================================== -->
+    <section id="sectionUpcoming" style="display:none;">
+      
+      <!-- Summary Banner & Sheet Link -->
+      <div class="simple-banner" id="upcomingBanner">
+        <div class="banner-left">
+          <h3>Upcoming Events & Topic Tracker</h3>
+          <p>Live sync from Google Sheet: <a href="https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=1107724151" target="_blank" style="color:#1d4ed8; text-decoration:underline;">Content Master Sheet (gid: 1107724151) ↗</a></p>
+        </div>
+        <div class="banner-tags">
+          <span class="simple-tag" style="background:#e0f2fe; color:#0369a1;">⚡ <strong>Last 7 Days Priority</strong></span>
+          <span class="simple-tag" style="background:#fef3c7; color:#92400e;">📊 <strong>Planned vs Done Tracker</strong></span>
+          <span class="simple-tag" style="background:#dcfce7; color:#15803d;" id="upcomingLiveBadge">🟢 Live Synced</span>
+        </div>
+      </div>
+
+      <!-- Executive KPI Cards: Planned vs Done -->
+      <div class="kpi-cards" id="upcomingKpiCards"></div>
+
+      <!-- Category Breakdown Cards / Progress Bars -->
+      <div class="upcoming-cat-breakdown" id="upcomingCatBreakdown"></div>
+
+      <!-- Sub Bar: Filters & Actions -->
+      <div class="sub-bar" style="flex-wrap: wrap; gap: 0.6rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          
+          <!-- Date Filter (Default: Last 7 Days) -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">📅 Date Range:</label>
+            <select class="select-simple" id="upcomingDateFilter">
+              <option value="last7days" selected>Last 7 Days (Default)</option>
+              <option value="today">Today (18th Sept)</option>
+              <option value="last3days">Last 3 Days</option>
+              <option value="last14days">Last 14 Days</option>
+              <option value="last30days">Last 30 Days</option>
+              <option value="all">All Dates (Entire Sheet)</option>
+            </select>
+          </div>
+
+          <!-- Category Filter (Col G) -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">📂 Category:</label>
+            <select class="select-simple" id="upcomingCategoryFilter">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+
+          <!-- Status Filter (Col N) -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">Status:</label>
+            <select class="select-simple" id="upcomingStatusFilter">
+              <option value="all">All Statuses</option>
+              <option value="done">✅ Done / Live</option>
+              <option value="pending">⏳ Pending / Not Done</option>
+              <option value="draft">📝 Drafted</option>
+            </select>
+          </div>
+
+          <!-- Search (Topic Col H, Writer Col E, Category Col G) -->
+          <input type="text" class="input-simple" id="upcomingSearch" placeholder="Search topic, category, writer..." style="width:240px;">
+          <span id="upcomingCountLabel" style="font-size:0.75rem; color:#6b7280; font-weight:500;"></span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <button class="btn-action" id="btnExportUpcomingCSV">Export CSV</button>
+        </div>
+      </div>
+
+      <!-- Upcoming Events Data Table -->
+      <div class="table-wrap" style="max-height: 720px; overflow: auto;">
+        <table class="data-table" id="upcomingTable">
+          <thead>
+            <tr>
+              <th style="width:140px;">Date (Col A)</th>
+              <th style="width:130px;">Category (Col G)</th>
+              <th>Topic / Page (Col H)</th>
+              <th style="width:120px;">Status (Col N)</th>
+              <th style="width:130px;">Picked By</th>
+              <th style="width:80px;">Priority</th>
+              <th style="width:80px;">Type</th>
+              <th style="width:110px;">Action / Link</th>
+            </tr>
+          </thead>
+          <tbody id="upcomingTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <!-- Data & Application Logic -->
   <script src="roster-data.js"></script>
   <script src="sheets-data.js"></script>
   <script src="category-data.js"></script>
+  <script src="upcoming-data.js"></script>
   <script src="sheets-client.js"></script>
   <script src="app.js"></script>
 </body>

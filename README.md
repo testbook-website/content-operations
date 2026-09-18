@@ -14,17 +14,26 @@ Protected by 4-digit passcode: **`7730`**.
 - Session persistence in `sessionStorage` with instant re-lock button.
 
 ### 2. Q4 2026 Content Roster (1st October – 31st December 2026)
-- **Weekly Rotation**:
+- **Visual Matrix Interface**:
+  - Beautiful multi-week matrix view with custom pastel task badges:
+    - `Child Pages` (mint badge)
+    - `High Intent` (lavender badge)
+    - `SEO Optimization` (rose badge)
+    - `Event Pages (News week)` (peach badge)
+    - `🌙 Night Update` (yellow card with 1.5px solid dark border, crescent moon, and stacked text)
+  - Sticky `Writer` column with horizontal scrolling across all 13 weeks.
+  - Separate structured sections for **Team A**, **Team B**, and **Upcoming Drafts & News Support**.
+- **Night Updates Duty (Monday – Saturday Only | Sunday OFF)**:
+  - Daily night shifts rotate Monday to Saturday across active News team members.
+  - **Sunday is deleted**: No one works on Sunday.
+  - Top Night Schedule card displays the 6 daily slots for the selected week with designated **Night Lead** badges.
+- **Weekly Rotation & Non-Consecutive Guarantee**:
   - **Team A**: Sonika, Archita, Shemaila, Somya, Atul.
   - **Team B**: Nadeem, Shilpa Kohli, Aditi, Mohit, Trishala (*Trishala replaces Shilpa Singh*).
-  - Teams alternate weekly between **News** ("Event Pages") and **Content** operations.
-- **Night Updates Duty**:
-  - Exactly one writer from the active News team leads **Night Updates** each week in a fair 5-person rotation.
-- **Strict Non-Consecutive Task Rotation**:
-  - On Content weeks, tasks are distributed among **Child Pages**, **SEO Optimization**, and **High Intent**.
-  - **Zero Repeat Guarantee**: No writer is assigned the same task on consecutive content weeks.
+  - Teams alternate weekly between News ("Event Pages") and Content operations.
+  - **Zero Repeat Guarantee**: No writer receives the same content task on consecutive content weeks.
 - **Upcoming Drafts**: Archana alternates weekly between Upcoming Drafts and News duty.
-- **Views**: Interactive Week Cards view + Full 13-Week Master Matrix Grid with CSV export.
+- **Filtering & Export**: Filter by team (Team A / Team B), search by writer, and instant CSV export.
 - **Directory**: Subject matter category mentors and Prep Team domain leads.
 
 ### 3. Productivity Portal (Synced Live from Google Sheets)
@@ -45,6 +54,26 @@ Derived from `Category Wise AMJ`:
 - Date selector and category dropdown filters.
 - Search bar and CSV export.
 - Also populated directly in the Google Sheet under the new tab `Category Wise Date`.
+
+### 5. Upcoming Events & Topic Tracker (Synced Live from Google Sheets)
+Connects directly to the Content Master Sheet:
+- **Sheet**: [Master Content Sheet (gid: 1107724151)](https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=1107724151#gid=1107724151)
+- **Priority Last 7 Days**: Defaults to the last 7 days from Column A dates (`11th–18th September 2026`), with quick options for Today, Last 3 Days, Last 14 Days, Last 30 Days, and All Dates.
+- **Column Mapping**:
+  - **Column A**: Date
+  - **Column G**: Category (State PSC, State Exams, Defence, Banking, Engineering, Teaching, SSC, etc.)
+  - **Column H**: Topic / Page Title
+  - **Column N**: Status (Done, Drafted, Pending)
+  - **Column E**: Picked By
+  - **Column F**: Priority (P0, P1)
+  - **Column P**: Live Article / Admin URL
+- **Key Executive KPIs**:
+  - **Events Planned**
+  - **Articles Done**
+  - **Pending Deficit**: `Number of Events Planned − Number of Articles Done`
+  - **Completion Rate (%)**
+- **Category Progress Breakdown**: Interactive chips showing Planned vs Done per Category with progress bars.
+- **Filters & Export**: Date filter, Category filter with real-time count badges, Status filter, search bar, and CSV export.
 
 ---
 
