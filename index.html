@@ -10,9 +10,9 @@
 
   <!-- Passcode Screen (PIN: 7730) -->
   <div id="lockScreen">
-    <div class="lock-card">
+    <div class="lock-box">
       <h2>Content Team Portal</h2>
-      <p>Enter 4-digit passcode to unlock</p>
+      <p>Enter 4-digit passcode</p>
 
       <div class="pin-dots">
         <div class="pin-dot"></div>
@@ -37,78 +37,75 @@
       </div>
 
       <div class="lock-feedback" id="lockFeedback"></div>
-      <p style="font-size:0.75rem; color:#9ca3af; margin-top:0.85rem;">Passcode: <strong>7730</strong></p>
+      <p style="font-size:0.75rem; color:#9ca3af; margin-top:0.75rem;">PIN: <strong>7730</strong></p>
     </div>
   </div>
 
   <!-- Header -->
-  <header class="simple-header">
-    <div class="header-row">
-      <div class="logo-text">
-        <span>Content Team Portal</span>
-        <span class="logo-badge">Q4 2026</span>
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <div class="brand-title">Content Operations Portal (Q4 2026)</div>
+
+      <div class="main-tab-btns">
+        <button class="tab-btn active" data-tab="roster" id="tabBtnRoster">📅 Roster Plan</button>
+        <button class="tab-btn" data-tab="productivity" id="tabBtnProductivity">📊 Productivity</button>
+        <button class="tab-btn" data-tab="category" id="tabBtnCategory">📂 Category Wise Date</button>
       </div>
 
-      <nav class="nav-tabs">
-        <button class="nav-btn active" data-tab="roster" id="navTabRoster">📅 Roster Plan</button>
-        <button class="nav-btn" data-tab="productivity" id="navTabProductivity">📊 Productivity</button>
-        <button class="nav-btn" data-tab="category" id="navTabCategory">📂 Category Wise Date</button>
-      </nav>
-
-      <div class="header-meta">
-        <span class="sync-pill">Sync: <strong id="syncCountdown">5:00</strong></span>
-        <button class="btn-simple" id="btnSync">Sync Now</button>
-        <button class="btn-simple" id="btnLock">Lock</button>
+      <div class="nav-actions">
+        <span style="font-size:0.75rem; color:#6b7280;">Auto-sync in <strong id="syncCountdown">5:00</strong></span>
+        <button class="btn-action" id="btnSync">Sync Now</button>
+        <button class="btn-action" id="btnLock">Lock</button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="container">
+  <!-- Page Container -->
+  <main class="page-container">
 
     <!-- =====================================================================
          TAB 1: ROSTER PLAN
          ===================================================================== -->
-    <section id="rosterSection">
+    <section id="sectionRoster">
       
-      <!-- Week Duty Summary -->
-      <div class="simple-duty-box" id="activeDutyBanner"></div>
+      <!-- Week Summary -->
+      <div class="simple-banner" id="dutyBanner"></div>
 
-      <!-- Night Shift Daily Rotation Box (Not one person doing whole week) -->
-      <div class="night-shift-box">
-        <div class="night-shift-title">
-          <span>🌙 Night Shift Daily Allotment (Monday to Sunday)</span>
-          <small style="font-weight:normal; color:#6b7280;">Rotated day-by-day across the 5 members</small>
+      <!-- Daily Night Shift Box (Rotated Day-by-Day across 5 members) -->
+      <div style="margin-bottom:0.75rem;">
+        <div style="font-size:0.82rem; font-weight:700; margin-bottom:0.4rem; display:flex; justify-content:space-between;">
+          <span>🌙 Night Shift Schedule (Monday – Sunday)</span>
+          <span style="font-size:0.75rem; font-weight:normal; color:#6b7280;">Rotated daily across the 5 News team members</span>
         </div>
-        <div class="night-daily-grid" id="nightShiftGrid"></div>
+        <div class="night-row" id="nightShiftRow"></div>
       </div>
 
-      <!-- Controls -->
-      <div class="simple-controls-bar">
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <label style="font-size:0.85rem; font-weight:600;">Week:</label>
-          <select class="select-clean" id="weekSelect"></select>
-          <select class="select-clean" id="teamFilter">
+      <!-- Sub Bar -->
+      <div class="sub-bar">
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <label style="font-size:0.8rem; font-weight:600;">Week:</label>
+          <select class="select-simple" id="weekSelect"></select>
+          <select class="select-simple" id="teamFilter">
             <option value="all">All Teams</option>
             <option value="teamA">Team A</option>
             <option value="teamB">Team B (with Trishala)</option>
           </select>
         </div>
 
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <input type="text" class="input-clean" id="rosterSearchInput" placeholder="Filter member name...">
-          <button class="btn-simple" id="btnToggleMatrix">Switch to Full 13-Week Grid</button>
-          <button class="btn-simple" id="btnExportRoster">Export CSV</button>
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <input type="text" class="input-simple" id="rosterSearch" placeholder="Search member...">
+          <button class="btn-action" id="btnToggleMatrix">Switch to 13-Week Grid</button>
+          <button class="btn-action" id="btnExportRoster">Export CSV</button>
         </div>
       </div>
 
-      <!-- Weekly Table View -->
-      <div class="simple-card-table" id="weekTableView">
-        <table class="clean-table">
+      <!-- Weekly Roster Table -->
+      <div class="table-wrap" id="weekTableWrap">
+        <table class="data-table">
           <thead>
             <tr>
-              <th>Team Member</th>
-              <th>Team</th>
+              <th style="width:200px;">Team Member</th>
+              <th style="width:120px;">Team</th>
               <th>Assigned Work</th>
               <th>Night Shift Days</th>
             </tr>
@@ -117,104 +114,83 @@
         </table>
       </div>
 
-      <!-- Full 13-Week Grid (Hidden by default, toggleable) -->
-      <div class="simple-card-table" id="masterMatrixContainer" style="display:none; overflow-x:auto;">
-        <!-- Injected by JavaScript -->
+      <!-- Full Master 13-Week Grid (Toggleable) -->
+      <div class="table-wrap" id="matrixTableWrap" style="display:none;">
+        <table class="data-table" id="matrixTable"></table>
       </div>
 
-      <!-- Category Mentors & Prep Team List -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1.5rem;" id="mentorsSection">
-        <div class="simple-card-table" style="padding:1rem;">
-          <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">Category Mentors</h4>
-          <div id="mentorsList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.82rem;"></div>
+      <!-- Mentors & Prep Team -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; font-size:0.8rem;">
+        <div class="table-wrap" style="padding:0.75rem;">
+          <div style="font-weight:700; margin-bottom:0.5rem;">Category Mentors</div>
+          <div id="mentorsList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.35rem;"></div>
         </div>
 
-        <div class="simple-card-table" style="padding:1rem;">
-          <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:0.75rem;">Exam Prep Operations Team</h4>
-          <div id="prepList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; font-size:0.82rem;"></div>
+        <div class="table-wrap" style="padding:0.75rem;">
+          <div style="font-weight:700; margin-bottom:0.5rem;">Exam Prep Specialists</div>
+          <div id="prepList" style="display:grid; grid-template-columns:1fr 1fr; gap:0.35rem;"></div>
         </div>
-      </div>
-
-    </section>
-
-    <!-- =====================================================================
-         TAB 2: PRODUCTIVITY
-         ===================================================================== -->
-    <section id="productivitySection" style="display:none;">
-      
-      <!-- Stats Summary -->
-      <div class="stats-row" id="statsCardsGrid"></div>
-
-      <!-- Productivity Subnav -->
-      <div class="simple-subnav">
-        <button class="subnav-tab active" data-subtab="daily">Daily Output</button>
-        <button class="subnav-tab" data-subtab="weekly">Weekly Trends</button>
-        <button class="subnav-tab" data-subtab="monthly">Monthly Volumes</button>
-        <button class="subnav-tab" data-subtab="kpi">KPI & Leaderboard</button>
-
-        <input type="text" class="input-clean" id="prodSearchInput" placeholder="Search writer..." style="margin-left:auto;">
-      </div>
-
-      <div class="prod-subtab-content" id="prodTab-daily">
-        <div class="simple-card-table" id="dailyTableContainer"></div>
-      </div>
-
-      <div class="prod-subtab-content" id="prodTab-weekly" style="display:none;">
-        <div class="simple-card-table" id="weeklyTableContainer"></div>
-      </div>
-
-      <div class="prod-subtab-content" id="prodTab-monthly" style="display:none;">
-        <div class="simple-card-table" id="monthlyTableContainer"></div>
-      </div>
-
-      <div class="prod-subtab-content" id="prodTab-kpi" style="display:none;">
-        <div class="simple-card-table" id="kpiTableContainer"></div>
       </div>
     </section>
 
     <!-- =====================================================================
-         TAB 3: CATEGORY WISE DATE
+         TAB 2: PRODUCTIVITY (Default: Weekly View)
          ===================================================================== -->
-    <section id="categorySection" style="display:none;">
+    <section id="sectionProductivity" style="display:none;">
       
-      <div class="simple-controls-bar">
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <label style="font-size:0.85rem; font-weight:600;">Date:</label>
-          <select class="select-clean" id="catDateSelect">
-            <option value="all">All Dates</option>
-          </select>
+      <!-- Summary KPI Cards -->
+      <div class="kpi-cards" id="prodKpiCards"></div>
 
-          <label style="font-size:0.85rem; font-weight:600;">Category:</label>
-          <select class="select-clean" id="catCategorySelect">
-            <option value="all">All Categories</option>
-          </select>
+      <!-- Sub-tabs (Default: Weekly) -->
+      <div class="sub-bar">
+        <div class="sub-btns">
+          <button class="sub-btn active" data-subtab="weekly" id="subtabWeekly">Weekly Output (Default)</button>
+          <button class="sub-btn" data-subtab="daily" id="subtabDaily">Daily Output</button>
+          <button class="sub-btn" data-subtab="monthly" id="subtabMonthly">Monthly Output</button>
         </div>
 
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <input type="text" class="input-clean" id="catSearchInput" placeholder="Search category...">
-          <button class="btn-simple" id="btnExportCategoryCSV">Export CSV</button>
-        </div>
+        <input type="text" class="input-simple" id="prodSearch" placeholder="Search writer...">
       </div>
 
-      <div class="stats-row" id="catStatsCardsGrid"></div>
+      <div class="table-wrap" id="prodTableContainer"></div>
+    </section>
 
-      <div class="simple-card-table">
-        <table class="clean-table" id="catTable">
-          <thead>
-            <tr>
-              <th style="width:140px;">Date</th>
-              <th>Category Name</th>
-              <th style="width:180px;">Articles Count</th>
-            </tr>
-          </thead>
-          <tbody id="catTableBody"></tbody>
+    <!-- =====================================================================
+         TAB 3: CATEGORY WISE DATE (Categories in Columns)
+         ===================================================================== -->
+    <section id="sectionCategory" style="display:none;">
+      
+      <div class="sub-bar">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          <label style="font-size:0.8rem; font-weight:600;">Filter:</label>
+          <select class="select-simple" id="catMonthFilter">
+            <option value="all">All Months (Apr - Oct 2026)</option>
+            <option value="04">April 2026</option>
+            <option value="05">May 2026</option>
+            <option value="06">June 2026</option>
+            <option value="07">July 2026</option>
+            <option value="08">August 2026</option>
+            <option value="09">September 2026</option>
+            <option value="10">October 2026</option>
+          </select>
+          <input type="text" class="input-simple" id="catSearch" placeholder="Search date (e.g. 04/01, 09/15)..." style="width:220px;">
+          <span id="catStatsLabel" style="font-size:0.75rem; color:#6b7280; font-weight:500;"></span>
+        </div>
+
+        <button class="btn-action" id="btnExportCategoryCSV">Export CSV</button>
+      </div>
+
+      <div class="table-wrap" style="max-height: 680px; overflow: auto;">
+        <table class="data-table" id="catGridTable">
+          <thead id="catGridHead"></thead>
+          <tbody id="catGridBody"></tbody>
         </table>
       </div>
-
     </section>
 
   </main>
 
+  <!-- Data & Application Logic -->
   <script src="roster-data.js"></script>
   <script src="sheets-data.js"></script>
   <script src="category-data.js"></script>

@@ -1,11311 +1,5581 @@
-/** Category Wise Date Dataset */
-const CATEGORY_DATE_DATA = {
+/** Category Wise Date Grid */
+const CATEGORY_GRID_DATA = {
   "categories": [
-    "AE/JE Prep",
-    "Banking",
-    "Defence",
-    "Engineering",
-    "Entrance",
-    "Hindi",
-    "IAS Prep",
-    "Insurance",
-    "K12",
-    "K12 Prep",
-    "MBA",
-    "Nursing",
-    "Other Govt. Exams",
-    "Police",
-    "Railways",
-    "Regulatory",
     "SSC",
-    "State Exams",
-    "State PSC",
     "Teaching",
-    "UGC NET",
+    "State PSC",
+    "Banking",
+    "Insurance",
+    "Entrance",
+    "IAS Prep",
+    "Regulatory",
+    "Police",
+    "State Exams",
+    "Defence",
     "UPSC",
-    "Vernacular"
+    "Other Govt. Exams",
+    "Vernacular",
+    "Railways",
+    "Judiciary",
+    "Nursing",
+    "Engineering",
+    "AE/JE Prep",
+    "Hindi",
+    "MBA",
+    "UGC NET",
+    "K12",
+    "K12 Prep"
   ],
-  "dates": [
-    "04/01/2026",
-    "04/02/2026",
-    "04/03/2026",
-    "04/04/2026",
-    "04/06/2026",
-    "04/07/2026",
-    "04/08/2026",
-    "04/09/2026",
-    "04/10/2026",
-    "04/11/2026",
-    "04/13/2026",
-    "04/14/2026",
-    "04/15/2026",
-    "04/16/2026",
-    "04/17/2026",
-    "04/18/2026",
-    "04/19/2026",
-    "04/20/2026",
-    "04/21/2026",
-    "04/22/2026",
-    "04/23/2026",
-    "04/24/2026",
-    "04/25/2026",
-    "04/26/2026",
-    "04/27/2026",
-    "04/28/2026",
-    "04/29/2026",
-    "04/30/2026",
-    "05/01/2026",
-    "05/02/2026",
-    "05/04/2026",
-    "05/05/2026",
-    "05/06/2026",
-    "05/07/2026",
-    "05/08/2026",
-    "05/09/2026",
-    "05/11/2026",
-    "05/12/2026",
-    "05/13/2026",
-    "05/14/2026",
-    "05/15/2026",
-    "05/16/2026",
-    "05/17/2026",
-    "05/18/2026",
-    "05/19/2026",
-    "05/20/2026",
-    "05/21/2026",
-    "05/22/2026",
-    "05/23/2026",
-    "05/24/2026",
-    "05/25/2026",
-    "05/26/2026",
-    "05/27/2026",
-    "05/28/2026",
-    "05/29/2026",
-    "05/30/2026",
-    "06/01/2026",
-    "06/02/2026",
-    "06/03/2026",
-    "06/04/2026",
-    "06/05/2026",
-    "06/06/2026",
-    "06/07/2026",
-    "06/08/2026",
-    "06/09/2026",
-    "06/10/2026",
-    "06/11/2026",
-    "06/12/2026",
-    "06/13/2026",
-    "06/15/2026",
-    "06/16/2026",
-    "06/17/2026",
-    "06/18/2026",
-    "06/19/2026",
-    "06/20/2026",
-    "06/22/2026",
-    "06/23/2026",
-    "06/24/2026",
-    "06/25/2026",
-    "06/26/2026",
-    "06/27/2026",
-    "06/28/2026",
-    "06/29/2026",
-    "06/30/2026",
-    "07/01/2026",
-    "07/02/2026",
-    "07/03/2026",
-    "07/04/2026",
-    "07/06/2026",
-    "07/07/2026",
-    "07/08/2026",
-    "07/09/2026",
-    "07/10/2026",
-    "07/11/2026",
-    "07/13/2026",
-    "07/14/2026",
-    "07/15/2026",
-    "07/16/2026",
-    "07/17/2026",
-    "07/18/2026",
-    "07/19/2026",
-    "07/20/2026",
-    "07/21/2026",
-    "07/22/2026",
-    "07/23/2026",
-    "07/24/2026",
-    "07/25/2026",
-    "07/27/2026",
-    "07/28/2026",
-    "07/29/2026",
-    "07/30/2026",
-    "07/31/2026",
-    "08/01/2026",
-    "08/02/2026",
-    "08/03/2026",
-    "08/04/2026",
-    "08/05/2026",
-    "08/06/2026",
-    "08/07/2026",
-    "08/08/2026",
-    "08/09/2026",
-    "08/10/2026",
-    "08/11/2026",
-    "08/12/2026",
-    "08/13/2026",
-    "08/14/2026",
-    "08/15/2026",
-    "08/16/2026",
-    "08/17/2026",
-    "08/18/2026",
-    "08/19/2026",
-    "08/20/2026",
-    "08/21/2026",
-    "08/22/2026",
-    "08/24/2026",
-    "08/25/2026",
-    "08/26/2026",
-    "08/27/2026",
-    "08/28/2026",
-    "08/29/2026",
-    "08/30/2026",
-    "08/31/2026",
-    "09/01/2026",
-    "09/02/2026",
-    "09/03/2026",
-    "09/04/2026",
-    "09/05/2026",
-    "09/07/2026",
-    "09/08/2026",
-    "09/09/2026",
-    "09/10/2026",
-    "09/11/2026",
-    "09/12/2026",
-    "09/13/2026",
-    "09/14/2026",
-    "09/15/2026",
-    "09/16/2026",
-    "09/17/2026",
-    "09/18/2026"
-  ],
-  "records": [
+  "rows": [
     {
       "date": "04/01/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "04/01/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Entrance",
-      "count": 15
-    },
-    {
-      "date": "04/01/2026",
-      "category": "IAS Prep",
-      "count": 3
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/01/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "04/01/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "04/01/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "04/01/2026",
-      "category": "UGC NET",
-      "count": 6
+      "counts": {
+        "SSC": 8,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 1,
+        "Banking": 2,
+        "Insurance": 1,
+        "Entrance": 15,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 3,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 7,
+        "State Exams": 29,
+        "Defence": 10,
+        "Other Govt. Exams": 4,
+        "Vernacular": 10,
+        "Railways": 3,
+        "Nursing": 2,
+        "Engineering": 4,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 6
+      },
+      "total": 126
     },
     {
       "date": "04/02/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "04/02/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "04/02/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Entrance",
-      "count": 10
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Regulatory",
-      "count": 6
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Police",
-      "count": 12
-    },
-    {
-      "date": "04/02/2026",
-      "category": "State Exams",
-      "count": 26
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Defence",
-      "count": 12
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "04/02/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "04/02/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "04/02/2026",
-      "category": "UGC NET",
-      "count": 10
+      "counts": {
+        "SSC": 6,
+        "UPSC": 2,
+        "Teaching": 14,
+        "State PSC": 2,
+        "Banking": 4,
+        "Insurance": 1,
+        "Entrance": 10,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 6,
+        "Police": 12,
+        "State Exams": 26,
+        "Defence": 12,
+        "Other Govt. Exams": 2,
+        "Vernacular": 9,
+        "Railways": 6,
+        "Nursing": 0,
+        "Engineering": 11,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 10
+      },
+      "total": 143
     },
     {
       "date": "04/03/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Teaching",
-      "count": 15
-    },
-    {
-      "date": "04/03/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Entrance",
-      "count": 8
-    },
-    {
-      "date": "04/03/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/03/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Other Govt. Exams",
-      "count": 10
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "04/03/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "04/03/2026",
-      "category": "AE/JE Prep",
-      "count": 13
-    },
-    {
-      "date": "04/03/2026",
-      "category": "UGC NET",
-      "count": 8
+      "counts": {
+        "SSC": 0,
+        "UPSC": 2,
+        "Teaching": 15,
+        "State PSC": 1,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 8,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 7,
+        "State Exams": 20,
+        "Defence": 3,
+        "Other Govt. Exams": 10,
+        "Vernacular": 10,
+        "Railways": 3,
+        "Nursing": 2,
+        "Engineering": 8,
+        "AE/JE Prep": 13,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 8
+      },
+      "total": 114
     },
     {
       "date": "04/04/2026",
-      "category": "Teaching",
-      "count": 14
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 14,
+        "State PSC": 6,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 11,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 8,
+        "State Exams": 11,
+        "Defence": 6,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 2,
+        "Engineering": 3,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 10
+      },
+      "total": 81
     },
     {
-      "date": "04/04/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "04/04/2026",
-      "category": "IAS Prep",
-      "count": 11
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Police",
-      "count": 8
-    },
-    {
-      "date": "04/04/2026",
-      "category": "State Exams",
-      "count": 11
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "04/04/2026",
-      "category": "Engineering",
-      "count": 3
-    },
-    {
-      "date": "04/04/2026",
-      "category": "UGC NET",
-      "count": 10
+      "date": "04/05/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "04/06/2026",
-      "category": "SSC",
-      "count": 7
-    },
-    {
-      "date": "04/06/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "04/06/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "04/06/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/06/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "04/06/2026",
-      "category": "State Exams",
-      "count": 39
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Railways",
-      "count": 15
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "04/06/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "04/06/2026",
-      "category": "Hindi",
-      "count": 1
-    },
-    {
-      "date": "04/06/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 7,
+        "UPSC": 2,
+        "Teaching": 12,
+        "State PSC": 3,
+        "Banking": 8,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 11,
+        "State Exams": 39,
+        "Defence": 5,
+        "Other Govt. Exams": 1,
+        "Vernacular": 9,
+        "Railways": 15,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 6,
+        "Hindi": 1,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 155
     },
     {
       "date": "04/07/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Teaching",
-      "count": 17
-    },
-    {
-      "date": "04/07/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "04/07/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/07/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "04/07/2026",
-      "category": "State Exams",
-      "count": 42
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Nursing",
-      "count": 5
-    },
-    {
-      "date": "04/07/2026",
-      "category": "Engineering",
-      "count": 22
-    },
-    {
-      "date": "04/07/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "04/07/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 6,
+        "UPSC": 0,
+        "Teaching": 17,
+        "State PSC": 8,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 6,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 5,
+        "State Exams": 42,
+        "Defence": 1,
+        "Other Govt. Exams": 1,
+        "Vernacular": 10,
+        "Railways": 4,
+        "Nursing": 5,
+        "Engineering": 22,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 169
     },
     {
       "date": "04/08/2026",
-      "category": "SSC",
-      "count": 16
-    },
-    {
-      "date": "04/08/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Teaching",
-      "count": 20
-    },
-    {
-      "date": "04/08/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "04/08/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/08/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/08/2026",
-      "category": "State Exams",
-      "count": 30
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Nursing",
-      "count": 5
-    },
-    {
-      "date": "04/08/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "04/08/2026",
-      "category": "AE/JE Prep",
-      "count": 12
-    },
-    {
-      "date": "04/08/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 16,
+        "UPSC": 1,
+        "Teaching": 20,
+        "State PSC": 7,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 7,
+        "State Exams": 30,
+        "Defence": 5,
+        "Other Govt. Exams": 2,
+        "Vernacular": 10,
+        "Railways": 0,
+        "Nursing": 5,
+        "Engineering": 15,
+        "AE/JE Prep": 12,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 163
     },
     {
       "date": "04/09/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "04/09/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "04/09/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "04/09/2026",
-      "category": "K12",
-      "count": 3
-    },
-    {
-      "date": "04/09/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "04/09/2026",
-      "category": "State Exams",
-      "count": 40
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Defence",
-      "count": 9
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "04/09/2026",
-      "category": "AE/JE Prep",
-      "count": 12
-    },
-    {
-      "date": "04/09/2026",
-      "category": "Hindi",
-      "count": 1
-    },
-    {
-      "date": "04/09/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 4,
+        "UPSC": 1,
+        "Teaching": 14,
+        "State PSC": 1,
+        "Banking": 3,
+        "Insurance": 3,
+        "Entrance": 6,
+        "K12": 3,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 40,
+        "Defence": 9,
+        "Other Govt. Exams": 3,
+        "Vernacular": 9,
+        "Railways": 5,
+        "Nursing": 2,
+        "Engineering": 7,
+        "AE/JE Prep": 12,
+        "Hindi": 1,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 153
     },
     {
       "date": "04/10/2026",
-      "category": "SSC",
-      "count": 7
-    },
-    {
-      "date": "04/10/2026",
-      "category": "UPSC",
-      "count": 6
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Teaching",
-      "count": 11
-    },
-    {
-      "date": "04/10/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Entrance",
-      "count": 13
-    },
-    {
-      "date": "04/10/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/10/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Regulatory",
-      "count": 6
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "04/10/2026",
-      "category": "State Exams",
-      "count": 19
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Vernacular",
-      "count": 14
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "04/10/2026",
-      "category": "Engineering",
-      "count": 18
-    },
-    {
-      "date": "04/10/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "04/10/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 7,
+        "UPSC": 6,
+        "Teaching": 11,
+        "State PSC": 4,
+        "Banking": 1,
+        "Insurance": 2,
+        "Entrance": 13,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 6,
+        "Police": 4,
+        "State Exams": 19,
+        "Defence": 7,
+        "Other Govt. Exams": 5,
+        "Vernacular": 14,
+        "Railways": 9,
+        "Nursing": 3,
+        "Engineering": 18,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 163
     },
     {
       "date": "04/11/2026",
-      "category": "SSC",
-      "count": 15
+      "counts": {
+        "SSC": 15,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 7,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 11,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 1,
+        "State Exams": 32,
+        "Defence": 3,
+        "Other Govt. Exams": 1,
+        "Vernacular": 9,
+        "Railways": 2,
+        "Nursing": 2,
+        "Engineering": 2,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 100
     },
     {
-      "date": "04/11/2026",
-      "category": "Teaching",
-      "count": 1
-    },
-    {
-      "date": "04/11/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "04/11/2026",
-      "category": "IAS Prep",
-      "count": 11
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "04/11/2026",
-      "category": "State Exams",
-      "count": 32
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "04/11/2026",
-      "category": "Engineering",
-      "count": 2
-    },
-    {
-      "date": "04/11/2026",
-      "category": "UGC NET",
-      "count": 9
+      "date": "04/12/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "04/13/2026",
-      "category": "SSC",
-      "count": 13
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Teaching",
-      "count": 11
-    },
-    {
-      "date": "04/13/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Entrance",
-      "count": 9
-    },
-    {
-      "date": "04/13/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/13/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "04/13/2026",
-      "category": "State Exams",
-      "count": 27
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "04/13/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "04/13/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "04/13/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 13,
+        "UPSC": 0,
+        "Teaching": 11,
+        "State PSC": 5,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 9,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 4,
+        "State Exams": 27,
+        "Defence": 7,
+        "Other Govt. Exams": 0,
+        "Vernacular": 9,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 141
     },
     {
       "date": "04/14/2026",
-      "category": "SSC",
-      "count": 9
-    },
-    {
-      "date": "04/14/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "04/14/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "04/14/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/14/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/14/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "04/14/2026",
-      "category": "State Exams",
-      "count": 32
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "04/14/2026",
-      "category": "Engineering",
-      "count": 20
-    },
-    {
-      "date": "04/14/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "04/14/2026",
-      "category": "MBA",
-      "count": 2
-    },
-    {
-      "date": "04/14/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 9,
+        "UPSC": 2,
+        "Teaching": 10,
+        "State PSC": 7,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 1,
+        "State Exams": 32,
+        "Defence": 10,
+        "Other Govt. Exams": 3,
+        "Vernacular": 10,
+        "Railways": 3,
+        "Nursing": 1,
+        "Engineering": 20,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 2,
+        "UGC NET": 18
+      },
+      "total": 165
     },
     {
       "date": "04/15/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Teaching",
-      "count": 20
-    },
-    {
-      "date": "04/15/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Banking",
-      "count": 11
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Entrance",
-      "count": 8
-    },
-    {
-      "date": "04/15/2026",
-      "category": "K12",
-      "count": 5
-    },
-    {
-      "date": "04/15/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "04/15/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Other Govt. Exams",
-      "count": 7
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "04/15/2026",
-      "category": "Engineering",
-      "count": 14
-    },
-    {
-      "date": "04/15/2026",
-      "category": "AE/JE Prep",
-      "count": 13
-    },
-    {
-      "date": "04/15/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 4,
+        "UPSC": 0,
+        "Teaching": 20,
+        "State PSC": 5,
+        "Banking": 11,
+        "Insurance": 0,
+        "Entrance": 8,
+        "K12": 5,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 2,
+        "State Exams": 23,
+        "Defence": 4,
+        "Other Govt. Exams": 7,
+        "Vernacular": 10,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 14,
+        "AE/JE Prep": 13,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 161
     },
     {
       "date": "04/16/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Teaching",
-      "count": 16
-    },
-    {
-      "date": "04/16/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Insurance",
-      "count": 6
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "04/16/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/16/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/16/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "04/16/2026",
-      "category": "State Exams",
-      "count": 38
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "04/16/2026",
-      "category": "Engineering",
-      "count": 16
-    },
-    {
-      "date": "04/16/2026",
-      "category": "AE/JE Prep",
-      "count": 12
-    },
-    {
-      "date": "04/16/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 8,
+        "UPSC": 0,
+        "Teaching": 16,
+        "State PSC": 7,
+        "Banking": 5,
+        "Insurance": 6,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 38,
+        "Defence": 10,
+        "Other Govt. Exams": 3,
+        "Vernacular": 9,
+        "Railways": 0,
+        "Nursing": 4,
+        "Engineering": 16,
+        "AE/JE Prep": 12,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 172
     },
     {
       "date": "04/17/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "04/17/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "04/17/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/17/2026",
-      "category": "IAS Prep",
-      "count": 18
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "04/17/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Vernacular",
-      "count": 14
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Nursing",
-      "count": 5
-    },
-    {
-      "date": "04/17/2026",
-      "category": "Engineering",
-      "count": 17
-    },
-    {
-      "date": "04/17/2026",
-      "category": "AE/JE Prep",
-      "count": 12
-    },
-    {
-      "date": "04/17/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 4,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 1,
+        "Banking": 4,
+        "Insurance": 1,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 18,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 6,
+        "State Exams": 29,
+        "Defence": 1,
+        "Other Govt. Exams": 1,
+        "Vernacular": 14,
+        "Railways": 6,
+        "Nursing": 5,
+        "Engineering": 17,
+        "AE/JE Prep": 12,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 148
     },
     {
       "date": "04/18/2026",
-      "category": "Teaching",
-      "count": 6
-    },
-    {
-      "date": "04/18/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "04/18/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "04/18/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "04/18/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/18/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "04/18/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "04/18/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/18/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "04/18/2026",
-      "category": "UGC NET",
-      "count": 9
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 6,
+        "State PSC": 3,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 29,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 9,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 15,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 104
     },
     {
       "date": "04/19/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "04/19/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/20/2026",
-      "category": "SSC",
-      "count": 7
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "04/20/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Insurance",
-      "count": 1
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 1,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 4
     },
     {
       "date": "04/20/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "04/20/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/20/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/20/2026",
-      "category": "State Exams",
-      "count": 28
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Vernacular",
-      "count": 10
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "04/20/2026",
-      "category": "Engineering",
-      "count": 18
-    },
-    {
-      "date": "04/20/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "04/20/2026",
-      "category": "UGC NET",
-      "count": 23
+      "counts": {
+        "SSC": 7,
+        "UPSC": 0,
+        "Teaching": 10,
+        "State PSC": 3,
+        "Banking": 8,
+        "Insurance": 1,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 28,
+        "Defence": 2,
+        "Other Govt. Exams": 1,
+        "Vernacular": 10,
+        "Railways": 2,
+        "Nursing": 3,
+        "Engineering": 18,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 23
+      },
+      "total": 148
     },
     {
       "date": "04/21/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "04/21/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Banking",
-      "count": 15
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "04/21/2026",
-      "category": "K12",
-      "count": 3
-    },
-    {
-      "date": "04/21/2026",
-      "category": "IAS Prep",
-      "count": 11
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "04/21/2026",
-      "category": "State Exams",
-      "count": 40
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Defence",
-      "count": 8
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Vernacular",
-      "count": 13
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "04/21/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "04/21/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "04/21/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "04/21/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 6,
+        "UPSC": 0,
+        "Teaching": 8,
+        "State PSC": 3,
+        "Banking": 15,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 3,
+        "K12 Prep": 0,
+        "IAS Prep": 11,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 40,
+        "Defence": 8,
+        "Other Govt. Exams": 0,
+        "Vernacular": 13,
+        "Railways": 4,
+        "Nursing": 1,
+        "Engineering": 9,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 18
+      },
+      "total": 155
     },
     {
       "date": "04/22/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "04/22/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "04/22/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "04/22/2026",
-      "category": "K12",
-      "count": 3
-    },
-    {
-      "date": "04/22/2026",
-      "category": "IAS Prep",
-      "count": 11
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Police",
-      "count": 15
-    },
-    {
-      "date": "04/22/2026",
-      "category": "State Exams",
-      "count": 33
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Defence",
-      "count": 14
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "04/22/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "04/22/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "04/22/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 3,
+        "UPSC": 1,
+        "Teaching": 9,
+        "State PSC": 1,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 3,
+        "K12 Prep": 0,
+        "IAS Prep": 11,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 15,
+        "State Exams": 33,
+        "Defence": 14,
+        "Other Govt. Exams": 0,
+        "Vernacular": 9,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 11,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 140
     },
     {
       "date": "04/23/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "04/23/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "04/23/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Entrance",
-      "count": 12
-    },
-    {
-      "date": "04/23/2026",
-      "category": "K12",
-      "count": 4
-    },
-    {
-      "date": "04/23/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "04/23/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Vernacular",
-      "count": 7
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "04/23/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "04/23/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "04/23/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 8,
+        "UPSC": 3,
+        "Teaching": 7,
+        "State PSC": 1,
+        "Banking": 3,
+        "Insurance": 3,
+        "Entrance": 12,
+        "K12": 4,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 23,
+        "Defence": 1,
+        "Other Govt. Exams": 2,
+        "Vernacular": 7,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 13,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 138
     },
     {
       "date": "04/24/2026",
-      "category": "SSC",
-      "count": 19
-    },
-    {
-      "date": "04/24/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "04/24/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "04/24/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "04/24/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "04/24/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "04/24/2026",
-      "category": "Police",
-      "count": 9
-    },
-    {
-      "date": "04/24/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "04/24/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "04/24/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "04/24/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "04/24/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "04/24/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 19,
+        "UPSC": 1,
+        "Teaching": 7,
+        "State PSC": 1,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 9,
+        "State Exams": 16,
+        "Defence": 0,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 13,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 112
     },
     {
       "date": "04/25/2026",
-      "category": "SSC",
-      "count": 11
-    },
-    {
-      "date": "04/25/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Teaching",
-      "count": 6
-    },
-    {
-      "date": "04/25/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "04/25/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/25/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "04/25/2026",
-      "category": "State Exams",
-      "count": 15
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Vernacular",
-      "count": 17
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "04/25/2026",
-      "category": "Engineering",
-      "count": 2
-    },
-    {
-      "date": "04/25/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "04/25/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 11,
+        "UPSC": 2,
+        "Teaching": 6,
+        "State PSC": 2,
+        "Banking": 1,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 15,
+        "Defence": 1,
+        "Other Govt. Exams": 1,
+        "Vernacular": 17,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 2,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 91
     },
     {
       "date": "04/26/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "04/26/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "04/26/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "04/26/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "04/27/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "04/27/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Teaching",
-      "count": 16
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 8,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 11
     },
     {
       "date": "04/27/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Entrance",
-      "count": 11
-    },
-    {
-      "date": "04/27/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/27/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/27/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "04/27/2026",
-      "category": "State Exams",
-      "count": 12
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "04/27/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "04/27/2026",
-      "category": "AE/JE Prep",
-      "count": 13
-    },
-    {
-      "date": "04/27/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 5,
+        "UPSC": 2,
+        "Teaching": 16,
+        "State PSC": 5,
+        "Banking": 5,
+        "Insurance": 0,
+        "Entrance": 11,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 12,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 9,
+        "Nursing": 1,
+        "Engineering": 5,
+        "AE/JE Prep": 13,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 131
     },
     {
       "date": "04/28/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "04/28/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "04/28/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Entrance",
-      "count": 9
-    },
-    {
-      "date": "04/28/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "04/28/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "04/28/2026",
-      "category": "IAS Prep",
-      "count": 6
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Regulatory",
-      "count": 6
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/28/2026",
-      "category": "State Exams",
-      "count": 22
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "04/28/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "04/28/2026",
-      "category": "AE/JE Prep",
-      "count": 3
-    },
-    {
-      "date": "04/28/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 6,
+        "UPSC": 3,
+        "Teaching": 7,
+        "State PSC": 2,
+        "Banking": 9,
+        "Insurance": 0,
+        "Entrance": 9,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 6,
+        "Judiciary": 0,
+        "Regulatory": 6,
+        "Police": 7,
+        "State Exams": 22,
+        "Defence": 4,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 13,
+        "AE/JE Prep": 3,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 125
     },
     {
       "date": "04/29/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "04/29/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Teaching",
-      "count": 17
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Entrance",
-      "count": 7
-    },
-    {
-      "date": "04/29/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "04/29/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Vernacular",
-      "count": 8
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "04/29/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "04/29/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "04/29/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 4,
+        "UPSC": 2,
+        "Teaching": 17,
+        "State PSC": 0,
+        "Banking": 3,
+        "Insurance": 1,
+        "Entrance": 7,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 6,
+        "State Exams": 23,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 8,
+        "Railways": 7,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 138
     },
     {
       "date": "04/30/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "04/30/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "04/30/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "04/30/2026",
-      "category": "IAS Prep",
-      "count": 11
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "04/30/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Vernacular",
-      "count": 9
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Railways",
-      "count": 10
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "04/30/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "04/30/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "04/30/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 14,
+        "State PSC": 3,
+        "Banking": 6,
+        "Insurance": 1,
+        "Entrance": 2,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 11,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 23,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 9,
+        "Railways": 10,
+        "Nursing": 1,
+        "Engineering": 11,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 129
     },
     {
       "date": "05/01/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "05/01/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "05/01/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "05/01/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "05/01/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Vernacular",
-      "count": 8
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "05/01/2026",
-      "category": "Engineering",
-      "count": 2
-    },
-    {
-      "date": "05/01/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 8,
+        "State PSC": 3,
+        "Banking": 1,
+        "Insurance": 2,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 6,
+        "State Exams": 23,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 8,
+        "Railways": 2,
+        "Nursing": 4,
+        "Engineering": 2,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 99
     },
     {
       "date": "05/02/2026",
-      "category": "Teaching",
-      "count": 16
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 16,
+        "State PSC": 0,
+        "Banking": 4,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 2,
+        "State Exams": 14,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 8,
+        "Railways": 0,
+        "Nursing": 1,
+        "Engineering": 2,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 10
+      },
+      "total": 79
     },
     {
-      "date": "05/02/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "05/02/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "05/02/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "05/02/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Vernacular",
-      "count": 8
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "05/02/2026",
-      "category": "Engineering",
-      "count": 2
-    },
-    {
-      "date": "05/02/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/02/2026",
-      "category": "UGC NET",
-      "count": 10
+      "date": "05/03/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "05/04/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "05/04/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "05/04/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "05/04/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/04/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "05/04/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Defence",
-      "count": 15
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "05/04/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "05/04/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "05/04/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 4,
+        "UPSC": 3,
+        "Teaching": 9,
+        "State PSC": 8,
+        "Banking": 2,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 2,
+        "State Exams": 20,
+        "Defence": 15,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 0,
+        "Engineering": 15,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 119
     },
     {
       "date": "05/05/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "05/05/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "05/05/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "05/05/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "05/05/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "05/05/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "05/05/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "05/05/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "05/05/2026",
-      "category": "MBA",
-      "count": 2
-    },
-    {
-      "date": "05/05/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 6,
+        "UPSC": 1,
+        "Teaching": 8,
+        "State PSC": 7,
+        "Banking": 9,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 3,
+        "State Exams": 16,
+        "Defence": 2,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 5,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 2,
+        "UGC NET": 19
+      },
+      "total": 114
     },
     {
       "date": "05/06/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "05/06/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "05/06/2026",
-      "category": "State PSC",
-      "count": 10
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "05/06/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "05/06/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "05/06/2026",
-      "category": "State Exams",
-      "count": 6
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "05/06/2026",
-      "category": "Engineering",
-      "count": 17
-    },
-    {
-      "date": "05/06/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "05/06/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 6,
+        "UPSC": 1,
+        "Teaching": 10,
+        "State PSC": 10,
+        "Banking": 8,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 1,
+        "State Exams": 6,
+        "Defence": 7,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 17,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 120
     },
     {
       "date": "05/07/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "05/07/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "05/07/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Police",
-      "count": 14
-    },
-    {
-      "date": "05/07/2026",
-      "category": "State Exams",
-      "count": 15
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "05/07/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "05/07/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "05/07/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 8,
+        "UPSC": 0,
+        "Teaching": 8,
+        "State PSC": 7,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 14,
+        "State Exams": 15,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 9,
+        "Nursing": 2,
+        "Engineering": 12,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 124
     },
     {
       "date": "05/08/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "05/08/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "05/08/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "05/08/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "05/08/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "05/08/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Railways",
-      "count": 8
-    },
-    {
-      "date": "05/08/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "05/08/2026",
-      "category": "AE/JE Prep",
-      "count": 1
-    },
-    {
-      "date": "05/08/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 3,
+        "UPSC": 1,
+        "Teaching": 5,
+        "State PSC": 2,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 14,
+        "Defence": 10,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 8,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 1,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 95
     },
     {
       "date": "05/09/2026",
-      "category": "Teaching",
-      "count": 1
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 2,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 4,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 17,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 8
+      },
+      "total": 57
     },
     {
-      "date": "05/09/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "05/09/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "05/09/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "05/09/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/09/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "05/09/2026",
-      "category": "IAS Prep",
-      "count": 4
-    },
-    {
-      "date": "05/09/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "05/09/2026",
-      "category": "State Exams",
-      "count": 17
-    },
-    {
-      "date": "05/09/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "05/09/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "05/09/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "05/09/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/09/2026",
-      "category": "UGC NET",
-      "count": 8
+      "date": "05/10/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "05/11/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Teaching",
-      "count": 24
-    },
-    {
-      "date": "05/11/2026",
-      "category": "State PSC",
-      "count": 9
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "05/11/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/11/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "05/11/2026",
-      "category": "IAS Prep",
-      "count": 6
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "05/11/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Railways",
-      "count": 13
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "05/11/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "05/11/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "05/11/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/11/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 24,
+        "State PSC": 9,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 6,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 6,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 23,
+        "Defence": 2,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 13,
+        "Nursing": 3,
+        "Engineering": 9,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 19
+      },
+      "total": 138
     },
     {
       "date": "05/12/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "05/12/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Entrance",
-      "count": 11
-    },
-    {
-      "date": "05/12/2026",
-      "category": "K12",
-      "count": 3
-    },
-    {
-      "date": "05/12/2026",
-      "category": "IAS Prep",
-      "count": 7
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "05/12/2026",
-      "category": "State Exams",
-      "count": 13
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Defence",
-      "count": 9
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Railways",
-      "count": 8
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "05/12/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "05/12/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "05/12/2026",
-      "category": "UGC NET",
-      "count": 28
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 14,
+        "State PSC": 5,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 11,
+        "K12": 3,
+        "K12 Prep": 0,
+        "IAS Prep": 7,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 11,
+        "State Exams": 13,
+        "Defence": 9,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 8,
+        "Nursing": 1,
+        "Engineering": 8,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 28
+      },
+      "total": 130
     },
     {
       "date": "05/13/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Teaching",
-      "count": 16
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Entrance",
-      "count": 7
-    },
-    {
-      "date": "05/13/2026",
-      "category": "K12",
-      "count": 6
-    },
-    {
-      "date": "05/13/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "05/13/2026",
-      "category": "IAS Prep",
-      "count": 17
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "05/13/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "05/13/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "05/13/2026",
-      "category": "AE/JE Prep",
-      "count": 3
-    },
-    {
-      "date": "05/13/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/13/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 16,
+        "State PSC": 0,
+        "Banking": 5,
+        "Insurance": 1,
+        "Entrance": 7,
+        "K12": 6,
+        "K12 Prep": 1,
+        "IAS Prep": 17,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 5,
+        "State Exams": 29,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 3,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 16
+      },
+      "total": 129
     },
     {
       "date": "05/14/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "05/14/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "05/14/2026",
-      "category": "K12",
-      "count": 3
-    },
-    {
-      "date": "05/14/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "05/14/2026",
-      "category": "State Exams",
-      "count": 24
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Defence",
-      "count": 11
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "05/14/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "05/14/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "05/14/2026",
-      "category": "UGC NET",
-      "count": 9
+      "counts": {
+        "SSC": 2,
+        "UPSC": 2,
+        "Teaching": 12,
+        "State PSC": 0,
+        "Banking": 5,
+        "Insurance": 1,
+        "Entrance": 4,
+        "K12": 3,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 10,
+        "State Exams": 24,
+        "Defence": 11,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 9,
+        "Nursing": 1,
+        "Engineering": 13,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 126
     },
     {
       "date": "05/15/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "05/15/2026",
-      "category": "UPSC",
-      "count": 4
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Teaching",
-      "count": 18
-    },
-    {
-      "date": "05/15/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Entrance",
-      "count": 8
-    },
-    {
-      "date": "05/15/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/15/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "05/15/2026",
-      "category": "State Exams",
-      "count": 21
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Defence",
-      "count": 14
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Railways",
-      "count": 10
-    },
-    {
-      "date": "05/15/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "05/15/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "05/15/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 2,
+        "UPSC": 4,
+        "Teaching": 18,
+        "State PSC": 4,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 8,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 6,
+        "State Exams": 21,
+        "Defence": 14,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 10,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 128
     },
     {
       "date": "05/16/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "05/16/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "05/16/2026",
-      "category": "K12",
-      "count": 6
-    },
-    {
-      "date": "05/16/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "05/16/2026",
-      "category": "State Exams",
-      "count": 19
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Railways",
-      "count": 11
-    },
-    {
-      "date": "05/16/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "05/16/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 0,
+        "UPSC": 1,
+        "Teaching": 7,
+        "State PSC": 1,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 6,
+        "K12 Prep": 0,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 19,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 11,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 82
     },
     {
       "date": "05/17/2026",
-      "category": "UGC NET",
-      "count": 4
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 4
+      },
+      "total": 4
     },
     {
       "date": "05/18/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Teaching",
-      "count": 20
-    },
-    {
-      "date": "05/18/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "05/18/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "05/18/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Police",
-      "count": 8
-    },
-    {
-      "date": "05/18/2026",
-      "category": "State Exams",
-      "count": 7
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Railways",
-      "count": 18
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "05/18/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "05/18/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "05/18/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 5,
+        "UPSC": 0,
+        "Teaching": 20,
+        "State PSC": 2,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 8,
+        "State Exams": 7,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 18,
+        "Nursing": 3,
+        "Engineering": 9,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 124
     },
     {
       "date": "05/19/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "05/19/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "05/19/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Banking",
-      "count": 31
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "05/19/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/19/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "05/19/2026",
-      "category": "State Exams",
-      "count": 9
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "05/19/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "05/19/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "05/19/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 2,
+        "UPSC": 2,
+        "Teaching": 7,
+        "State PSC": 4,
+        "Banking": 31,
+        "Insurance": 2,
+        "Entrance": 6,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 10,
+        "State Exams": 9,
+        "Defence": 6,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 5,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 136
     },
     {
       "date": "05/20/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "05/20/2026",
-      "category": "UPSC",
-      "count": 6
-    },
-    {
-      "date": "05/20/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "05/20/2026",
-      "category": "State PSC",
-      "count": 9
-    },
-    {
-      "date": "05/20/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "05/20/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "05/20/2026",
-      "category": "K12",
-      "count": 4
-    },
-    {
-      "date": "05/20/2026",
-      "category": "IAS Prep",
-      "count": 17
-    },
-    {
-      "date": "05/20/2026",
-      "category": "Police",
-      "count": 12
-    },
-    {
-      "date": "05/20/2026",
-      "category": "State Exams",
-      "count": 4
-    },
-    {
-      "date": "05/20/2026",
-      "category": "Defence",
-      "count": 19
-    },
-    {
-      "date": "05/20/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "05/20/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "05/20/2026",
-      "category": "MBA",
-      "count": 2
-    },
-    {
-      "date": "05/20/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 3,
+        "UPSC": 6,
+        "Teaching": 9,
+        "State PSC": 9,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 4,
+        "K12 Prep": 0,
+        "IAS Prep": 17,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 12,
+        "State Exams": 4,
+        "Defence": 19,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 15,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 2,
+        "UGC NET": 14
+      },
+      "total": 123
     },
     {
       "date": "05/21/2026",
-      "category": "SSC",
-      "count": 11
-    },
-    {
-      "date": "05/21/2026",
-      "category": "UPSC",
-      "count": 4
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "05/21/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "05/21/2026",
-      "category": "IAS Prep",
-      "count": 23
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/21/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Defence",
-      "count": 13
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "05/21/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "05/21/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 11,
+        "UPSC": 4,
+        "Teaching": 5,
+        "State PSC": 3,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 6,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 23,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 0,
+        "State Exams": 16,
+        "Defence": 13,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 7,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 116
     },
     {
       "date": "05/22/2026",
-      "category": "SSC",
-      "count": 12
-    },
-    {
-      "date": "05/22/2026",
-      "category": "UPSC",
-      "count": 4
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Teaching",
-      "count": 4
-    },
-    {
-      "date": "05/22/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "05/22/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "05/22/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Defence",
-      "count": 11
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "05/22/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "05/22/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/22/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 12,
+        "UPSC": 4,
+        "Teaching": 4,
+        "State PSC": 4,
+        "Banking": 6,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 4,
+        "State Exams": 20,
+        "Defence": 11,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 4,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 19
+      },
+      "total": 109
     },
     {
       "date": "05/23/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Teaching",
-      "count": 3
-    },
-    {
-      "date": "05/23/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "05/23/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "05/23/2026",
-      "category": "State Exams",
-      "count": 4
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "05/23/2026",
-      "category": "Engineering",
-      "count": 1
-    },
-    {
-      "date": "05/23/2026",
-      "category": "UGC NET",
-      "count": 8
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 3,
+        "State PSC": 4,
+        "Banking": 5,
+        "Insurance": 2,
+        "Entrance": 5,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 7,
+        "State Exams": 4,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 0,
+        "Engineering": 1,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 8
+      },
+      "total": 54
     },
     {
       "date": "05/24/2026",
-      "category": "UGC NET",
-      "count": 4
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 4
+      },
+      "total": 4
     },
     {
       "date": "05/25/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "05/25/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "05/25/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "05/25/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "05/25/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Regulatory",
-      "count": 5
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "05/25/2026",
-      "category": "State Exams",
-      "count": 11
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Defence",
-      "count": 11
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "05/25/2026",
-      "category": "Engineering",
-      "count": 16
-    },
-    {
-      "date": "05/25/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "05/25/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 6,
+        "UPSC": 1,
+        "Teaching": 14,
+        "State PSC": 5,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 6,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 5,
+        "Police": 3,
+        "State Exams": 11,
+        "Defence": 11,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 9,
+        "Nursing": 0,
+        "Engineering": 16,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 121
     },
     {
       "date": "05/26/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "05/26/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "05/26/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Insurance",
-      "count": 4
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Entrance",
-      "count": 7
-    },
-    {
-      "date": "05/26/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "05/26/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "05/26/2026",
-      "category": "State Exams",
-      "count": 18
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "05/26/2026",
-      "category": "Engineering",
-      "count": 14
-    },
-    {
-      "date": "05/26/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "05/26/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 2,
+        "UPSC": 2,
+        "Teaching": 14,
+        "State PSC": 5,
+        "Banking": 3,
+        "Insurance": 4,
+        "Entrance": 7,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 11,
+        "State Exams": 18,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 1,
+        "Engineering": 14,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 122
     },
     {
       "date": "05/27/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "05/27/2026",
-      "category": "UPSC",
-      "count": 4
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "05/27/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Entrance",
-      "count": 10
-    },
-    {
-      "date": "05/27/2026",
-      "category": "IAS Prep",
-      "count": 5
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Police",
-      "count": 16
-    },
-    {
-      "date": "05/27/2026",
-      "category": "State Exams",
-      "count": 25
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "05/27/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "05/27/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "05/27/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/27/2026",
-      "category": "UGC NET",
-      "count": 10
+      "counts": {
+        "SSC": 1,
+        "UPSC": 4,
+        "Teaching": 8,
+        "State PSC": 3,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 10,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 5,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 16,
+        "State Exams": 25,
+        "Defence": 5,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 10
+      },
+      "total": 113
     },
     {
       "date": "05/28/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "05/28/2026",
-      "category": "IAS Prep",
-      "count": 5
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "05/28/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "05/28/2026",
-      "category": "Engineering",
-      "count": 14
-    },
-    {
-      "date": "05/28/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "05/28/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 14,
+        "State PSC": 0,
+        "Banking": 6,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 5,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 7,
+        "State Exams": 29,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 14,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 105
     },
     {
       "date": "05/29/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "05/29/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Teaching",
-      "count": 21
-    },
-    {
-      "date": "05/29/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "05/29/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Police",
-      "count": 15
-    },
-    {
-      "date": "05/29/2026",
-      "category": "State Exams",
-      "count": 32
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Railways",
-      "count": 12
-    },
-    {
-      "date": "05/29/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "05/29/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "05/29/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "05/29/2026",
-      "category": "UGC NET",
-      "count": 8
+      "counts": {
+        "SSC": 1,
+        "UPSC": 1,
+        "Teaching": 21,
+        "State PSC": 5,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 15,
+        "State Exams": 32,
+        "Defence": 10,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 12,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 8
+      },
+      "total": 135
     },
     {
       "date": "05/30/2026",
-      "category": "SSC",
-      "count": 1
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 1,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 4,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 1,
+        "State Exams": 17,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 1,
+        "Engineering": 4,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 58
     },
     {
-      "date": "05/30/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "05/30/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "05/30/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "05/30/2026",
-      "category": "IAS Prep",
-      "count": 4
-    },
-    {
-      "date": "05/30/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "05/30/2026",
-      "category": "State Exams",
-      "count": 17
-    },
-    {
-      "date": "05/30/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "05/30/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "05/30/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "05/30/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "05/30/2026",
-      "category": "UGC NET",
-      "count": 11
-    },
-    {
-      "date": "06/01/2026",
-      "category": "SSC",
-      "count": 5
+      "date": "05/31/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "06/01/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "06/01/2026",
-      "category": "State PSC",
-      "count": 11
-    },
-    {
-      "date": "06/01/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "06/01/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "06/01/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "06/01/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "06/01/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "06/01/2026",
-      "category": "State Exams",
-      "count": 30
-    },
-    {
-      "date": "06/01/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "06/01/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "06/01/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "06/01/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "06/01/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 5,
+        "UPSC": 0,
+        "Teaching": 10,
+        "State PSC": 11,
+        "Banking": 6,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 6,
+        "State Exams": 30,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 124
     },
     {
       "date": "06/02/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "06/02/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "06/02/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "06/02/2026",
-      "category": "State Exams",
-      "count": 18
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "06/02/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "06/02/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "06/02/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 5,
+        "State PSC": 8,
+        "Banking": 4,
+        "Insurance": 1,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 11,
+        "State Exams": 18,
+        "Defence": 10,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 13,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 117
     },
     {
       "date": "06/03/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Teaching",
-      "count": 24
-    },
-    {
-      "date": "06/03/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "06/03/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Police",
-      "count": 8
-    },
-    {
-      "date": "06/03/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "06/03/2026",
-      "category": "Engineering",
-      "count": 27
-    },
-    {
-      "date": "06/03/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "06/03/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 6,
+        "UPSC": 0,
+        "Teaching": 24,
+        "State PSC": 8,
+        "Banking": 2,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 8,
+        "State Exams": 20,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 27,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 132
     },
     {
       "date": "06/04/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "06/04/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "06/04/2026",
-      "category": "IAS Prep",
-      "count": 6
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "06/04/2026",
-      "category": "State Exams",
-      "count": 26
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "06/04/2026",
-      "category": "Engineering",
-      "count": 2
-    },
-    {
-      "date": "06/04/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "06/04/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 6,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 3,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 6,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 11,
+        "State Exams": 26,
+        "Defence": 5,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 2,
+        "Engineering": 2,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 98
     },
     {
       "date": "06/05/2026",
-      "category": "Teaching",
-      "count": 1
-    },
-    {
-      "date": "06/05/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "06/05/2026",
-      "category": "IAS Prep",
-      "count": 4
-    },
-    {
-      "date": "06/05/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "06/05/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "06/05/2026",
-      "category": "State Exams",
-      "count": 1
-    },
-    {
-      "date": "06/05/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "06/05/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "06/05/2026",
-      "category": "UGC NET",
-      "count": 6
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 6,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 4,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 3,
+        "State Exams": 1,
+        "Defence": 1,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 6
+      },
+      "total": 26
     },
     {
       "date": "06/06/2026",
-      "category": "Teaching",
-      "count": 1
-    },
-    {
-      "date": "06/06/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "06/06/2026",
-      "category": "UGC NET",
-      "count": 3
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 1,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 3
+      },
+      "total": 5
     },
     {
       "date": "06/07/2026",
-      "category": "Entrance",
-      "count": 2
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 2
     },
     {
       "date": "06/08/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "06/08/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "06/08/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "06/08/2026",
-      "category": "State Exams",
-      "count": 10
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "06/08/2026",
-      "category": "Hindi",
-      "count": 3
-    },
-    {
-      "date": "06/08/2026",
-      "category": "UGC NET",
-      "count": 9
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 7,
+        "State PSC": 7,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 10,
+        "Defence": 2,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 1,
+        "Engineering": 4,
+        "AE/JE Prep": 0,
+        "Hindi": 3,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 63
     },
     {
       "date": "06/09/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "06/09/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Entrance",
-      "count": 6
-    },
-    {
-      "date": "06/09/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "06/09/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "06/09/2026",
-      "category": "State Exams",
-      "count": 9
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "06/09/2026",
-      "category": "Hindi",
-      "count": 2
-    },
-    {
-      "date": "06/09/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 5,
+        "State PSC": 2,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 6,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 9,
+        "Defence": 4,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 4,
+        "AE/JE Prep": 0,
+        "Hindi": 2,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 76
     },
     {
       "date": "06/10/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "06/10/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Teaching",
-      "count": 23
-    },
-    {
-      "date": "06/10/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "06/10/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "06/10/2026",
-      "category": "State Exams",
-      "count": 22
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Other Govt. Exams",
-      "count": 9
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "06/10/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "06/10/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "06/10/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 5,
+        "UPSC": 1,
+        "Teaching": 23,
+        "State PSC": 2,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 10,
+        "State Exams": 22,
+        "Defence": 7,
+        "Other Govt. Exams": 9,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 9,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 134
     },
     {
       "date": "06/11/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "06/11/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Teaching",
-      "count": 19
-    },
-    {
-      "date": "06/11/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Banking",
-      "count": 10
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "06/11/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "06/11/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "06/11/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Defence",
-      "count": 9
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Railways",
-      "count": 10
-    },
-    {
-      "date": "06/11/2026",
-      "category": "Engineering",
-      "count": 18
-    },
-    {
-      "date": "06/11/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "06/11/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 3,
+        "UPSC": 1,
+        "Teaching": 19,
+        "State PSC": 2,
+        "Banking": 10,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 5,
+        "State Exams": 20,
+        "Defence": 9,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 10,
+        "Nursing": 0,
+        "Engineering": 18,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 142
     },
     {
       "date": "06/12/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Teaching",
-      "count": 22
-    },
-    {
-      "date": "06/12/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Banking",
-      "count": 11
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "06/12/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "06/12/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Police",
-      "count": 12
-    },
-    {
-      "date": "06/12/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Railways",
-      "count": 12
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "06/12/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "06/12/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "06/12/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 22,
+        "State PSC": 4,
+        "Banking": 11,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 12,
+        "State Exams": 23,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 12,
+        "Nursing": 4,
+        "Engineering": 7,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 139
     },
     {
       "date": "06/13/2026",
-      "category": "SSC",
-      "count": 1
+      "counts": {
+        "SSC": 1,
+        "UPSC": 1,
+        "Teaching": 13,
+        "State PSC": 3,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 3,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 0,
+        "State Exams": 5,
+        "Defence": 3,
+        "Other Govt. Exams": 25,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 6,
+        "Engineering": 3,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 9
+      },
+      "total": 78
     },
     {
-      "date": "06/13/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "06/13/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "06/13/2026",
-      "category": "IAS Prep",
-      "count": 3
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/13/2026",
-      "category": "State Exams",
-      "count": 5
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Other Govt. Exams",
-      "count": 25
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Nursing",
-      "count": 6
-    },
-    {
-      "date": "06/13/2026",
-      "category": "Engineering",
-      "count": 3
-    },
-    {
-      "date": "06/13/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "06/13/2026",
-      "category": "UGC NET",
-      "count": 9
+      "date": "06/14/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "06/15/2026",
-      "category": "SSC",
-      "count": 11
-    },
-    {
-      "date": "06/15/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Teaching",
-      "count": 15
-    },
-    {
-      "date": "06/15/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "06/15/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "06/15/2026",
-      "category": "State Exams",
-      "count": 26
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "06/15/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "06/15/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "06/15/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 11,
+        "UPSC": 3,
+        "Teaching": 15,
+        "State PSC": 5,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 10,
+        "State Exams": 26,
+        "Defence": 2,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 1,
+        "Engineering": 8,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 136
     },
     {
       "date": "06/16/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "06/16/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Teaching",
-      "count": 23
-    },
-    {
-      "date": "06/16/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Entrance",
-      "count": 7
-    },
-    {
-      "date": "06/16/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Police",
-      "count": 14
-    },
-    {
-      "date": "06/16/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Defence",
-      "count": 9
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "06/16/2026",
-      "category": "Engineering",
-      "count": 19
-    },
-    {
-      "date": "06/16/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "06/16/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 1,
+        "UPSC": 1,
+        "Teaching": 23,
+        "State PSC": 1,
+        "Banking": 4,
+        "Insurance": 0,
+        "Entrance": 7,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 14,
+        "State Exams": 20,
+        "Defence": 9,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 2,
+        "Engineering": 19,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 144
     },
     {
       "date": "06/17/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "06/17/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Teaching",
-      "count": 11
-    },
-    {
-      "date": "06/17/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Insurance",
-      "count": 11
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Entrance",
-      "count": 14
-    },
-    {
-      "date": "06/17/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "06/17/2026",
-      "category": "State Exams",
-      "count": 31
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "06/17/2026",
-      "category": "Engineering",
-      "count": 21
-    },
-    {
-      "date": "06/17/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "06/17/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 2,
+        "UPSC": 1,
+        "Teaching": 11,
+        "State PSC": 8,
+        "Banking": 2,
+        "Insurance": 11,
+        "Entrance": 14,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 11,
+        "State Exams": 31,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 1,
+        "Engineering": 21,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 166
     },
     {
       "date": "06/18/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Teaching",
-      "count": 6
-    },
-    {
-      "date": "06/18/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Banking",
-      "count": 19
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "06/18/2026",
-      "category": "IAS Prep",
-      "count": 6
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "06/18/2026",
-      "category": "State Exams",
-      "count": 22
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Defence",
-      "count": 14
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "06/18/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "06/18/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "06/18/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 5,
+        "UPSC": 0,
+        "Teaching": 6,
+        "State PSC": 8,
+        "Banking": 19,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 6,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 6,
+        "State Exams": 22,
+        "Defence": 14,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 5,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 128
     },
     {
       "date": "06/19/2026",
-      "category": "SSC",
-      "count": 7
-    },
-    {
-      "date": "06/19/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "06/19/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Entrance",
-      "count": 9
-    },
-    {
-      "date": "06/19/2026",
-      "category": "IAS Prep",
-      "count": 22
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Police",
-      "count": 18
-    },
-    {
-      "date": "06/19/2026",
-      "category": "State Exams",
-      "count": 24
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "06/19/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "06/19/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "06/19/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 7,
+        "UPSC": 1,
+        "Teaching": 9,
+        "State PSC": 5,
+        "Banking": 6,
+        "Insurance": 0,
+        "Entrance": 9,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 22,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 18,
+        "State Exams": 24,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 4,
+        "Engineering": 4,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 139
     },
     {
       "date": "06/20/2026",
-      "category": "SSC",
-      "count": 2
+      "counts": {
+        "SSC": 2,
+        "UPSC": 1,
+        "Teaching": 8,
+        "State PSC": 4,
+        "Banking": 5,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 5,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 11,
+        "State Exams": 16,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 10
+      },
+      "total": 75
     },
     {
-      "date": "06/20/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/20/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "06/20/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "06/20/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "06/20/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "06/20/2026",
-      "category": "IAS Prep",
-      "count": 5
-    },
-    {
-      "date": "06/20/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "06/20/2026",
-      "category": "Police",
-      "count": 11
-    },
-    {
-      "date": "06/20/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "06/20/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "06/20/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "06/20/2026",
-      "category": "UGC NET",
-      "count": 10
+      "date": "06/21/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "06/22/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "06/22/2026",
-      "category": "State PSC",
-      "count": 17
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Banking",
-      "count": 10
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "06/22/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Police",
-      "count": 13
-    },
-    {
-      "date": "06/22/2026",
-      "category": "State Exams",
-      "count": 31
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "06/22/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "06/22/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "06/22/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 8,
+        "UPSC": 0,
+        "Teaching": 13,
+        "State PSC": 17,
+        "Banking": 10,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 13,
+        "State Exams": 31,
+        "Defence": 3,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 1,
+        "Engineering": 13,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 158
     },
     {
       "date": "06/23/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "06/23/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "06/23/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "06/23/2026",
-      "category": "State Exams",
-      "count": 32
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "06/23/2026",
-      "category": "Engineering",
-      "count": 24
-    },
-    {
-      "date": "06/23/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "06/23/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 6,
+        "UPSC": 0,
+        "Teaching": 9,
+        "State PSC": 6,
+        "Banking": 7,
+        "Insurance": 2,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 10,
+        "State Exams": 32,
+        "Defence": 6,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 9,
+        "Nursing": 0,
+        "Engineering": 24,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 153
     },
     {
       "date": "06/24/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "06/24/2026",
-      "category": "UPSC",
-      "count": 22
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "06/24/2026",
-      "category": "State PSC",
-      "count": 24
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Banking",
-      "count": 11
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "06/24/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "06/24/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "06/24/2026",
-      "category": "Engineering",
-      "count": 10
-    },
-    {
-      "date": "06/24/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "06/24/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 2,
+        "UPSC": 22,
+        "Teaching": 12,
+        "State PSC": 24,
+        "Banking": 11,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 29,
+        "Defence": 0,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 2,
+        "Engineering": 10,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 157
     },
     {
       "date": "06/25/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Teaching",
-      "count": 17
-    },
-    {
-      "date": "06/25/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "06/25/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Police",
-      "count": 9
-    },
-    {
-      "date": "06/25/2026",
-      "category": "State Exams",
-      "count": 32
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "06/25/2026",
-      "category": "Engineering",
-      "count": 44
-    },
-    {
-      "date": "06/25/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "06/25/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 17,
+        "State PSC": 3,
+        "Banking": 4,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 9,
+        "State Exams": 32,
+        "Defence": 5,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 44,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 164
     },
     {
       "date": "06/26/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "06/26/2026",
-      "category": "UPSC",
-      "count": 7
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "06/26/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "06/26/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "06/26/2026",
-      "category": "IAS Prep",
-      "count": 16
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Police",
-      "count": 8
-    },
-    {
-      "date": "06/26/2026",
-      "category": "State Exams",
-      "count": 31
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "06/26/2026",
-      "category": "Engineering",
-      "count": 21
-    },
-    {
-      "date": "06/26/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "06/26/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 2,
+        "UPSC": 7,
+        "Teaching": 7,
+        "State PSC": 6,
+        "Banking": 6,
+        "Insurance": 3,
+        "Entrance": 2,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 16,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 8,
+        "State Exams": 31,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 1,
+        "Engineering": 21,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 143
     },
     {
       "date": "06/27/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "06/27/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "06/27/2026",
-      "category": "IAS Prep",
-      "count": 11
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "06/27/2026",
-      "category": "State Exams",
-      "count": 2
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "06/27/2026",
-      "category": "Engineering",
-      "count": 27
-    },
-    {
-      "date": "06/27/2026",
-      "category": "AE/JE Prep",
-      "count": 1
-    },
-    {
-      "date": "06/27/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 7,
+        "State PSC": 2,
+        "Banking": 4,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 11,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 2,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 1,
+        "Engineering": 27,
+        "AE/JE Prep": 1,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 78
     },
     {
       "date": "06/28/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "06/28/2026",
-      "category": "State Exams",
-      "count": 2
-    },
-    {
-      "date": "06/29/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "06/29/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Teaching",
-      "count": 3
-    },
-    {
-      "date": "06/29/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Banking",
-      "count": 7
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 2,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 4
     },
     {
       "date": "06/29/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "06/29/2026",
-      "category": "State Exams",
-      "count": 24
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "06/29/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "06/29/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "06/29/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 4,
+        "UPSC": 1,
+        "Teaching": 3,
+        "State PSC": 6,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 10,
+        "State Exams": 24,
+        "Defence": 4,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 2,
+        "Engineering": 9,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 112
     },
     {
       "date": "06/30/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "06/30/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Teaching",
-      "count": 4
-    },
-    {
-      "date": "06/30/2026",
-      "category": "State PSC",
-      "count": 9
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Banking",
-      "count": 19
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "06/30/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "06/30/2026",
-      "category": "IAS Prep",
-      "count": 6
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Police",
-      "count": 9
-    },
-    {
-      "date": "06/30/2026",
-      "category": "State Exams",
-      "count": 15
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Railways",
-      "count": 14
-    },
-    {
-      "date": "06/30/2026",
-      "category": "Engineering",
-      "count": 2
-    },
-    {
-      "date": "06/30/2026",
-      "category": "AE/JE Prep",
-      "count": 7
-    },
-    {
-      "date": "06/30/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "06/30/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 1,
+        "UPSC": 1,
+        "Teaching": 4,
+        "State PSC": 9,
+        "Banking": 19,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 6,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 9,
+        "State Exams": 15,
+        "Defence": 3,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 14,
+        "Nursing": 0,
+        "Engineering": 2,
+        "AE/JE Prep": 7,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 18
+      },
+      "total": 118
     },
     {
       "date": "07/01/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "07/01/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/01/2026",
-      "category": "Banking",
-      "count": 26
-    },
-    {
-      "date": "07/01/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/01/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "07/01/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "07/01/2026",
-      "category": "State Exams",
-      "count": 13
-    },
-    {
-      "date": "07/01/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "07/01/2026",
-      "category": "Railways",
-      "count": 13
-    },
-    {
-      "date": "07/01/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "07/01/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 1,
+        "Banking": 26,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 13,
+        "Defence": 2,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 13,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 105
     },
     {
       "date": "07/02/2026",
-      "category": "Teaching",
-      "count": 16
-    },
-    {
-      "date": "07/02/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Banking",
-      "count": 17
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/02/2026",
-      "category": "IAS Prep",
-      "count": 17
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "07/02/2026",
-      "category": "State Exams",
-      "count": 20
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "07/02/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "07/02/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "07/02/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 16,
+        "State PSC": 5,
+        "Banking": 17,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 17,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 20,
+        "Defence": 3,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 0,
+        "Engineering": 11,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 117
     },
     {
       "date": "07/03/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "07/03/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/03/2026",
-      "category": "IAS Prep",
-      "count": 20
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "07/03/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "07/03/2026",
-      "category": "Engineering",
-      "count": 23
-    },
-    {
-      "date": "07/03/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 7,
+        "State PSC": 4,
+        "Banking": 9,
+        "Insurance": 1,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 20,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 4,
+        "State Exams": 23,
+        "Defence": 5,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 23,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 120
     },
     {
       "date": "07/04/2026",
-      "category": "SSC",
-      "count": 2
+      "counts": {
+        "SSC": 2,
+        "UPSC": 2,
+        "Teaching": 3,
+        "State PSC": 2,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 6,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 16,
+        "State Exams": 3,
+        "Defence": 1,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 5
+      },
+      "total": 54
     },
     {
-      "date": "07/04/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Teaching",
-      "count": 3
-    },
-    {
-      "date": "07/04/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/04/2026",
-      "category": "IAS Prep",
-      "count": 6
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Police",
-      "count": 16
-    },
-    {
-      "date": "07/04/2026",
-      "category": "State Exams",
-      "count": 3
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "07/04/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "07/04/2026",
-      "category": "UGC NET",
-      "count": 5
+      "date": "07/05/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "07/06/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "07/06/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/06/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "07/06/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "07/06/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "07/06/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/06/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 14,
+        "State PSC": 3,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 10,
+        "State Exams": 23,
+        "Defence": 6,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 9,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 109
     },
     {
       "date": "07/07/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "07/07/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Teaching",
-      "count": 11
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/07/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Police",
-      "count": 8
-    },
-    {
-      "date": "07/07/2026",
-      "category": "State Exams",
-      "count": 7
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Other Govt. Exams",
-      "count": 17
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "07/07/2026",
-      "category": "Engineering",
-      "count": 10
-    },
-    {
-      "date": "07/07/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "07/07/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "07/07/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 3,
+        "UPSC": 1,
+        "Teaching": 11,
+        "State PSC": 0,
+        "Banking": 6,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 8,
+        "State Exams": 7,
+        "Defence": 5,
+        "Other Govt. Exams": 17,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 1,
+        "Engineering": 10,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 17
+      },
+      "total": 111
     },
     {
       "date": "07/08/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/08/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "07/08/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Railways",
-      "count": 10
-    },
-    {
-      "date": "07/08/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "07/08/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 13,
+        "State PSC": 0,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 14,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 10,
+        "Nursing": 0,
+        "Engineering": 7,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 91
     },
     {
       "date": "07/09/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Teaching",
-      "count": 19
-    },
-    {
-      "date": "07/09/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "07/09/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "07/09/2026",
-      "category": "State Exams",
-      "count": 21
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Other Govt. Exams",
-      "count": 7
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "07/09/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "07/09/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/09/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 19,
+        "State PSC": 1,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 21,
+        "Defence": 5,
+        "Other Govt. Exams": 7,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 4,
+        "Engineering": 13,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 118
     },
     {
       "date": "07/10/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "07/10/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/10/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Police",
-      "count": 20
-    },
-    {
-      "date": "07/10/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "07/10/2026",
-      "category": "Engineering",
-      "count": 9
-    },
-    {
-      "date": "07/10/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "07/10/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 2,
+        "Banking": 3,
+        "Insurance": 1,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 20,
+        "State Exams": 23,
+        "Defence": 3,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 1,
+        "Engineering": 9,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 116
     },
     {
       "date": "07/11/2026",
-      "category": "Teaching",
-      "count": 2
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 2,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 10,
+        "Defence": 0,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 3,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 7
+      },
+      "total": 23
     },
     {
-      "date": "07/11/2026",
-      "category": "State Exams",
-      "count": 10
-    },
-    {
-      "date": "07/11/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/11/2026",
-      "category": "Engineering",
-      "count": 3
-    },
-    {
-      "date": "07/11/2026",
-      "category": "UGC NET",
-      "count": 7
-    },
-    {
-      "date": "07/13/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "07/13/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Teaching",
-      "count": 18
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/13/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Regulatory",
-      "count": 4
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Police",
-      "count": 3
+      "date": "07/12/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "07/13/2026",
-      "category": "State Exams",
-      "count": 8
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "07/13/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "07/13/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 2,
+        "UPSC": 2,
+        "Teaching": 18,
+        "State PSC": 0,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 4,
+        "Police": 3,
+        "State Exams": 8,
+        "Defence": 4,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 1,
+        "Engineering": 11,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 88
     },
     {
       "date": "07/14/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "07/14/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/14/2026",
-      "category": "K12",
-      "count": 2
-    },
-    {
-      "date": "07/14/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "07/14/2026",
-      "category": "State Exams",
-      "count": 32
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Railways",
-      "count": 8
-    },
-    {
-      "date": "07/14/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "07/14/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/14/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 4,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 4,
+        "Banking": 7,
+        "Insurance": 1,
+        "Entrance": 4,
+        "K12": 2,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 7,
+        "State Exams": 32,
+        "Defence": 5,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 8,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 133
     },
     {
       "date": "07/15/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "07/15/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Teaching",
-      "count": 32
-    },
-    {
-      "date": "07/15/2026",
-      "category": "State PSC",
-      "count": 11
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "07/15/2026",
-      "category": "K12 Prep",
-      "count": 3
-    },
-    {
-      "date": "07/15/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "07/15/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Railways",
-      "count": 13
-    },
-    {
-      "date": "07/15/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "07/15/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "07/15/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "07/15/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 1,
+        "UPSC": 1,
+        "Teaching": 32,
+        "State PSC": 11,
+        "Banking": 4,
+        "Insurance": 2,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 3,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 5,
+        "State Exams": 14,
+        "Defence": 2,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 13,
+        "Nursing": 0,
+        "Engineering": 7,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 16
+      },
+      "total": 140
     },
     {
       "date": "07/16/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Teaching",
-      "count": 15
-    },
-    {
-      "date": "07/16/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "07/16/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "07/16/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "07/16/2026",
-      "category": "IAS Prep",
-      "count": 20
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "07/16/2026",
-      "category": "State Exams",
-      "count": 15
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Defence",
-      "count": 8
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "07/16/2026",
-      "category": "Engineering",
-      "count": 17
-    },
-    {
-      "date": "07/16/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 15,
+        "State PSC": 3,
+        "Banking": 9,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 2,
+        "IAS Prep": 20,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 15,
+        "Defence": 8,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 0,
+        "Engineering": 17,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 123
     },
     {
       "date": "07/17/2026",
-      "category": "Teaching",
-      "count": 6
-    },
-    {
-      "date": "07/17/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Insurance",
-      "count": 8
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "07/17/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "07/17/2026",
-      "category": "IAS Prep",
-      "count": 18
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "07/17/2026",
-      "category": "State Exams",
-      "count": 21
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Other Govt. Exams",
-      "count": 9
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "07/17/2026",
-      "category": "Engineering",
-      "count": 21
-    },
-    {
-      "date": "07/17/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 6,
+        "State PSC": 3,
+        "Banking": 8,
+        "Insurance": 8,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 18,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 7,
+        "State Exams": 21,
+        "Defence": 1,
+        "Other Govt. Exams": 9,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 21,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 129
     },
     {
       "date": "07/18/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "07/18/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/18/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "07/18/2026",
-      "category": "State Exams",
-      "count": 13
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Other Govt. Exams",
-      "count": 8
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "07/18/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "07/18/2026",
-      "category": "UGC NET",
-      "count": 10
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 9,
+        "State PSC": 1,
+        "Banking": 3,
+        "Insurance": 3,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 13,
+        "Defence": 1,
+        "Other Govt. Exams": 8,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 2,
+        "Engineering": 15,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 10
+      },
+      "total": 90
     },
     {
       "date": "07/19/2026",
-      "category": "Defence",
-      "count": 1
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 1,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 1
     },
     {
       "date": "07/20/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Teaching",
-      "count": 17
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Banking",
-      "count": 23
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/20/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "07/20/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "07/20/2026",
-      "category": "State Exams",
-      "count": 19
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Other Govt. Exams",
-      "count": 14
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "07/20/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "07/20/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 17,
+        "State PSC": 0,
+        "Banking": 23,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 5,
+        "State Exams": 19,
+        "Defence": 7,
+        "Other Govt. Exams": 14,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 15,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 141
     },
     {
       "date": "07/21/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "07/21/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "07/21/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "07/21/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "07/21/2026",
-      "category": "State Exams",
-      "count": 19
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Other Govt. Exams",
-      "count": 11
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "07/21/2026",
-      "category": "Engineering",
-      "count": 19
-    },
-    {
-      "date": "07/21/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/21/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 2,
+        "UPSC": 3,
+        "Teaching": 8,
+        "State PSC": 0,
+        "Banking": 9,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 6,
+        "State Exams": 19,
+        "Defence": 1,
+        "Other Govt. Exams": 11,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 2,
+        "Engineering": 19,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 119
     },
     {
       "date": "07/22/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "07/22/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "07/22/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Banking",
-      "count": 10
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/22/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "07/22/2026",
-      "category": "IAS Prep",
-      "count": 19
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Police",
-      "count": 14
-    },
-    {
-      "date": "07/22/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Other Govt. Exams",
-      "count": 20
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "07/22/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "07/22/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "07/22/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 1,
+        "UPSC": 3,
+        "Teaching": 10,
+        "State PSC": 1,
+        "Banking": 10,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 19,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 14,
+        "State Exams": 29,
+        "Defence": 4,
+        "Other Govt. Exams": 20,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 148
     },
     {
       "date": "07/23/2026",
-      "category": "UPSC",
-      "count": 4
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Teaching",
-      "count": 15
-    },
-    {
-      "date": "07/23/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Banking",
-      "count": 16
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "07/23/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "07/23/2026",
-      "category": "State Exams",
-      "count": 17
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Railways",
-      "count": 9
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "07/23/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "07/23/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/23/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 0,
+        "UPSC": 4,
+        "Teaching": 15,
+        "State PSC": 2,
+        "Banking": 16,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 10,
+        "State Exams": 17,
+        "Defence": 2,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 9,
+        "Nursing": 4,
+        "Engineering": 15,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 129
     },
     {
       "date": "07/24/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "07/24/2026",
-      "category": "UPSC",
-      "count": 4
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Teaching",
-      "count": 18
-    },
-    {
-      "date": "07/24/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Banking",
-      "count": 12
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/24/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "07/24/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Police",
-      "count": 13
-    },
-    {
-      "date": "07/24/2026",
-      "category": "State Exams",
-      "count": 15
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "07/24/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "07/24/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 8,
+        "UPSC": 4,
+        "Teaching": 18,
+        "State PSC": 1,
+        "Banking": 12,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 13,
+        "State Exams": 15,
+        "Defence": 1,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 3,
+        "Engineering": 8,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 126
     },
     {
       "date": "07/25/2026",
-      "category": "SSC",
-      "count": 3
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 12,
+        "State PSC": 3,
+        "Banking": 8,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 1,
+        "K12 Prep": 1,
+        "IAS Prep": 18,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 0,
+        "State Exams": 13,
+        "Defence": 1,
+        "Other Govt. Exams": 6,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 9,
+        "Engineering": 5,
+        "AE/JE Prep": 0,
+        "Hindi": 1,
+        "MBA": 1,
+        "UGC NET": 7
+      },
+      "total": 95
     },
     {
-      "date": "07/25/2026",
-      "category": "Teaching",
-      "count": 12
-    },
-    {
-      "date": "07/25/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "07/25/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "07/25/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "07/25/2026",
-      "category": "IAS Prep",
-      "count": 18
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "07/25/2026",
-      "category": "State Exams",
-      "count": 13
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Other Govt. Exams",
-      "count": 6
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Nursing",
-      "count": 9
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "07/25/2026",
-      "category": "Hindi",
-      "count": 1
-    },
-    {
-      "date": "07/25/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "07/25/2026",
-      "category": "UGC NET",
-      "count": 7
+      "date": "07/26/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "07/27/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "07/27/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Banking",
-      "count": 20
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "07/27/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "07/27/2026",
-      "category": "IAS Prep",
-      "count": 21
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "07/27/2026",
-      "category": "State Exams",
-      "count": 12
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Other Govt. Exams",
-      "count": 10
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "07/27/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/27/2026",
-      "category": "Hindi",
-      "count": 1
-    },
-    {
-      "date": "07/27/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 7,
+        "State PSC": 2,
+        "Banking": 20,
+        "Insurance": 1,
+        "Entrance": 3,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 21,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 1,
+        "State Exams": 12,
+        "Defence": 0,
+        "Other Govt. Exams": 10,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 7,
+        "AE/JE Prep": 5,
+        "Hindi": 1,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 114
     },
     {
       "date": "07/28/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "07/28/2026",
-      "category": "Teaching",
-      "count": 15
-    },
-    {
-      "date": "07/28/2026",
-      "category": "State PSC",
-      "count": 7
-    },
-    {
-      "date": "07/28/2026",
-      "category": "Banking",
-      "count": 14
-    },
-    {
-      "date": "07/28/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "07/28/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "07/28/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "07/28/2026",
-      "category": "State Exams",
-      "count": 18
-    },
-    {
-      "date": "07/28/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "07/28/2026",
-      "category": "Railways",
-      "count": 11
-    },
-    {
-      "date": "07/28/2026",
-      "category": "Engineering",
-      "count": 23
-    },
-    {
-      "date": "07/28/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "07/28/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 15,
+        "State PSC": 7,
+        "Banking": 14,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 18,
+        "Defence": 2,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 11,
+        "Nursing": 0,
+        "Engineering": 23,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 137
     },
     {
       "date": "07/29/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Teaching",
-      "count": 20
-    },
-    {
-      "date": "07/29/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "07/29/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "07/29/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Police",
-      "count": 13
-    },
-    {
-      "date": "07/29/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "07/29/2026",
-      "category": "Engineering",
-      "count": 28
-    },
-    {
-      "date": "07/29/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "07/29/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 1,
+        "UPSC": 0,
+        "Teaching": 20,
+        "State PSC": 1,
+        "Banking": 6,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 13,
+        "State Exams": 16,
+        "Defence": 5,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 0,
+        "Engineering": 28,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 136
     },
     {
       "date": "07/30/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "07/30/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Teaching",
-      "count": 29
-    },
-    {
-      "date": "07/30/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "07/30/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Police",
-      "count": 19
-    },
-    {
-      "date": "07/30/2026",
-      "category": "State Exams",
-      "count": 10
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Railways",
-      "count": 11
-    },
-    {
-      "date": "07/30/2026",
-      "category": "Engineering",
-      "count": 19
-    },
-    {
-      "date": "07/30/2026",
-      "category": "AE/JE Prep",
-      "count": 3
-    },
-    {
-      "date": "07/30/2026",
-      "category": "UGC NET",
-      "count": 15
+      "counts": {
+        "SSC": 3,
+        "UPSC": 2,
+        "Teaching": 29,
+        "State PSC": 1,
+        "Banking": 5,
+        "Insurance": 1,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 19,
+        "State Exams": 10,
+        "Defence": 0,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 11,
+        "Nursing": 0,
+        "Engineering": 19,
+        "AE/JE Prep": 3,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 15
+      },
+      "total": 132
     },
     {
       "date": "07/31/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "07/31/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "07/31/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Banking",
-      "count": 10
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "07/31/2026",
-      "category": "IAS Prep",
-      "count": 18
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Regulatory",
-      "count": 4
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "07/31/2026",
-      "category": "State Exams",
-      "count": 11
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "07/31/2026",
-      "category": "Engineering",
-      "count": 10
-    },
-    {
-      "date": "07/31/2026",
-      "category": "AE/JE Prep",
-      "count": 2
-    },
-    {
-      "date": "07/31/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 5,
+        "UPSC": 1,
+        "Teaching": 10,
+        "State PSC": 5,
+        "Banking": 10,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 18,
+        "Judiciary": 0,
+        "Regulatory": 4,
+        "Police": 10,
+        "State Exams": 11,
+        "Defence": 4,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 1,
+        "Engineering": 10,
+        "AE/JE Prep": 2,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 114
     },
     {
       "date": "08/01/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "08/01/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "08/01/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "08/01/2026",
-      "category": "Banking",
-      "count": 16
-    },
-    {
-      "date": "08/01/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "08/01/2026",
-      "category": "Police",
-      "count": 9
-    },
-    {
-      "date": "08/01/2026",
-      "category": "State Exams",
-      "count": 13
-    },
-    {
-      "date": "08/01/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "08/01/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "08/01/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "08/01/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "08/01/2026",
-      "category": "UGC NET",
-      "count": 8
+      "counts": {
+        "SSC": 0,
+        "UPSC": 3,
+        "Teaching": 5,
+        "State PSC": 5,
+        "Banking": 16,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 9,
+        "State Exams": 13,
+        "Defence": 1,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 5,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 8
+      },
+      "total": 79
     },
     {
       "date": "08/02/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "08/02/2026",
-      "category": "UGC NET",
-      "count": 2
-    },
-    {
-      "date": "08/03/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "08/03/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Teaching",
-      "count": 16
-    },
-    {
-      "date": "08/03/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Banking",
-      "count": 6
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 2
+      },
+      "total": 3
     },
     {
       "date": "08/03/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "08/03/2026",
-      "category": "IAS Prep",
-      "count": 17
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "08/03/2026",
-      "category": "State Exams",
-      "count": 24
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "08/03/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "08/03/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "08/03/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 8,
+        "UPSC": 2,
+        "Teaching": 16,
+        "State PSC": 4,
+        "Banking": 6,
+        "Insurance": 1,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 17,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 6,
+        "State Exams": 24,
+        "Defence": 1,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 127
     },
     {
       "date": "08/04/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "08/04/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "08/04/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/04/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "08/04/2026",
-      "category": "IAS Prep",
-      "count": 19
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "08/04/2026",
-      "category": "State Exams",
-      "count": 22
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "08/04/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "08/04/2026",
-      "category": "AE/JE Prep",
-      "count": 11
-    },
-    {
-      "date": "08/04/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 2,
+        "UPSC": 3,
+        "Teaching": 8,
+        "State PSC": 3,
+        "Banking": 9,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 19,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 22,
+        "Defence": 3,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 15,
+        "AE/JE Prep": 11,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 13
+      },
+      "total": 120
     },
     {
       "date": "08/05/2026",
-      "category": "SSC",
-      "count": 1
-    },
-    {
-      "date": "08/05/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "08/05/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "08/05/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "08/05/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "08/05/2026",
-      "category": "State Exams",
-      "count": 38
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "08/05/2026",
-      "category": "Engineering",
-      "count": 16
-    },
-    {
-      "date": "08/05/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "08/05/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "08/05/2026",
-      "category": "UGC NET",
-      "count": 13
+      "counts": {
+        "SSC": 1,
+        "UPSC": 3,
+        "Teaching": 9,
+        "State PSC": 5,
+        "Banking": 7,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 4,
+        "State Exams": 38,
+        "Defence": 5,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 16,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 13
+      },
+      "total": 130
     },
     {
       "date": "08/06/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "08/06/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Teaching",
-      "count": 18
-    },
-    {
-      "date": "08/06/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Entrance",
-      "count": 4
-    },
-    {
-      "date": "08/06/2026",
-      "category": "K12 Prep",
-      "count": 2
-    },
-    {
-      "date": "08/06/2026",
-      "category": "IAS Prep",
-      "count": 18
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Police",
-      "count": 5
-    },
-    {
-      "date": "08/06/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "08/06/2026",
-      "category": "Engineering",
-      "count": 17
-    },
-    {
-      "date": "08/06/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "08/06/2026",
-      "category": "MBA",
-      "count": 1
-    },
-    {
-      "date": "08/06/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 3,
+        "UPSC": 2,
+        "Teaching": 18,
+        "State PSC": 2,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 4,
+        "K12": 0,
+        "K12 Prep": 2,
+        "IAS Prep": 18,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 16,
+        "Defence": 2,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 17,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 1,
+        "UGC NET": 11
+      },
+      "total": 121
     },
     {
       "date": "08/07/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "08/07/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Teaching",
-      "count": 7
-    },
-    {
-      "date": "08/07/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Banking",
-      "count": 19
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "08/07/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/07/2026",
-      "category": "IAS Prep",
-      "count": 15
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "08/07/2026",
-      "category": "State Exams",
-      "count": 11
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "08/07/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "08/07/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "08/07/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 2,
+        "UPSC": 1,
+        "Teaching": 7,
+        "State PSC": 5,
+        "Banking": 19,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 15,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 11,
+        "Defence": 3,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 1,
+        "Engineering": 4,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 104
     },
     {
       "date": "08/08/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "08/08/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "08/08/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "08/08/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/08/2026",
-      "category": "IAS Prep",
-      "count": 7
-    },
-    {
-      "date": "08/08/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "08/08/2026",
-      "category": "State Exams",
-      "count": 8
-    },
-    {
-      "date": "08/08/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "08/08/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "08/08/2026",
-      "category": "Nursing",
-      "count": 4
-    },
-    {
-      "date": "08/08/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "08/08/2026",
-      "category": "MBA",
-      "count": 2
-    },
-    {
-      "date": "08/08/2026",
-      "category": "UGC NET",
-      "count": 7
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 5,
+        "State PSC": 3,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 7,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 1,
+        "State Exams": 8,
+        "Defence": 7,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 4,
+        "Engineering": 7,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 2,
+        "UGC NET": 7
+      },
+      "total": 55
     },
     {
       "date": "08/09/2026",
-      "category": "State Exams",
-      "count": 3
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 3,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 3
     },
     {
       "date": "08/10/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "08/10/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Teaching",
-      "count": 18
-    },
-    {
-      "date": "08/10/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Banking",
-      "count": 3
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "08/10/2026",
-      "category": "K12",
-      "count": 1
-    },
-    {
-      "date": "08/10/2026",
-      "category": "IAS Prep",
-      "count": 20
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Police",
-      "count": 8
-    },
-    {
-      "date": "08/10/2026",
-      "category": "State Exams",
-      "count": 23
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "08/10/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "08/10/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "08/10/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 3,
+        "UPSC": 2,
+        "Teaching": 18,
+        "State PSC": 3,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 1,
+        "K12 Prep": 0,
+        "IAS Prep": 20,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 8,
+        "State Exams": 23,
+        "Defence": 7,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 2,
+        "Engineering": 11,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 133
     },
     {
       "date": "08/11/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "08/11/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "08/11/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Banking",
-      "count": 10
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Entrance",
-      "count": 5
-    },
-    {
-      "date": "08/11/2026",
-      "category": "IAS Prep",
-      "count": 20
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "08/11/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "08/11/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "08/11/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "08/11/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 4,
+        "UPSC": 2,
+        "Teaching": 14,
+        "State PSC": 3,
+        "Banking": 10,
+        "Insurance": 0,
+        "Entrance": 5,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 20,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 14,
+        "Defence": 4,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 1,
+        "Engineering": 4,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 113
     },
     {
       "date": "08/12/2026",
-      "category": "SSC",
-      "count": 8
-    },
-    {
-      "date": "08/12/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Teaching",
-      "count": 18
-    },
-    {
-      "date": "08/12/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "08/12/2026",
-      "category": "IAS Prep",
-      "count": 19
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "08/12/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Defence",
-      "count": 10
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Railways",
-      "count": 6
-    },
-    {
-      "date": "08/12/2026",
-      "category": "Engineering",
-      "count": 7
-    },
-    {
-      "date": "08/12/2026",
-      "category": "AE/JE Prep",
-      "count": 7
-    },
-    {
-      "date": "08/12/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 8,
+        "UPSC": 2,
+        "Teaching": 18,
+        "State PSC": 4,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 19,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 14,
+        "Defence": 10,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 6,
+        "Nursing": 0,
+        "Engineering": 7,
+        "AE/JE Prep": 7,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 127
     },
     {
       "date": "08/13/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "08/13/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/13/2026",
-      "category": "IAS Prep",
-      "count": 20
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "08/13/2026",
-      "category": "State Exams",
-      "count": 11
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "08/13/2026",
-      "category": "Engineering",
-      "count": 14
-    },
-    {
-      "date": "08/13/2026",
-      "category": "UGC NET",
-      "count": 16
+      "counts": {
+        "SSC": 5,
+        "UPSC": 1,
+        "Teaching": 9,
+        "State PSC": 0,
+        "Banking": 6,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 20,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 6,
+        "State Exams": 11,
+        "Defence": 4,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 14,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 16
+      },
+      "total": 100
     },
     {
       "date": "08/14/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "08/14/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "08/14/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "08/14/2026",
-      "category": "IAS Prep",
-      "count": 13
-    },
-    {
-      "date": "08/14/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "08/14/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "08/14/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "08/14/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 3,
+        "UPSC": 3,
+        "Teaching": 13,
+        "State PSC": 3,
+        "Banking": 7,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 13,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 16,
+        "Defence": 2,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 11,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 98
     },
     {
       "date": "08/15/2026",
-      "category": "Teaching",
-      "count": 1
-    },
-    {
-      "date": "08/15/2026",
-      "category": "Banking",
-      "count": 1
-    },
-    {
-      "date": "08/15/2026",
-      "category": "State Exams",
-      "count": 2
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 0,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 2,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 4
     },
     {
       "date": "08/16/2026",
-      "category": "Teaching",
-      "count": 1
-    },
-    {
-      "date": "08/16/2026",
-      "category": "Engineering",
-      "count": 1
-    },
-    {
-      "date": "08/16/2026",
-      "category": "UGC NET",
-      "count": 5
-    },
-    {
-      "date": "08/17/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "08/17/2026",
-      "category": "UPSC",
-      "count": 5
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Teaching",
-      "count": 21
-    },
-    {
-      "date": "08/17/2026",
-      "category": "State PSC",
-      "count": 4
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 1,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 5
+      },
+      "total": 7
     },
     {
       "date": "08/17/2026",
-      "category": "Banking",
-      "count": 5
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/17/2026",
-      "category": "IAS Prep",
-      "count": 14
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "08/17/2026",
-      "category": "State Exams",
-      "count": 30
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Defence",
-      "count": 6
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "08/17/2026",
-      "category": "Engineering",
-      "count": 10
-    },
-    {
-      "date": "08/17/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "08/17/2026",
-      "category": "UGC NET",
-      "count": 21
+      "counts": {
+        "SSC": 2,
+        "UPSC": 5,
+        "Teaching": 21,
+        "State PSC": 4,
+        "Banking": 5,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 14,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 4,
+        "State Exams": 30,
+        "Defence": 6,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 10,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 21
+      },
+      "total": 138
     },
     {
       "date": "08/18/2026",
-      "category": "SSC",
-      "count": 7
-    },
-    {
-      "date": "08/18/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Teaching",
-      "count": 26
-    },
-    {
-      "date": "08/18/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "08/18/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/18/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "08/18/2026",
-      "category": "State Exams",
-      "count": 16
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Other Govt. Exams",
-      "count": 6
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "08/18/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "08/18/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "08/18/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 7,
+        "UPSC": 1,
+        "Teaching": 26,
+        "State PSC": 4,
+        "Banking": 6,
+        "Insurance": 1,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 16,
+        "Defence": 2,
+        "Other Govt. Exams": 6,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 1,
+        "Engineering": 11,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 131
     },
     {
       "date": "08/19/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "08/19/2026",
-      "category": "UPSC",
-      "count": 3
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Teaching",
-      "count": 20
-    },
-    {
-      "date": "08/19/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/19/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/19/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "08/19/2026",
-      "category": "State Exams",
-      "count": 18
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "08/19/2026",
-      "category": "Engineering",
-      "count": 17
-    },
-    {
-      "date": "08/19/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "08/19/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 2,
+        "UPSC": 3,
+        "Teaching": 20,
+        "State PSC": 1,
+        "Banking": 9,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 7,
+        "State Exams": 18,
+        "Defence": 2,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 17,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 121
     },
     {
       "date": "08/20/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "08/20/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Teaching",
-      "count": 37
-    },
-    {
-      "date": "08/20/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/20/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/20/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "08/20/2026",
-      "category": "State Exams",
-      "count": 17
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "08/20/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "08/20/2026",
-      "category": "AE/JE Prep",
-      "count": 6
-    },
-    {
-      "date": "08/20/2026",
-      "category": "UGC NET",
-      "count": 17
+      "counts": {
+        "SSC": 6,
+        "UPSC": 1,
+        "Teaching": 37,
+        "State PSC": 5,
+        "Banking": 7,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 4,
+        "State Exams": 17,
+        "Defence": 7,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 11,
+        "AE/JE Prep": 6,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 17
+      },
+      "total": 135
     },
     {
       "date": "08/21/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "08/21/2026",
-      "category": "UPSC",
-      "count": 8
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Teaching",
-      "count": 30
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Banking",
-      "count": 14
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "08/21/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/21/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "08/21/2026",
-      "category": "State Exams",
-      "count": 13
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "08/21/2026",
-      "category": "Engineering",
-      "count": 19
-    },
-    {
-      "date": "08/21/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "08/21/2026",
-      "category": "UGC NET",
-      "count": 7
+      "counts": {
+        "SSC": 5,
+        "UPSC": 8,
+        "Teaching": 30,
+        "State PSC": 0,
+        "Banking": 14,
+        "Insurance": 3,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 13,
+        "Defence": 5,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 1,
+        "Engineering": 19,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 7
+      },
+      "total": 131
     },
     {
       "date": "08/22/2026",
-      "category": "SSC",
-      "count": 3
+      "counts": {
+        "SSC": 3,
+        "UPSC": 2,
+        "Teaching": 21,
+        "State PSC": 0,
+        "Banking": 6,
+        "Insurance": 2,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 2,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 6,
+        "State Exams": 5,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 0,
+        "Engineering": 11,
+        "AE/JE Prep": 3,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 83
     },
     {
-      "date": "08/22/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Teaching",
-      "count": 21
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Insurance",
-      "count": 2
-    },
-    {
-      "date": "08/22/2026",
-      "category": "IAS Prep",
-      "count": 2
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "08/22/2026",
-      "category": "State Exams",
-      "count": 5
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "08/22/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "08/22/2026",
-      "category": "AE/JE Prep",
-      "count": 3
-    },
-    {
-      "date": "08/22/2026",
-      "category": "UGC NET",
-      "count": 9
+      "date": "08/23/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "08/24/2026",
-      "category": "UPSC",
-      "count": 10
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Teaching",
-      "count": 14
-    },
-    {
-      "date": "08/24/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Insurance",
-      "count": 5
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "08/24/2026",
-      "category": "IAS Prep",
-      "count": 4
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "08/24/2026",
-      "category": "State Exams",
-      "count": 22
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Railways",
-      "count": 8
-    },
-    {
-      "date": "08/24/2026",
-      "category": "Engineering",
-      "count": 10
-    },
-    {
-      "date": "08/24/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "08/24/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 0,
+        "UPSC": 10,
+        "Teaching": 14,
+        "State PSC": 1,
+        "Banking": 4,
+        "Insurance": 5,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 4,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 6,
+        "State Exams": 22,
+        "Defence": 2,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 8,
+        "Nursing": 0,
+        "Engineering": 10,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 120
     },
     {
       "date": "08/25/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "08/25/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Teaching",
-      "count": 20
-    },
-    {
-      "date": "08/25/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Banking",
-      "count": 12
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "08/25/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Regulatory",
-      "count": 4
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "08/25/2026",
-      "category": "State Exams",
-      "count": 29
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Defence",
-      "count": 5
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "08/25/2026",
-      "category": "Engineering",
-      "count": 18
-    },
-    {
-      "date": "08/25/2026",
-      "category": "AE/JE Prep",
-      "count": 4
-    },
-    {
-      "date": "08/25/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 3,
+        "UPSC": 1,
+        "Teaching": 20,
+        "State PSC": 6,
+        "Banking": 12,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 4,
+        "Police": 3,
+        "State Exams": 29,
+        "Defence": 5,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 1,
+        "Engineering": 18,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 141
     },
     {
       "date": "08/26/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Teaching",
-      "count": 21
-    },
-    {
-      "date": "08/26/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Banking",
-      "count": 9
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Insurance",
-      "count": 5
-    },
-    {
-      "date": "08/26/2026",
-      "category": "IAS Prep",
-      "count": 12
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "08/26/2026",
-      "category": "State Exams",
-      "count": 9
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "08/26/2026",
-      "category": "Engineering",
-      "count": 6
-    },
-    {
-      "date": "08/26/2026",
-      "category": "AE/JE Prep",
-      "count": 3
-    },
-    {
-      "date": "08/26/2026",
-      "category": "UGC NET",
-      "count": 21
+      "counts": {
+        "SSC": 0,
+        "UPSC": 2,
+        "Teaching": 21,
+        "State PSC": 5,
+        "Banking": 9,
+        "Insurance": 5,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 12,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 7,
+        "State Exams": 9,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 6,
+        "AE/JE Prep": 3,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 21
+      },
+      "total": 106
     },
     {
       "date": "08/27/2026",
-      "category": "SSC",
-      "count": 2
-    },
-    {
-      "date": "08/27/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Teaching",
-      "count": 19
-    },
-    {
-      "date": "08/27/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Banking",
-      "count": 13
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "08/27/2026",
-      "category": "IAS Prep",
-      "count": 2
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "08/27/2026",
-      "category": "State Exams",
-      "count": 6
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "08/27/2026",
-      "category": "Engineering",
-      "count": 15
-    },
-    {
-      "date": "08/27/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "08/27/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 2,
+        "UPSC": 1,
+        "Teaching": 19,
+        "State PSC": 4,
+        "Banking": 13,
+        "Insurance": 3,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 2,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 0,
+        "State Exams": 6,
+        "Defence": 0,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 1,
+        "Engineering": 15,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 98
     },
     {
       "date": "08/28/2026",
-      "category": "Teaching",
-      "count": 1
-    },
-    {
-      "date": "08/28/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "08/28/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "08/28/2026",
-      "category": "Nursing",
-      "count": 6
-    },
-    {
-      "date": "08/28/2026",
-      "category": "Engineering",
-      "count": 1
-    },
-    {
-      "date": "08/28/2026",
-      "category": "UGC NET",
-      "count": 1
-    },
-    {
-      "date": "08/29/2026",
-      "category": "Teaching",
-      "count": 2
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 1,
+        "State PSC": 0,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 6,
+        "Engineering": 1,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 1
+      },
+      "total": 13
     },
     {
       "date": "08/29/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "08/29/2026",
-      "category": "Banking",
-      "count": 12
-    },
-    {
-      "date": "08/29/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "08/29/2026",
-      "category": "State Exams",
-      "count": 7
-    },
-    {
-      "date": "08/29/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "08/29/2026",
-      "category": "Engineering",
-      "count": 3
-    },
-    {
-      "date": "08/29/2026",
-      "category": "UGC NET",
-      "count": 12
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 2,
+        "State PSC": 3,
+        "Banking": 12,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 7,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 3,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 12
+      },
+      "total": 44
     },
     {
       "date": "08/30/2026",
-      "category": "Banking",
-      "count": 1
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 1,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 1
     },
     {
       "date": "08/31/2026",
-      "category": "SSC",
-      "count": 7
-    },
-    {
-      "date": "08/31/2026",
-      "category": "Teaching",
-      "count": 26
-    },
-    {
-      "date": "08/31/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "08/31/2026",
-      "category": "Banking",
-      "count": 23
-    },
-    {
-      "date": "08/31/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "08/31/2026",
-      "category": "IAS Prep",
-      "count": 10
-    },
-    {
-      "date": "08/31/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "08/31/2026",
-      "category": "State Exams",
-      "count": 21
-    },
-    {
-      "date": "08/31/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "08/31/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "08/31/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "08/31/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "08/31/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 7,
+        "UPSC": 0,
+        "Teaching": 26,
+        "State PSC": 1,
+        "Banking": 23,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 10,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 4,
+        "State Exams": 21,
+        "Defence": 0,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 134
     },
     {
       "date": "09/01/2026",
-      "category": "SSC",
-      "count": 12
-    },
-    {
-      "date": "09/01/2026",
-      "category": "UPSC",
-      "count": 2
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Teaching",
-      "count": 17
-    },
-    {
-      "date": "09/01/2026",
-      "category": "State PSC",
-      "count": 5
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Banking",
-      "count": 17
-    },
-    {
-      "date": "09/01/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "09/01/2026",
-      "category": "IAS Prep",
-      "count": 1
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "09/01/2026",
-      "category": "State Exams",
-      "count": 21
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Railways",
-      "count": 2
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "09/01/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "09/01/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "09/01/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 12,
+        "UPSC": 2,
+        "Teaching": 17,
+        "State PSC": 5,
+        "Banking": 17,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 1,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 21,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 1,
+        "Engineering": 11,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 126
     },
     {
       "date": "09/02/2026",
-      "category": "SSC",
-      "count": 9
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Teaching",
-      "count": 21
-    },
-    {
-      "date": "09/02/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "09/02/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "09/02/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Police",
-      "count": 16
-    },
-    {
-      "date": "09/02/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "09/02/2026",
-      "category": "Engineering",
-      "count": 18
-    },
-    {
-      "date": "09/02/2026",
-      "category": "AE/JE Prep",
-      "count": 8
-    },
-    {
-      "date": "09/02/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 9,
+        "UPSC": 0,
+        "Teaching": 21,
+        "State PSC": 2,
+        "Banking": 8,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 16,
+        "State Exams": 14,
+        "Defence": 2,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 18,
+        "AE/JE Prep": 8,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 136
     },
     {
       "date": "09/03/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "09/03/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Teaching",
-      "count": 8
-    },
-    {
-      "date": "09/03/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "09/03/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "09/03/2026",
-      "category": "IAS Prep",
-      "count": 7
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "09/03/2026",
-      "category": "State Exams",
-      "count": 21
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Other Govt. Exams",
-      "count": 5
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "09/03/2026",
-      "category": "Engineering",
-      "count": 13
-    },
-    {
-      "date": "09/03/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "09/03/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 5,
+        "UPSC": 1,
+        "Teaching": 8,
+        "State PSC": 4,
+        "Banking": 2,
+        "Insurance": 1,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 7,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 3,
+        "State Exams": 21,
+        "Defence": 7,
+        "Other Govt. Exams": 5,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 1,
+        "Engineering": 13,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 114
     },
     {
       "date": "09/04/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "09/04/2026",
-      "category": "State PSC",
-      "count": 3
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Banking",
-      "count": 11
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "09/04/2026",
-      "category": "IAS Prep",
-      "count": 2
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Police",
-      "count": 6
-    },
-    {
-      "date": "09/04/2026",
-      "category": "State Exams",
-      "count": 14
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "09/04/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "09/04/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 4,
+        "UPSC": 0,
+        "Teaching": 13,
+        "State PSC": 3,
+        "Banking": 11,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 2,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 6,
+        "State Exams": 14,
+        "Defence": 4,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 1,
+        "Engineering": 5,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 87
     },
     {
       "date": "09/05/2026",
-      "category": "UPSC",
-      "count": 3
+      "counts": {
+        "SSC": 0,
+        "UPSC": 3,
+        "Teaching": 3,
+        "State PSC": 4,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 1,
+        "IAS Prep": 4,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 7,
+        "Defence": 1,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 1,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 51
     },
     {
-      "date": "09/05/2026",
-      "category": "Teaching",
-      "count": 3
-    },
-    {
-      "date": "09/05/2026",
-      "category": "State PSC",
-      "count": 4
-    },
-    {
-      "date": "09/05/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "09/05/2026",
-      "category": "K12 Prep",
-      "count": 1
-    },
-    {
-      "date": "09/05/2026",
-      "category": "IAS Prep",
-      "count": 4
-    },
-    {
-      "date": "09/05/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "09/05/2026",
-      "category": "State Exams",
-      "count": 7
-    },
-    {
-      "date": "09/05/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "09/05/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "09/05/2026",
-      "category": "Engineering",
-      "count": 1
-    },
-    {
-      "date": "09/05/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "09/05/2026",
-      "category": "UGC NET",
-      "count": 9
+      "date": "09/06/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
       "date": "09/07/2026",
-      "category": "SSC",
-      "count": 6
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Teaching",
-      "count": 27
-    },
-    {
-      "date": "09/07/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Insurance",
-      "count": 8
-    },
-    {
-      "date": "09/07/2026",
-      "category": "IAS Prep",
-      "count": 7
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "09/07/2026",
-      "category": "State Exams",
-      "count": 18
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Other Govt. Exams",
-      "count": 4
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "09/07/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "09/07/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "09/07/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 6,
+        "UPSC": 0,
+        "Teaching": 27,
+        "State PSC": 8,
+        "Banking": 6,
+        "Insurance": 8,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 7,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 10,
+        "State Exams": 18,
+        "Defence": 2,
+        "Other Govt. Exams": 4,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 143
     },
     {
       "date": "09/08/2026",
-      "category": "SSC",
-      "count": 26
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "09/08/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Banking",
-      "count": 10
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Entrance",
-      "count": 3
-    },
-    {
-      "date": "09/08/2026",
-      "category": "IAS Prep",
-      "count": 7
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "09/08/2026",
-      "category": "State Exams",
-      "count": 17
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Railways",
-      "count": 7
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "09/08/2026",
-      "category": "Engineering",
-      "count": 5
-    },
-    {
-      "date": "09/08/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "09/08/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 26,
+        "UPSC": 0,
+        "Teaching": 10,
+        "State PSC": 8,
+        "Banking": 10,
+        "Insurance": 0,
+        "Entrance": 3,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 7,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 3,
+        "State Exams": 17,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 7,
+        "Nursing": 3,
+        "Engineering": 5,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 133
     },
     {
       "date": "09/09/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "09/09/2026",
-      "category": "State PSC",
-      "count": 8
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Banking",
-      "count": 6
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Insurance",
-      "count": 3
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "09/09/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Regulatory",
-      "count": 3
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Police",
-      "count": 10
-    },
-    {
-      "date": "09/09/2026",
-      "category": "State Exams",
-      "count": 24
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Defence",
-      "count": 2
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Nursing",
-      "count": 3
-    },
-    {
-      "date": "09/09/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "09/09/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "09/09/2026",
-      "category": "UGC NET",
-      "count": 18
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 13,
+        "State PSC": 8,
+        "Banking": 6,
+        "Insurance": 3,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 3,
+        "Police": 10,
+        "State Exams": 24,
+        "Defence": 2,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 3,
+        "Engineering": 4,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 18
+      },
+      "total": 118
     },
     {
       "date": "09/10/2026",
-      "category": "SSC",
-      "count": 15
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Teaching",
-      "count": 9
-    },
-    {
-      "date": "09/10/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "09/10/2026",
-      "category": "IAS Prep",
-      "count": 8
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "09/10/2026",
-      "category": "State Exams",
-      "count": 17
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Defence",
-      "count": 8
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Railways",
-      "count": 5
-    },
-    {
-      "date": "09/10/2026",
-      "category": "Engineering",
-      "count": 20
-    },
-    {
-      "date": "09/10/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "09/10/2026",
-      "category": "UGC NET",
-      "count": 22
+      "counts": {
+        "SSC": 15,
+        "UPSC": 0,
+        "Teaching": 9,
+        "State PSC": 2,
+        "Banking": 8,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 8,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 4,
+        "State Exams": 17,
+        "Defence": 8,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 5,
+        "Nursing": 0,
+        "Engineering": 20,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 22
+      },
+      "total": 130
     },
     {
       "date": "09/11/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Teaching",
-      "count": 5
-    },
-    {
-      "date": "09/11/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Banking",
-      "count": 4
-    },
-    {
-      "date": "09/11/2026",
-      "category": "IAS Prep",
-      "count": 3
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "09/11/2026",
-      "category": "State Exams",
-      "count": 18
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Railways",
-      "count": 4
-    },
-    {
-      "date": "09/11/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "09/11/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "09/11/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 5,
+        "State PSC": 2,
+        "Banking": 4,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 3,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 18,
+        "Defence": 3,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 4,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 85
     },
     {
       "date": "09/12/2026",
-      "category": "SSC",
-      "count": 9
-    },
-    {
-      "date": "09/12/2026",
-      "category": "UPSC",
-      "count": 1
-    },
-    {
-      "date": "09/12/2026",
-      "category": "Teaching",
-      "count": 6
-    },
-    {
-      "date": "09/12/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "09/12/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "09/12/2026",
-      "category": "IAS Prep",
-      "count": 2
-    },
-    {
-      "date": "09/12/2026",
-      "category": "Regulatory",
-      "count": 1
-    },
-    {
-      "date": "09/12/2026",
-      "category": "Police",
-      "count": 4
-    },
-    {
-      "date": "09/12/2026",
-      "category": "State Exams",
-      "count": 7
-    },
-    {
-      "date": "09/12/2026",
-      "category": "Engineering",
-      "count": 4
-    },
-    {
-      "date": "09/12/2026",
-      "category": "UGC NET",
-      "count": 9
+      "counts": {
+        "SSC": 9,
+        "UPSC": 1,
+        "Teaching": 6,
+        "State PSC": 1,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 2,
+        "Judiciary": 0,
+        "Regulatory": 1,
+        "Police": 4,
+        "State Exams": 7,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 4,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 9
+      },
+      "total": 46
     },
     {
       "date": "09/13/2026",
-      "category": "Entrance",
-      "count": 1
-    },
-    {
-      "date": "09/13/2026",
-      "category": "Police",
-      "count": 1
-    },
-    {
-      "date": "09/14/2026",
-      "category": "SSC",
-      "count": 3
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Teaching",
-      "count": 10
-    },
-    {
-      "date": "09/14/2026",
-      "category": "State PSC",
-      "count": 2
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "09/14/2026",
-      "category": "IAS Prep",
-      "count": 2
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 1,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 2
     },
     {
       "date": "09/14/2026",
-      "category": "Police",
-      "count": 2
-    },
-    {
-      "date": "09/14/2026",
-      "category": "State Exams",
-      "count": 10
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Defence",
-      "count": 4
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Other Govt. Exams",
-      "count": 2
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Railways",
-      "count": 10
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Nursing",
-      "count": 1
-    },
-    {
-      "date": "09/14/2026",
-      "category": "Engineering",
-      "count": 11
-    },
-    {
-      "date": "09/14/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "09/14/2026",
-      "category": "UGC NET",
-      "count": 11
+      "counts": {
+        "SSC": 3,
+        "UPSC": 0,
+        "Teaching": 10,
+        "State PSC": 2,
+        "Banking": 8,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 2,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 2,
+        "State Exams": 10,
+        "Defence": 4,
+        "Other Govt. Exams": 2,
+        "Vernacular": 0,
+        "Railways": 10,
+        "Nursing": 1,
+        "Engineering": 11,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 11
+      },
+      "total": 85
     },
     {
       "date": "09/15/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Teaching",
-      "count": 13
-    },
-    {
-      "date": "09/15/2026",
-      "category": "State PSC",
-      "count": 6
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Banking",
-      "count": 7
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Entrance",
-      "count": 2
-    },
-    {
-      "date": "09/15/2026",
-      "category": "IAS Prep",
-      "count": 9
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Police",
-      "count": 3
-    },
-    {
-      "date": "09/15/2026",
-      "category": "State Exams",
-      "count": 26
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Defence",
-      "count": 3
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Railways",
-      "count": 12
-    },
-    {
-      "date": "09/15/2026",
-      "category": "Engineering",
-      "count": 8
-    },
-    {
-      "date": "09/15/2026",
-      "category": "AE/JE Prep",
-      "count": 5
-    },
-    {
-      "date": "09/15/2026",
-      "category": "UGC NET",
-      "count": 20
+      "counts": {
+        "SSC": 5,
+        "UPSC": 0,
+        "Teaching": 13,
+        "State PSC": 6,
+        "Banking": 7,
+        "Insurance": 0,
+        "Entrance": 2,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 9,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 3,
+        "State Exams": 26,
+        "Defence": 3,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 12,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 5,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 20
+      },
+      "total": 119
     },
     {
       "date": "09/16/2026",
-      "category": "SSC",
-      "count": 4
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Teaching",
-      "count": 23
-    },
-    {
-      "date": "09/16/2026",
-      "category": "State PSC",
-      "count": 1
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Banking",
-      "count": 2
-    },
-    {
-      "date": "09/16/2026",
-      "category": "IAS Prep",
-      "count": 2
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Regulatory",
-      "count": 2
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Police",
-      "count": 7
-    },
-    {
-      "date": "09/16/2026",
-      "category": "State Exams",
-      "count": 7
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Defence",
-      "count": 7
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Other Govt. Exams",
-      "count": 1
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Railways",
-      "count": 1
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Nursing",
-      "count": 2
-    },
-    {
-      "date": "09/16/2026",
-      "category": "Engineering",
-      "count": 10
-    },
-    {
-      "date": "09/16/2026",
-      "category": "AE/JE Prep",
-      "count": 9
-    },
-    {
-      "date": "09/16/2026",
-      "category": "UGC NET",
-      "count": 14
+      "counts": {
+        "SSC": 4,
+        "UPSC": 0,
+        "Teaching": 23,
+        "State PSC": 1,
+        "Banking": 2,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 2,
+        "Judiciary": 0,
+        "Regulatory": 2,
+        "Police": 7,
+        "State Exams": 7,
+        "Defence": 7,
+        "Other Govt. Exams": 1,
+        "Vernacular": 0,
+        "Railways": 1,
+        "Nursing": 2,
+        "Engineering": 10,
+        "AE/JE Prep": 9,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 14
+      },
+      "total": 92
     },
     {
       "date": "09/17/2026",
-      "category": "SSC",
-      "count": 5
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Teaching",
-      "count": 16
-    },
-    {
-      "date": "09/17/2026",
-      "category": "State PSC",
-      "count": 11
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Banking",
-      "count": 8
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Insurance",
-      "count": 1
-    },
-    {
-      "date": "09/17/2026",
-      "category": "IAS Prep",
-      "count": 4
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Police",
-      "count": 13
-    },
-    {
-      "date": "09/17/2026",
-      "category": "State Exams",
-      "count": 27
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Defence",
-      "count": 1
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Other Govt. Exams",
-      "count": 3
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Railways",
-      "count": 3
-    },
-    {
-      "date": "09/17/2026",
-      "category": "Engineering",
-      "count": 12
-    },
-    {
-      "date": "09/17/2026",
-      "category": "AE/JE Prep",
-      "count": 10
-    },
-    {
-      "date": "09/17/2026",
-      "category": "UGC NET",
-      "count": 19
+      "counts": {
+        "SSC": 5,
+        "UPSC": 0,
+        "Teaching": 16,
+        "State PSC": 11,
+        "Banking": 8,
+        "Insurance": 1,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 4,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 13,
+        "State Exams": 27,
+        "Defence": 1,
+        "Other Govt. Exams": 3,
+        "Vernacular": 0,
+        "Railways": 3,
+        "Nursing": 0,
+        "Engineering": 12,
+        "AE/JE Prep": 10,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 19
+      },
+      "total": 133
     },
     {
       "date": "09/18/2026",
-      "category": "SSC",
-      "count": 2
+      "counts": {
+        "SSC": 2,
+        "UPSC": 0,
+        "Teaching": 7,
+        "State PSC": 5,
+        "Banking": 3,
+        "Insurance": 0,
+        "Entrance": 1,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 5,
+        "State Exams": 15,
+        "Defence": 4,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 2,
+        "Nursing": 0,
+        "Engineering": 8,
+        "AE/JE Prep": 4,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 10
+      },
+      "total": 66
     },
     {
-      "date": "09/18/2026",
-      "category": "Teaching",
-      "count": 6
+      "date": "09/19/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "State PSC",
-      "count": 3
+      "date": "09/20/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "Banking",
-      "count": 3
+      "date": "09/21/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "Police",
-      "count": 4
+      "date": "09/22/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "State Exams",
-      "count": 6
+      "date": "09/23/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "Defence",
-      "count": 4
+      "date": "09/24/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "Railways",
-      "count": 2
+      "date": "09/25/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "Engineering",
-      "count": 5
+      "date": "09/26/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "AE/JE Prep",
-      "count": 4
+      "date": "09/27/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     },
     {
-      "date": "09/18/2026",
-      "category": "UGC NET",
-      "count": 9
+      "date": "09/28/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
+    },
+    {
+      "date": "09/29/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
+    },
+    {
+      "date": "09/30/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
+    },
+    {
+      "date": "10/01/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
+    },
+    {
+      "date": "10/02/2026",
+      "counts": {
+        "SSC": 0,
+        "UPSC": 0,
+        "Teaching": 0,
+        "State PSC": 0,
+        "Banking": 0,
+        "Insurance": 0,
+        "Entrance": 0,
+        "K12": 0,
+        "K12 Prep": 0,
+        "IAS Prep": 0,
+        "Judiciary": 0,
+        "Regulatory": 0,
+        "Police": 0,
+        "State Exams": 0,
+        "Defence": 0,
+        "Other Govt. Exams": 0,
+        "Vernacular": 0,
+        "Railways": 0,
+        "Nursing": 0,
+        "Engineering": 0,
+        "AE/JE Prep": 0,
+        "Hindi": 0,
+        "MBA": 0,
+        "UGC NET": 0
+      },
+      "total": 0
     }
   ]
 };
