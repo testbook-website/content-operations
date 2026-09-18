@@ -75,7 +75,6 @@
     // Upcoming Events
     sectionUpcoming: document.getElementById('sectionUpcoming'),
     upcomingKpiCards: document.getElementById('upcomingKpiCards'),
-    upcomingCatBreakdown: document.getElementById('upcomingCatBreakdown'),
     upcomingDateFilter: document.getElementById('upcomingDateFilter'),
     upcomingCategoryFilter: document.getElementById('upcomingCategoryFilter'),
     upcomingStatusFilter: document.getElementById('upcomingStatusFilter'),
@@ -369,7 +368,6 @@
         <div class="night-day-box ${isLead ? 'is-lead' : ''}">
           <div class="night-day-name">${escapeHtml(item.day)}</div>
           <div class="night-member-name">${escapeHtml(item.member)}</div>
-          ${isLead ? '<span class="night-role-tag">Night Lead</span>' : '<span style="display:inline-block; margin-top:0.25rem; font-size:0.68rem; color:#64748b;">On Call</span>'}
         </div>
       `;
     });
@@ -384,18 +382,6 @@
 
     const t = taskInfo.task;
 
-    if (t === 'Night Update') {
-      return `
-        <div class="grid-badge badge-night" title="${escapeHtml(taskInfo.nightDays ? 'Night shifts: ' + taskInfo.nightDays : 'Weekly Night Lead')}">
-          <span class="night-icon">🌙</span>
-          <span class="night-label">
-            <span>Night</span>
-            <span>Update</span>
-          </span>
-        </div>
-      `;
-    }
-
     if (t === 'Child Pages') {
       return '<div class="grid-badge badge-child">Child Pages</div>';
     }
@@ -408,12 +394,9 @@
       return '<div class="grid-badge badge-seo">SEO Optimization</div>';
     }
 
-    if (t === 'Event Pages') {
+    // On News week: simple, clean Event Pages badge (no bulky Night Update badge in table)
+    if (t === 'Event Pages' || t === 'Night Update' || t.includes('News') || t.includes('Event')) {
       return '<div class="grid-badge badge-event">Event Pages</div>';
-    }
-
-    if (t === 'Upcoming Drafts') {
-      return '<div class="grid-badge badge-upcoming">Upcoming Drafts</div>';
     }
 
     return `<div class="grid-badge">${escapeHtml(t)}</div>`;
@@ -428,7 +411,6 @@
       teamGroups.push({
         id: 'teamA',
         title: 'Team A',
-        meta: '5 writers · alternates News / Content weekly',
         members: ROSTER_CONFIG.teams.teamA.members
       });
     }
@@ -437,17 +419,7 @@
       teamGroups.push({
         id: 'teamB',
         title: 'Team B',
-        meta: '5 writers · alternates News / Content weekly (Trishala replaces Shilpa Singh)',
         members: ROSTER_CONFIG.teams.teamB.members
-      });
-    }
-
-    if (state.rosterTeamFilter === 'all') {
-      teamGroups.push({
-        id: 'upcoming',
-        title: 'Upcoming Drafts & News Support',
-        meta: '1 dedicated writer · alternates Event Pages & Upcoming Drafts weekly',
-        members: ROSTER_CONFIG.teams.upcoming.members
       });
     }
 
@@ -468,7 +440,6 @@
         <div class="team-roster-section">
           <div class="team-roster-header">
             <h2 class="team-title">${escapeHtml(grp.title)}</h2>
-            <div class="team-meta">${escapeHtml(grp.meta)}</div>
           </div>
 
           <div class="roster-table-card">
@@ -487,10 +458,7 @@
               <tbody>
                 ${filteredMembers.map(member => `
                   <tr>
-                    <td class="cell-writer">
-                      ${escapeHtml(member)}
-                      ${member === 'Trishala' ? '<span style="display:block; font-size:0.68rem; color:#059669; font-weight:600; margin-top:2px;">(Replaces Shilpa Singh)</span>' : ''}
-                    </td>
+                    <td class="cell-writer">${escapeHtml(member)}</td>
                     ${ROSTER_CONFIG.weeks.map(w => {
                       const taskInfo = w.tasks[member] || { task: '-' };
                       return `<td class="cell-task">${getRosterMatrixBadge(taskInfo)}</td>`;
@@ -532,8 +500,7 @@
   function exportRosterCSV() {
     const allMembers = [
       ...ROSTER_CONFIG.teams.teamA.members.map(m => ({ name: m, team: 'Team A' })),
-      ...ROSTER_CONFIG.teams.teamB.members.map(m => ({ name: m, team: 'Team B' })),
-      { name: 'Archana', team: 'Upcoming' }
+      ...ROSTER_CONFIG.teams.teamB.members.map(m => ({ name: m, team: 'Team B' }))
     ];
 
     let csv = ['Name,Team,' + ROSTER_CONFIG.weeks.map(w => `"${w.name} (${w.dateRange})"`).join(',')];
@@ -542,7 +509,7 @@
       const row = [m.name, m.team];
       ROSTER_CONFIG.weeks.forEach(w => {
         const a = w.tasks[m.name];
-        row.push(a ? `"${a.task} [Night: ${a.nightDays}]"` : '""');
+        row.push(a ? `"${a.task}"` : '""');
       });
       csv.push(row.join(','));
     });
@@ -586,16 +553,6 @@
       const pubT = sumObj(s1['Today']);
       const wordT = sumObj(s2['Today']);
 
-      let topWriter = '-';
-      let topWords = 0;
-      writers.forEach(w => {
-        const num = parseInt(s2['Today']?.[w] || '0', 10);
-        if (num > topWords) {
-          topWords = num;
-          topWriter = w;
-        }
-      });
-
       els.prodKpiCards.innerHTML = `
         <div class="kpi-card">
           <div class="kpi-label">Picked Today</div>
@@ -612,26 +569,11 @@
           <div class="kpi-val">${wordT.toLocaleString()}</div>
           <div class="kpi-sub">Daily team volume</div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Top Writer Today</div>
-          <div class="kpi-val" style="font-size:1.15rem; color:#059669;">${topWriter}</div>
-          <div class="kpi-sub">${topWords.toLocaleString()} words today</div>
-        </div>
       `;
     } else {
       const words7D = sumObj(s2['Last 7 Days']);
       const pub7D = sumObj(s1['Last 7 Days']);
       const pick7D = sumObj(s3['Last 7 Days']);
-      
-      let topWriter = '-';
-      let topWords = 0;
-      writers.forEach(w => {
-        const num = parseInt(s2['Last 7 Days']?.[w] || '0', 10);
-        if (num > topWords) {
-          topWords = num;
-          topWriter = w;
-        }
-      });
 
       els.prodKpiCards.innerHTML = `
         <div class="kpi-card">
@@ -648,11 +590,6 @@
           <div class="kpi-label">Words (Last 7 Days)</div>
           <div class="kpi-val">${words7D.toLocaleString()}</div>
           <div class="kpi-sub">Total 7-day team volume</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Top Writer (Last 7 Days)</div>
-          <div class="kpi-val" style="font-size:1.15rem; color:#059669;">${topWriter}</div>
-          <div class="kpi-sub">${topWords.toLocaleString()} words this week</div>
         </div>
       `;
     }
@@ -1084,7 +1021,6 @@
     // If rebuildCategories is requested (e.g. date filter changed)
     if (rebuildCategories) {
       populateUpcomingCategoryFilter(dateScopedEvents);
-      renderUpcomingCategoryChips(dateScopedEvents);
     }
 
     // Now filter by category, status, and search
@@ -1189,79 +1125,6 @@
       state.upcomingCategoryFilter = 'all';
       els.upcomingCategoryFilter.value = 'all';
     }
-  }
-
-  function renderUpcomingCategoryChips(dateScopedEvents) {
-    if (!els.upcomingCatBreakdown) return;
-
-    const catStats = {};
-    dateScopedEvents.forEach(e => {
-      const cat = e.category || 'Others';
-      if (!catStats[cat]) catStats[cat] = { total: 0, done: 0 };
-      catStats[cat].total++;
-      if (isStatusDone(e.status)) catStats[cat].done++;
-    });
-
-    const sortedCats = Object.keys(catStats).sort((a, b) => catStats[b].total - catStats[a].total);
-
-    if (sortedCats.length === 0) {
-      els.upcomingCatBreakdown.innerHTML = '';
-      return;
-    }
-
-    let chipsHtml = `
-      <div class="upcoming-cat-chip ${state.upcomingCategoryFilter === 'all' ? 'active' : ''}" data-cat="all">
-        <div class="cat-chip-name">
-          <span>All Categories</span>
-          <span>${dateScopedEvents.length}</span>
-        </div>
-        <div class="cat-chip-counts">
-          <span>Total Planned</span>
-          <span style="font-weight:700; color:#1d4ed8;">${dateScopedEvents.length}</span>
-        </div>
-        <div class="cat-progress-bar">
-          <div class="cat-progress-fill" style="width: 100%;"></div>
-        </div>
-      </div>
-    `;
-
-    sortedCats.forEach(cat => {
-      const stat = catStats[cat];
-      const rate = stat.total > 0 ? Math.round((stat.done / stat.total) * 100) : 0;
-      const isActive = state.upcomingCategoryFilter === cat;
-
-      chipsHtml += `
-        <div class="upcoming-cat-chip ${isActive ? 'active' : ''}" data-cat="${escapeHtml(cat)}">
-          <div class="cat-chip-name">
-            <span>${escapeHtml(cat)}</span>
-            <span>${stat.total}</span>
-          </div>
-          <div class="cat-chip-counts">
-            <span>${stat.done} Done / ${stat.total - stat.done} Left</span>
-            <span style="font-weight:700;">${rate}%</span>
-          </div>
-          <div class="cat-progress-bar">
-            <div class="cat-progress-fill" style="width: ${rate}%;"></div>
-          </div>
-        </div>
-      `;
-    });
-
-    els.upcomingCatBreakdown.innerHTML = chipsHtml;
-
-    // Attach click listeners to chips
-    els.upcomingCatBreakdown.querySelectorAll('.upcoming-cat-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const cat = chip.dataset.cat;
-        state.upcomingCategoryFilter = cat;
-        if (els.upcomingCategoryFilter) els.upcomingCategoryFilter.value = cat;
-        renderUpcomingEvents(false);
-        // Highlight active chip
-        els.upcomingCatBreakdown.querySelectorAll('.upcoming-cat-chip').forEach(c => {
-          c.classList.toggle('active', c.dataset.cat === cat);
-        });
-      });
-    });
   }
 
   function renderUpcomingTable(filteredEvents) {

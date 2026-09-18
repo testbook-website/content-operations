@@ -237,46 +237,6 @@ body {
 .tag-content { background: #dcfce7; color: #15803d; }
 .tag-night { background: #fef3c7; color: #92400e; }
 
-/* Roster Legend Bar (Matches Screenshot) */
-.roster-legend-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  align-items: center;
-  margin-bottom: 1.25rem;
-}
-
-.legend-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.85rem;
-  border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-}
-
-.legend-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.pill-child { background: #d1fae5; color: #065f46; }
-.dot-child { background: #10b981; }
-
-.pill-intent { background: #ede9fe; color: #5b21b6; }
-.dot-intent { background: #7c3aed; }
-
-.pill-seo { background: #fce7f3; color: #9d174d; }
-.dot-seo { background: #ec4899; }
-
-.pill-event { background: #ffedd5; color: #9a3412; }
-.dot-event { background: #ea580c; }
-
-.pill-night { background: #f8fafc; color: #1e293b; border: 1px solid #cbd5e1; }
-
 /* Night Schedule Card (Monday - Saturday | Sunday Deleted) */
 .night-schedule-card {
   border: 1px solid #e2e8f0;
@@ -319,12 +279,6 @@ body {
   border: 1px solid #fecaca;
 }
 
-.night-subtitle {
-  font-size: 0.75rem;
-  color: #64748b;
-  margin-top: 0.15rem;
-}
-
 .night-days-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -335,7 +289,7 @@ body {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 0.65rem 0.5rem;
+  padding: 0.75rem 0.6rem;
   text-align: center;
   transition: all 0.15s ease;
 }
@@ -343,7 +297,6 @@ body {
 .night-day-box:hover {
   border-color: #cbd5e1;
   background: #ffffff;
-  transform: translateY(-1px);
 }
 
 .night-day-box.is-lead {
@@ -360,24 +313,13 @@ body {
 }
 
 .night-member-name {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #0f172a;
-  margin-top: 0.2rem;
-}
-
-.night-role-tag {
-  display: inline-block;
   margin-top: 0.25rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-  background: #fef3c7;
-  color: #92400e;
 }
 
-/* Team Matrix Layout (Matches Screenshot) */
+/* Team Matrix Layout */
 .team-roster-section {
   margin-bottom: 2rem;
 }
@@ -386,21 +328,14 @@ body {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 0.5rem;
 }
 
 .team-title {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #0f172a;
-  font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   letter-spacing: -0.01em;
-}
-
-.team-meta {
-  font-size: 0.82rem;
-  color: #64748b;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .roster-table-card {
@@ -503,66 +438,45 @@ body {
   vertical-align: middle;
 }
 
-/* Cell task badges matching screenshot */
+/* Cell task badges */
 .grid-badge {
-  border-radius: 8px;
-  padding: 0.5rem 0.4rem;
+  border-radius: 6px;
+  padding: 0.45rem 0.5rem;
   font-size: 0.74rem;
   font-weight: 600;
   text-align: center;
   line-height: 1.25;
-  min-height: 44px;
+  min-height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
   white-space: normal;
+  transition: all 0.1s ease;
 }
 
 .grid-badge.badge-child {
-  background: #d1fae5;
-  color: #065f46;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
 }
 
 .grid-badge.badge-intent {
-  background: #ede9fe;
-  color: #5b21b6;
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
 }
 
 .grid-badge.badge-seo {
-  background: #fce7f3;
-  color: #9d174d;
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
 }
 
 .grid-badge.badge-event {
-  background: #ffedd5;
-  color: #9a3412;
-}
-
-.grid-badge.badge-upcoming {
-  background: #e0e7ff;
-  color: #3730a3;
-}
-
-.grid-badge.badge-night {
-  border: 1.5px solid #1e293b;
-  background: #fef3c7;
-  color: #1e293b;
-  font-weight: 700;
-  gap: 0.35rem;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-}
-
-.grid-badge.badge-night .night-icon {
-  font-size: 0.95rem;
-}
-
-.grid-badge.badge-night .night-label {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-  font-size: 0.72rem;
-  text-align: left;
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
 }
 
 /* Clean Tables */
@@ -758,63 +672,6 @@ body {
 .kpi-card .kpi-sub {
   font-size: 0.72rem;
   color: #6b7280;
-}
-
-/* Category Breakdown Grid */
-.upcoming-cat-breakdown {
-  display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.upcoming-cat-chip {
-  background: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  padding: 0.4rem 0.65rem;
-  min-width: 140px;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.upcoming-cat-chip:hover, .upcoming-cat-chip.active {
-  border-color: #2563eb;
-  background: #eff6ff;
-}
-
-.upcoming-cat-chip .cat-chip-name {
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: #1e293b;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.2rem;
-}
-
-.upcoming-cat-chip .cat-chip-counts {
-  font-size: 0.7rem;
-  color: #64748b;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
-}
-
-.upcoming-cat-chip .cat-progress-bar {
-  height: 4px;
-  background: #e2e8f0;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.upcoming-cat-chip .cat-progress-fill {
-  height: 100%;
-  background: #16a34a;
-  border-radius: 2px;
-  transition: width 0.3s ease;
 }
 
 /* Status Badges */

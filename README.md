@@ -14,25 +14,18 @@ Protected by 4-digit passcode: **`7730`**.
 - Session persistence in `sessionStorage` with instant re-lock button.
 
 ### 2. Q4 2026 Content Roster (1st October – 31st December 2026)
-- **Visual Matrix Interface**:
-  - Beautiful multi-week matrix view with custom pastel task badges:
-    - `Child Pages` (mint badge)
-    - `High Intent` (lavender badge)
-    - `SEO Optimization` (rose badge)
-    - `Event Pages (News week)` (peach badge)
-    - `🌙 Night Update` (yellow card with 1.5px solid dark border, crescent moon, and stacked text)
-  - Sticky `Writer` column with horizontal scrolling across all 13 weeks.
-  - Separate structured sections for **Team A**, **Team B**, and **Upcoming Drafts & News Support**.
-- **Night Updates Duty (Monday – Saturday Only | Sunday OFF)**:
-  - Daily night shifts rotate Monday to Saturday across active News team members.
-  - **Sunday is deleted**: No one works on Sunday.
-  - Top Night Schedule card displays the 6 daily slots for the selected week with designated **Night Lead** badges.
+- **Clean Visual Matrix Tables**:
+  - High-performance matrix view for **Team A** and **Team B** with sticky `Writer` column and smooth horizontal week scrolling.
+  - Refined task badges: `Child Pages`, `High Intent`, `SEO Optimization`, and `Event Pages`.
+- **Night Updates Duty (Monday – Saturday | Sunday OFF)**:
+  - Daily night shifts rotate Monday to Saturday across active News team members in the top card.
+  - **Sunday is deleted**: Zero work on Sunday.
+  - Active Week dropdown allows reviewing any week's schedule.
 - **Weekly Rotation & Non-Consecutive Guarantee**:
   - **Team A**: Sonika, Archita, Shemaila, Somya, Atul.
-  - **Team B**: Nadeem, Shilpa Kohli, Aditi, Mohit, Trishala (*Trishala replaces Shilpa Singh*).
+  - **Team B**: Nadeem, Shilpa Kohli, Aditi, Mohit, Trishala.
   - Teams alternate weekly between News ("Event Pages") and Content operations.
   - **Zero Repeat Guarantee**: No writer receives the same content task on consecutive content weeks.
-- **Upcoming Drafts**: Archana alternates weekly between Upcoming Drafts and News duty.
 - **Filtering & Export**: Filter by team (Team A / Team B), search by writer, and instant CSV export.
 - **Directory**: Subject matter category mentors and Prep Team domain leads.
 

@@ -69,30 +69,6 @@
          ===================================================================== -->
     <section id="sectionRoster">
       
-      <!-- Top Legend Bar (Matches Screenshot) -->
-      <div class="roster-legend-bar">
-        <div class="legend-pill pill-child">
-          <span class="legend-dot dot-child"></span>
-          <span>Child Pages</span>
-        </div>
-        <div class="legend-pill pill-intent">
-          <span class="legend-dot dot-intent"></span>
-          <span>High Intent</span>
-        </div>
-        <div class="legend-pill pill-seo">
-          <span class="legend-dot dot-seo"></span>
-          <span>SEO Optimization</span>
-        </div>
-        <div class="legend-pill pill-event">
-          <span class="legend-dot dot-event"></span>
-          <span>Event Pages (News week)</span>
-        </div>
-        <div class="legend-pill pill-night">
-          <span style="font-size:0.95rem;">🌙</span>
-          <span>Night Update — one News-week writer on call</span>
-        </div>
-      </div>
-
       <!-- Night Shift Schedule Card (Monday - Saturday | Sunday Deleted) -->
       <div class="night-schedule-card">
         <div class="night-schedule-header">
@@ -102,7 +78,6 @@
               <span class="night-title">Night Shift Schedule (Monday – Saturday)</span>
               <span class="sunday-off-badge">Sunday OFF</span>
             </div>
-            <p class="night-subtitle">Rotated daily across active News team members · No one works on Sunday</p>
           </div>
           <div class="night-header-right">
             <label style="font-size:0.8rem; font-weight:600; color:#475569;">Active Week:</label>
@@ -119,8 +94,8 @@
           <label style="font-size:0.8rem; font-weight:600;">Show Team:</label>
           <select class="select-simple" id="teamFilter">
             <option value="all">All Teams (Team A & Team B)</option>
-            <option value="teamA">Team A Only</option>
-            <option value="teamB">Team B Only (with Trishala)</option>
+            <option value="teamA">Team A</option>
+            <option value="teamB">Team B</option>
           </select>
         </div>
 
@@ -130,7 +105,7 @@
         </div>
       </div>
 
-      <!-- Master Roster Tables (Team A, Team B, Upcoming Drafts) -->
+      <!-- Master Roster Tables (Team A, Team B) -->
       <div id="rosterTeamsContainer"></div>
 
       <!-- Mentors & Prep Team -->
@@ -222,9 +197,6 @@
 
       <!-- Executive KPI Cards: Planned vs Done -->
       <div class="kpi-cards" id="upcomingKpiCards"></div>
-
-      <!-- Category Breakdown Cards / Progress Bars -->
-      <div class="upcoming-cat-breakdown" id="upcomingCatBreakdown"></div>
 
       <!-- Sub Bar: Filters & Actions -->
       <div class="sub-bar" style="flex-wrap: wrap; gap: 0.6rem;">
