@@ -1,0 +1,19 @@
+{
+  "name": "content-team-dashboard",
+  "version": "1.0.0",
+  "description": "Executive Dashboard for Content Team - Q4 2026 Roster, Productivity, & Category Analytics",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "dev": "npx serve -l 3000 ."
+  },
+  "keywords": [
+    "content-team",
+    "roster",
+    "productivity",
+    "dashboard",
+    "vercel"
+  ],
+  "author": "Content Team",
+  "license": "MIT"
+}

@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Local credentials
+credentials*.json
+*.pem
+*.key
+
+# OS and Temp Files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
