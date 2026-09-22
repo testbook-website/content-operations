@@ -29,6 +29,11 @@
     upcomingCategoryFilter: 'all',
     upcomingStatusFilter: 'all', // 'all' | 'done' | 'pending' | 'draft'
     upcomingSearch: '',
+    workflowDateFilter: 'today', // 'today' (default) | 'yesterday' | 'today_yesterday' | 'last7days' | 'last14days' | 'last30days' | 'all'
+    workflowCategoryFilter: 'all',
+    workflowWriterFilter: 'all',
+    workflowTaskTypeFilter: 'all',
+    workflowSearch: '',
     sheetsData: null,
     lastSyncTime: null
   };
@@ -82,7 +87,22 @@
     upcomingCountLabel: document.getElementById('upcomingCountLabel'),
     upcomingTableBody: document.getElementById('upcomingTableBody'),
     btnExportUpcomingCSV: document.getElementById('btnExportUpcomingCSV'),
-    upcomingLiveBadge: document.getElementById('upcomingLiveBadge')
+    upcomingLiveBadge: document.getElementById('upcomingLiveBadge'),
+
+    // Workflow <JAS>
+    sectionWorkflow: document.getElementById('sectionWorkflow'),
+    workflowKpiCards: document.getElementById('workflowKpiCards'),
+    workflowDateFilter: document.getElementById('workflowDateFilter'),
+    optWorkflowToday: document.getElementById('optWorkflowToday'),
+    optWorkflowYesterday: document.getElementById('optWorkflowYesterday'),
+    workflowCategoryFilter: document.getElementById('workflowCategoryFilter'),
+    workflowWriterFilter: document.getElementById('workflowWriterFilter'),
+    workflowTaskTypeFilter: document.getElementById('workflowTaskTypeFilter'),
+    workflowSearch: document.getElementById('workflowSearch'),
+    workflowCountLabel: document.getElementById('workflowCountLabel'),
+    workflowTableBody: document.getElementById('workflowTableBody'),
+    btnExportWorkflowCSV: document.getElementById('btnExportWorkflowCSV'),
+    workflowLiveBadge: document.getElementById('workflowLiveBadge')
   };
 
   // =========================================================================
@@ -186,20 +206,40 @@
         if (els.syncCountdown) els.syncCountdown.textContent = formatted;
       });
 
-      sheetsClient.onUpdate((data, syncTime) => {
+      sheetsClient.onUpdate((data, syncTime, status) => {
         state.sheetsData = data;
         state.lastSyncTime = syncTime;
+        const liveBadge = document.getElementById('syncLiveStatus');
+        if (liveBadge && syncTime) {
+          const timeStr = syncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (status === 'live') {
+            liveBadge.innerHTML = `🟢 Live (${timeStr})`;
+            liveBadge.style.color = '#15803d';
+          } else if (status === 'syncing') {
+            liveBadge.innerHTML = `🔄 Syncing...`;
+            liveBadge.style.color = '#0284c7';
+          } else {
+            liveBadge.innerHTML = `🟢 Synced (${timeStr})`;
+            liveBadge.style.color = '#15803d';
+          }
+        }
         if (state.isAuthenticated) {
           if (state.activeNavTab === 'productivity') renderProductivity();
           if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
+          if (state.activeNavTab === 'workflow') renderWorkflow();
         }
       });
 
       if (els.btnSync) {
         els.btnSync.addEventListener('click', async () => {
           els.btnSync.textContent = 'Syncing...';
-          await sheetsClient.refreshData();
-          els.btnSync.textContent = 'Sync Now';
+          const res = await sheetsClient.refreshData();
+          if (res && res.success) {
+            els.btnSync.textContent = '✓ Synced!';
+            setTimeout(() => { els.btnSync.textContent = 'Sync Now'; }, 2000);
+          } else {
+            els.btnSync.textContent = 'Sync Now';
+          }
         });
       }
 
@@ -310,6 +350,46 @@
     if (els.btnExportUpcomingCSV) {
       els.btnExportUpcomingCSV.addEventListener('click', exportUpcomingCSV);
     }
+
+    // Workflow <JAS> Controls
+    if (els.workflowDateFilter) {
+      els.workflowDateFilter.addEventListener('change', (e) => {
+        state.workflowDateFilter = e.target.value;
+        renderWorkflow(true);
+      });
+    }
+
+    if (els.workflowCategoryFilter) {
+      els.workflowCategoryFilter.addEventListener('change', (e) => {
+        state.workflowCategoryFilter = e.target.value;
+        renderWorkflow(false);
+      });
+    }
+
+    if (els.workflowWriterFilter) {
+      els.workflowWriterFilter.addEventListener('change', (e) => {
+        state.workflowWriterFilter = e.target.value;
+        renderWorkflow(false);
+      });
+    }
+
+    if (els.workflowTaskTypeFilter) {
+      els.workflowTaskTypeFilter.addEventListener('change', (e) => {
+        state.workflowTaskTypeFilter = e.target.value;
+        renderWorkflow(false);
+      });
+    }
+
+    if (els.workflowSearch) {
+      els.workflowSearch.addEventListener('input', (e) => {
+        state.workflowSearch = e.target.value.toLowerCase().trim();
+        renderWorkflow(false);
+      });
+    }
+
+    if (els.btnExportWorkflowCSV) {
+      els.btnExportWorkflowCSV.addEventListener('click', exportWorkflowCSV);
+    }
   }
 
   function switchNavTab(tab) {
@@ -320,11 +400,13 @@
     if (els.sectionProductivity) els.sectionProductivity.style.display = tab === 'productivity' ? 'block' : 'none';
     if (els.sectionCategory) els.sectionCategory.style.display = tab === 'category' ? 'block' : 'none';
     if (els.sectionUpcoming) els.sectionUpcoming.style.display = tab === 'upcoming' ? 'block' : 'none';
+    if (els.sectionWorkflow) els.sectionWorkflow.style.display = tab === 'workflow' ? 'block' : 'none';
 
     if (tab === 'roster') renderRoster();
     if (tab === 'productivity') renderProductivity();
     if (tab === 'category') renderCategoryGrid();
     if (tab === 'upcoming') renderUpcomingEvents();
+    if (tab === 'workflow') renderWorkflow();
   }
 
   function switchProdSubTab(subtab) {
@@ -526,8 +608,8 @@
 
     renderProdKpiCards(data);
 
-    if (state.activeProdSubTab === 'weekly') {
-      renderWeeklyTable(data);
+    if (state.activeProdSubTab === 'yesterday' || state.activeProdSubTab === 'weekly') {
+      renderYesterdayTable(data);
     } else if (state.activeProdSubTab === 'daily') {
       renderDailyTable(data);
     } else if (state.activeProdSubTab === 'monthly') {
@@ -557,12 +639,12 @@
         <div class="kpi-card">
           <div class="kpi-label">Picked Today</div>
           <div class="kpi-val">${pickT.toLocaleString()}</div>
-          <div class="kpi-sub">Articles picked today</div>
+          <div class="kpi-sub">Articles picked today (Row 1)</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Published Today</div>
           <div class="kpi-val" style="color:#1d4ed8;">${pubT.toLocaleString()}</div>
-          <div class="kpi-sub">Articles published live</div>
+          <div class="kpi-sub">Articles published live today</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">Word Count Today</div>
@@ -570,89 +652,109 @@
           <div class="kpi-sub">Daily team volume</div>
         </div>
       `;
-    } else {
-      const words7D = sumObj(s2['Last 7 Days']);
-      const pub7D = sumObj(s1['Last 7 Days']);
-      const pick7D = sumObj(s3['Last 7 Days']);
+    } else if (state.activeProdSubTab === 'yesterday' || state.activeProdSubTab === 'weekly') {
+      const pickY = sumObj(s3['Yesterday']);
+      const pubY = sumObj(s1['Yesterday']);
+      const wordY = sumObj(s2['Yesterday']);
 
       els.prodKpiCards.innerHTML = `
         <div class="kpi-card">
-          <div class="kpi-label">Picked (Last 7 Days)</div>
-          <div class="kpi-val">${pick7D.toLocaleString()}</div>
-          <div class="kpi-sub">Articles in work</div>
+          <div class="kpi-label">Picked Yesterday</div>
+          <div class="kpi-val">${pickY.toLocaleString()}</div>
+          <div class="kpi-sub">Articles picked yesterday (Row 2)</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Published (Last 7 Days)</div>
-          <div class="kpi-val" style="color:#1d4ed8;">${pub7D.toLocaleString()}</div>
-          <div class="kpi-sub">Articles published live</div>
+          <div class="kpi-label">Published Yesterday</div>
+          <div class="kpi-val" style="color:#1d4ed8;">${pubY.toLocaleString()}</div>
+          <div class="kpi-sub">Articles published live yesterday</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Words (Last 7 Days)</div>
-          <div class="kpi-val">${words7D.toLocaleString()}</div>
-          <div class="kpi-sub">Total 7-day team volume</div>
+          <div class="kpi-label">Word Count Yesterday</div>
+          <div class="kpi-val">${wordY.toLocaleString()}</div>
+          <div class="kpi-sub">Yesterday's team volume (Row 2)</div>
+        </div>
+      `;
+    } else {
+      // Monthly View
+      const tillWords = sumObj(s2['Till Now']);
+      const tillPub = sumObj(s1['Till Now']);
+      const tillPick = sumObj(s3['JAS']) + sumObj(s3['AMJ']);
+
+      els.prodKpiCards.innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-label">Total Word Count</div>
+          <div class="kpi-val">${tillWords.toLocaleString()}</div>
+          <div class="kpi-sub">Cumulative team words</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Published</div>
+          <div class="kpi-val" style="color:#1d4ed8;">${tillPub.toLocaleString()}</div>
+          <div class="kpi-sub">Cumulative articles published</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Picked</div>
+          <div class="kpi-val">${tillPick.toLocaleString()}</div>
+          <div class="kpi-sub">Cumulative articles picked</div>
         </div>
       `;
     }
   }
 
-  // Last 7 Days (Formerly Weekly Output)
-  function renderWeeklyTable(data) {
+  // YESTERDAY VIEW: Row 2 of Google Sheets (Picked Yesterday | Published Yesterday | Word Count Yesterday)
+  function renderYesterdayTable(data) {
     if (!els.prodTableContainer) return;
     const writers = data.sheet1_published.headers;
     let filtered = state.prodSearch ? writers.filter(w => w.toLowerCase().includes(state.prodSearch)) : writers;
 
-    const s1 = data.sheet1_published.summary;
-    const s2 = data.sheet2_wordcount.summary;
-    const s3 = data.sheet3_picked.summary;
+    const pubY = data.sheet1_published.summary['Yesterday'] || {};
+    const wordY = data.sheet2_wordcount.summary['Yesterday'] || {};
+    const pickY = data.sheet3_picked.summary['Yesterday'] || {};
 
-    let totWords7D = 0, totWordsPrev = 0, totPub7D = 0, totPick7D = 0;
+    let sumPickY = 0, sumPubY = 0, sumWordY = 0;
 
     const rowsHtml = filtered.map(w => {
-      const w7 = parseInt(s2['Last 7 Days']?.[w] || '0', 10);
-      const wp = parseInt(s2['Previous 7 days']?.[w] || '0', 10);
-      const p7 = parseInt(s1['Last 7 Days']?.[w] || '0', 10);
-      const pk = parseInt(s3['Last 7 Days']?.[w] || '0', 10);
-      const avg = p7 > 0 ? Math.round(w7 / p7) : 0;
+      const pky = parseInt(String(pickY[w] || '0').replace(/,/g, ''), 10) || 0;
+      const py = parseInt(String(pubY[w] || '0').replace(/,/g, ''), 10) || 0;
+      const wy = parseInt(String(wordY[w] || '0').replace(/,/g, ''), 10) || 0;
+      const avg = py > 0 ? Math.round(wy / py) : 0;
 
-      totWords7D += w7;
-      totWordsPrev += wp;
-      totPub7D += p7;
-      totPick7D += pk;
+      sumPickY += pky;
+      sumPubY += py;
+      sumWordY += wy;
 
       return `
         <tr>
           <td><strong>${w}</strong></td>
-          <td class="col-center"><strong>${w7 > 0 ? w7.toLocaleString() : '<span class="zero-val">0</span>'}</strong></td>
-          <td class="col-center" style="color:#6b7280;">${wp > 0 ? wp.toLocaleString() : '<span class="zero-val">0</span>'}</td>
-          <td class="col-center">${p7 > 0 ? `<strong style="color:#1d4ed8;">${p7}</strong>` : '<span class="zero-val">0</span>'}</td>
-          <td class="col-center">${pk > 0 ? `<strong>${pk}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${pky > 0 ? `<strong>${pky}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${py > 0 ? `<strong style="color:#1d4ed8;">${py}</strong>` : '<span class="zero-val">0</span>'}</td>
+          <td class="col-center">${wy > 0 ? `<strong>${wy.toLocaleString()}</strong>` : '<span class="zero-val">0</span>'}</td>
           <td class="col-center" style="color:#6b7280;">${avg > 0 ? avg.toLocaleString() + ' w/a' : '-'}</td>
         </tr>
       `;
     }).join('');
+
+    const grandAvg = sumPubY > 0 ? Math.round(sumWordY / sumPubY) : 0;
 
     const html = `
       <table class="data-table">
         <thead>
           <tr>
             <th>Writer</th>
-            <th class="col-center">Words (Last 7 Days)</th>
-            <th class="col-center">Words (Prev 7 Days)</th>
-            <th class="col-center">Articles Published (7D)</th>
-            <th class="col-center">Articles Picked (7D)</th>
+            <th class="col-center">Picked Yesterday</th>
+            <th class="col-center">Published Yesterday</th>
+            <th class="col-center">Word Count Yesterday</th>
             <th class="col-center">Avg Words/Article</th>
           </tr>
         </thead>
         <tbody>
           <tr class="total-row">
             <td>TOTAL (${filtered.length} Writers)</td>
-            <td class="col-center">${totWords7D.toLocaleString()}</td>
-            <td class="col-center">${totWordsPrev.toLocaleString()}</td>
-            <td class="col-center">${totPub7D.toLocaleString()}</td>
-            <td class="col-center">${totPick7D.toLocaleString()}</td>
-            <td class="col-center">${totPub7D > 0 ? Math.round(totWords7D / totPub7D).toLocaleString() + ' w/a' : '-'}</td>
+            <td class="col-center">${sumPickY.toLocaleString()}</td>
+            <td class="col-center">${sumPubY.toLocaleString()}</td>
+            <td class="col-center">${sumWordY.toLocaleString()}</td>
+            <td class="col-center">${grandAvg > 0 ? grandAvg.toLocaleString() + ' w/a' : '-'}</td>
           </tr>
-          ${rowsHtml || '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#9ca3af;">No writers found matching search.</td></tr>'}
+          ${rowsHtml || '<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:#9ca3af;">No writers found matching search.</td></tr>'}
         </tbody>
       </table>
     `;
@@ -673,9 +775,9 @@
     let sumPickT = 0, sumPubT = 0, sumWordT = 0;
 
     const rowsHtml = filtered.map(w => {
-      const pkt = parseInt(pickT[w] || '0', 10);
-      const pt = parseInt(pubT[w] || '0', 10);
-      const wt = parseInt(wordT[w] || '0', 10);
+      const pkt = parseInt(String(pickT[w] || '0').replace(/,/g, ''), 10) || 0;
+      const pt = parseInt(String(pubT[w] || '0').replace(/,/g, ''), 10) || 0;
+      const wt = parseInt(String(wordT[w] || '0').replace(/,/g, ''), 10) || 0;
 
       sumPickT += pkt;
       sumPubT += pt;
@@ -1233,6 +1335,366 @@
   }
 
   // =========================================================================
+  // TAB 5: WORKFLOW <JAS> (Live Google Sheet gid: 820015548 Replica)
+  // =========================================================================
+  function getWorkflowList() {
+    if (state.sheetsData && Array.isArray(state.sheetsData.workflow_jas) && state.sheetsData.workflow_jas.length > 0) {
+      return state.sheetsData.workflow_jas;
+    }
+    if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && Array.isArray(BASELINE_WORKFLOW_DATA)) {
+      return BASELINE_WORKFLOW_DATA;
+    }
+    return [];
+  }
+
+  function parseWorkflowDate(dateStr) {
+    if (!dateStr) return null;
+    const clean = String(dateStr).trim();
+    // match: MM/DD/YYYY or M/D/YYYY
+    const slashMatch = clean.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (slashMatch) {
+      const month = parseInt(slashMatch[1], 10) - 1;
+      const day = parseInt(slashMatch[2], 10);
+      const year = parseInt(slashMatch[3], 10);
+      return new Date(year, month, day);
+    }
+    const t = Date.parse(clean);
+    return isNaN(t) ? null : new Date(t);
+  }
+
+  function getWorkflowForDateScope(items) {
+    if (!items || items.length === 0) return [];
+
+    let maxTime = 0;
+    const timestamps = [];
+    items.forEach(e => {
+      const d = parseWorkflowDate(e.date);
+      if (d) {
+        const t = d.getTime();
+        if (t > maxTime) maxTime = t;
+        timestamps.push(t);
+      }
+    });
+
+    const dayMs = 24 * 60 * 60 * 1000;
+    const todayTime = maxTime;
+    const yesterdayTime = maxTime - dayMs;
+    const sevenDaysAgo = maxTime - (7 * dayMs);
+    const fourteenDaysAgo = maxTime - (14 * dayMs);
+    const thirtyDaysAgo = maxTime - (30 * dayMs);
+
+    // Dynamically update option labels for Today and Yesterday if elements exist
+    if (maxTime > 0) {
+      const todayDate = new Date(todayTime);
+      const yesterdayDate = new Date(yesterdayTime);
+      const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+      if (els.optWorkflowToday) {
+        els.optWorkflowToday.textContent = `Today (Default) (${fmt(todayDate)})`;
+      }
+      if (els.optWorkflowYesterday) {
+        els.optWorkflowYesterday.textContent = `Yesterday (${fmt(yesterdayDate)})`;
+      }
+    }
+
+    return items.filter(e => {
+      const d = parseWorkflowDate(e.date);
+      const time = d ? d.getTime() : null;
+
+      if (state.workflowDateFilter === 'today_yesterday') {
+        if (!time) return false;
+        return time === todayTime || time === yesterdayTime;
+      } else if (state.workflowDateFilter === 'today') {
+        if (!time || time !== todayTime) return false;
+        return true;
+      } else if (state.workflowDateFilter === 'yesterday') {
+        if (!time || time !== yesterdayTime) return false;
+        return true;
+      } else if (state.workflowDateFilter === 'last7days') {
+        if (!time || time < sevenDaysAgo) return false;
+        return true;
+      } else if (state.workflowDateFilter === 'last14days') {
+        if (!time || time < fourteenDaysAgo) return false;
+        return true;
+      } else if (state.workflowDateFilter === 'last30days') {
+        if (!time || time < thirtyDaysAgo) return false;
+        return true;
+      } else if (state.workflowDateFilter === 'all') {
+        return true;
+      }
+      return true;
+    });
+  }
+
+  function renderWorkflow(rebuildFilters = true) {
+    if (!els.sectionWorkflow) return;
+
+    const allItems = getWorkflowList();
+    const dateScopedItems = getWorkflowForDateScope(allItems);
+
+    if (rebuildFilters) {
+      populateWorkflowDynamicFilters(dateScopedItems);
+    }
+
+    const filteredItems = dateScopedItems.filter(e => {
+      // Category Filter
+      if (state.workflowCategoryFilter !== 'all' && (e.category || 'Others') !== state.workflowCategoryFilter) {
+        return false;
+      }
+
+      // Writer Filter
+      if (state.workflowWriterFilter !== 'all' && (e.writer || 'Unassigned') !== state.workflowWriterFilter) {
+        return false;
+      }
+
+      // Task Type Filter
+      if (state.workflowTaskTypeFilter !== 'all' && (e.taskType || 'Other') !== state.workflowTaskTypeFilter) {
+        return false;
+      }
+
+      // Search
+      if (state.workflowSearch) {
+        const q = state.workflowSearch;
+        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.writer && e.writer.toLowerCase().includes(q)) ||
+                      (e.fk && e.fk.toLowerCase().includes(q)) ||
+                      (e.taskType && e.taskType.toLowerCase().includes(q)) ||
+                      (e.pageType && e.pageType.toLowerCase().includes(q)) ||
+                      (e.date && e.date.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+
+      return true;
+    });
+
+    renderWorkflowKpis(filteredItems, dateScopedItems.length);
+    renderWorkflowTable(filteredItems);
+
+    if (els.workflowCountLabel) {
+      els.workflowCountLabel.textContent = `Showing ${filteredItems.length} of ${dateScopedItems.length} tasks`;
+    }
+  }
+
+  function renderWorkflowKpis(filteredItems, totalInScope) {
+    if (!els.workflowKpiCards) return;
+
+    const totalTasks = filteredItems.length;
+    let totalWords = 0;
+    const writersSet = new Set();
+    let doneCount = 0;
+
+    filteredItems.forEach(e => {
+      const wc = parseInt(String(e.wordCount).replace(/,/g, ''), 10);
+      if (!isNaN(wc)) totalWords += wc;
+      if (e.writer && e.writer.trim()) writersSet.add(e.writer.trim());
+      if (isStatusDone(e.status)) doneCount++;
+    });
+
+    const completionRate = totalTasks > 0 ? Math.round((doneCount / totalTasks) * 100) : 0;
+
+    els.workflowKpiCards.innerHTML = `
+      <div class="kpi-card kpi-planned">
+        <div class="kpi-label">📝 Total Tasks / Articles</div>
+        <div class="kpi-val" style="color:#1d4ed8;">${totalTasks.toLocaleString()}</div>
+        <div class="kpi-sub">${state.workflowDateFilter === 'today' ? 'Today (Default)' : (state.workflowDateFilter === 'today_yesterday' ? 'Today & Yesterday' : state.workflowDateFilter)}</div>
+      </div>
+      <div class="kpi-card kpi-rate">
+        <div class="kpi-label">✍️ Total Word Count</div>
+        <div class="kpi-val" style="color:#7c3aed;">${totalWords.toLocaleString()}</div>
+        <div class="kpi-sub">Total words authored</div>
+      </div>
+      <div class="kpi-card kpi-done">
+        <div class="kpi-label">👥 Active Writers</div>
+        <div class="kpi-val" style="color:#059669;">${writersSet.size}</div>
+        <div class="kpi-sub">Contributing team members</div>
+      </div>
+      <div class="kpi-card kpi-pending">
+        <div class="kpi-label">✅ Live / Done Status</div>
+        <div class="kpi-val" style="color:#15803d;">${doneCount.toLocaleString()} <span style="font-size:0.85rem; color:#6b7280; font-weight:normal;">(${completionRate}%)</span></div>
+        <div class="kpi-sub">Marked Done or Live</div>
+      </div>
+    `;
+  }
+
+  function populateWorkflowDynamicFilters(dateScopedItems) {
+    // 1. Categories
+    if (els.workflowCategoryFilter) {
+      const catCounts = {};
+      dateScopedItems.forEach(e => {
+        const cat = (e.category || 'Others').trim();
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      });
+      const sortedCats = Object.keys(catCounts).sort((a, b) => catCounts[b] - catCounts[a]);
+      const currentCat = state.workflowCategoryFilter;
+      els.workflowCategoryFilter.innerHTML = `<option value="all">All Categories (${dateScopedItems.length})</option>`;
+      sortedCats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = `${cat} (${catCounts[cat]})`;
+        if (cat === currentCat) opt.selected = true;
+        els.workflowCategoryFilter.appendChild(opt);
+      });
+      if (currentCat !== 'all' && !catCounts[currentCat]) {
+        state.workflowCategoryFilter = 'all';
+        els.workflowCategoryFilter.value = 'all';
+      }
+    }
+
+    // 2. Writers
+    if (els.workflowWriterFilter) {
+      const writerCounts = {};
+      dateScopedItems.forEach(e => {
+        const w = (e.writer || 'Unassigned').trim();
+        writerCounts[w] = (writerCounts[w] || 0) + 1;
+      });
+      const sortedWriters = Object.keys(writerCounts).sort((a, b) => writerCounts[b] - writerCounts[a]);
+      const currentWriter = state.workflowWriterFilter;
+      els.workflowWriterFilter.innerHTML = `<option value="all">All Writers (${Object.keys(writerCounts).length})</option>`;
+      sortedWriters.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w;
+        opt.textContent = `${w} (${writerCounts[w]})`;
+        if (w === currentWriter) opt.selected = true;
+        els.workflowWriterFilter.appendChild(opt);
+      });
+      if (currentWriter !== 'all' && !writerCounts[currentWriter]) {
+        state.workflowWriterFilter = 'all';
+        els.workflowWriterFilter.value = 'all';
+      }
+    }
+
+    // 3. Task Types
+    if (els.workflowTaskTypeFilter) {
+      const ttCounts = {};
+      dateScopedItems.forEach(e => {
+        const tt = (e.taskType || 'Other').trim();
+        ttCounts[tt] = (ttCounts[tt] || 0) + 1;
+      });
+      const sortedTT = Object.keys(ttCounts).sort((a, b) => ttCounts[b] - ttCounts[a]);
+      const currentTT = state.workflowTaskTypeFilter;
+      els.workflowTaskTypeFilter.innerHTML = `<option value="all">All Task Types</option>`;
+      sortedTT.forEach(tt => {
+        const opt = document.createElement('option');
+        opt.value = tt;
+        opt.textContent = `${tt} (${ttCounts[tt]})`;
+        if (tt === currentTT) opt.selected = true;
+        els.workflowTaskTypeFilter.appendChild(opt);
+      });
+      if (currentTT !== 'all' && !ttCounts[currentTT]) {
+        state.workflowTaskTypeFilter = 'all';
+        els.workflowTaskTypeFilter.value = 'all';
+      }
+    }
+  }
+
+  function renderWorkflowTable(items) {
+    if (!els.workflowTableBody) return;
+
+    if (items.length === 0) {
+      els.workflowTableBody.innerHTML = `
+        <tr>
+          <td colspan="11" style="text-align:center; padding:2.5rem; color:#6b7280; font-size:0.85rem;">
+            No workflow tasks match the selected filters.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    let rowsHtml = '';
+    items.forEach(e => {
+      // Word count formatting
+      let wcFormatted = '—';
+      if (e.wordCount !== null && e.wordCount !== undefined && String(e.wordCount).trim() !== '') {
+        const n = parseInt(String(e.wordCount).replace(/,/g, ''), 10);
+        wcFormatted = isNaN(n) ? escapeHtml(e.wordCount) : n.toLocaleString();
+      }
+
+      // New Doc Link
+      let docLinkHtml = '<span style="color:#94a3b8;">—</span>';
+      if (e.newDoc && e.newDoc.startsWith('http')) {
+        docLinkHtml = `<a href="${escapeHtml(e.newDoc)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link">Doc 📄</a>`;
+      }
+
+      // Live URL Link
+      let urlLinkHtml = '<span style="color:#94a3b8;">—</span>';
+      if (e.url) {
+        let fullUrl = e.url;
+        if (fullUrl.startsWith('/')) fullUrl = 'https://testbook.com' + fullUrl;
+        if (fullUrl.startsWith('http')) {
+          urlLinkHtml = `<a href="${escapeHtml(fullUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link">Visit ↗</a>`;
+        }
+      }
+
+      rowsHtml += `
+        <tr>
+          <td style="font-weight:600; color:#334155; white-space:nowrap;">${escapeHtml(e.date)}</td>
+          <td>
+            <div style="font-weight:600; color:#0f172a; line-height:1.35;">${escapeHtml(e.topic)}</div>
+          </td>
+          <td><span class="badge-cat">${escapeHtml(e.category || 'Others')}</span></td>
+          <td><span class="badge-task-type">${escapeHtml(e.taskType || '—')}</span></td>
+          <td><span class="badge-sub-type">${escapeHtml(e.type || '—')}</span></td>
+          <td><span class="badge-page-type">${escapeHtml(e.pageType || '—')}</span></td>
+          <td><span class="writer-pill">${e.writer ? escapeHtml(e.writer) : '<span style="color:#94a3b8;">—</span>'}</span></td>
+          <td><span class="fk-text" title="${escapeHtml(e.fk)}">${escapeHtml(e.fk || '—')}</span></td>
+          <td style="text-align:right; font-weight:600; color:#1e293b; white-space:nowrap;">${wcFormatted}</td>
+          <td style="text-align:center;">${docLinkHtml}</td>
+          <td style="text-align:center;">${urlLinkHtml}</td>
+        </tr>
+      `;
+    });
+
+    els.workflowTableBody.innerHTML = rowsHtml;
+  }
+
+  function exportWorkflowCSV() {
+    const allItems = getWorkflowList();
+    const dateScopedItems = getWorkflowForDateScope(allItems);
+
+    const filteredItems = dateScopedItems.filter(e => {
+      if (state.workflowCategoryFilter !== 'all' && (e.category || 'Others') !== state.workflowCategoryFilter) return false;
+      if (state.workflowWriterFilter !== 'all' && (e.writer || 'Unassigned') !== state.workflowWriterFilter) return false;
+      if (state.workflowTaskTypeFilter !== 'all' && (e.taskType || 'Other') !== state.workflowTaskTypeFilter) return false;
+      if (state.workflowSearch) {
+        const q = state.workflowSearch;
+        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.writer && e.writer.toLowerCase().includes(q)) ||
+                      (e.fk && e.fk.toLowerCase().includes(q)) ||
+                      (e.taskType && e.taskType.toLowerCase().includes(q)) ||
+                      (e.pageType && e.pageType.toLowerCase().includes(q)) ||
+                      (e.date && e.date.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    const headers = ['Date', 'Topic', 'Category', 'Task Type', 'Type', 'Page Type', 'Writer', 'FK', 'Word Count', 'New Content (Doc)', 'URL'];
+    const csvLines = [headers.join(',')];
+
+    filteredItems.forEach(e => {
+      const row = [
+        `"${(e.date || '').replace(/"/g, '""')}"`,
+        `"${(e.topic || '').replace(/"/g, '""')}"`,
+        `"${(e.category || '').replace(/"/g, '""')}"`,
+        `"${(e.taskType || '').replace(/"/g, '""')}"`,
+        `"${(e.type || '').replace(/"/g, '""')}"`,
+        `"${(e.pageType || '').replace(/"/g, '""')}"`,
+        `"${(e.writer || '').replace(/"/g, '""')}"`,
+        `"${(e.fk || '').replace(/"/g, '""')}"`,
+        `"${(e.wordCount || '').replace(/"/g, '""')}"`,
+        `"${(e.newDoc || '').replace(/"/g, '""')}"`,
+        `"${(e.url || '').replace(/"/g, '""')}"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    const filename = `Workflow_JAS_${state.workflowDateFilter}_${state.workflowCategoryFilter}.csv`;
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
   // Master Initialization
   // =========================================================================
   function renderApp() {
@@ -1240,6 +1702,7 @@
     renderProductivity();
     renderCategoryGrid();
     renderUpcomingEvents();
+    renderWorkflow();
   }
 
   function init() {

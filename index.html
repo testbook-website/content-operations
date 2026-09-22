@@ -51,9 +51,11 @@
         <button class="tab-btn" data-tab="productivity" id="tabBtnProductivity">📊 Productivity</button>
         <button class="tab-btn" data-tab="category" id="tabBtnCategory">📂 Category Wise Date</button>
         <button class="tab-btn" data-tab="upcoming" id="tabBtnUpcoming">⚡ Upcoming Events</button>
+        <button class="tab-btn" data-tab="workflow" id="tabBtnWorkflow">📋 Workflow &lt;JAS&gt;</button>
       </div>
 
       <div class="nav-actions">
+        <span id="syncLiveStatus" style="font-size:0.75rem; color:#15803d; font-weight:600; display:inline-flex; align-items:center; gap:0.25rem;">🟢 Live</span>
         <span style="font-size:0.75rem; color:#6b7280;">Auto-sync in <strong id="syncCountdown">5:00</strong></span>
         <button class="btn-action" id="btnSync">Sync Now</button>
         <button class="btn-action" id="btnLock">Lock</button>
@@ -134,7 +136,7 @@
       <div class="sub-bar">
         <div class="sub-btns">
           <button class="sub-btn active" data-subtab="daily" id="subtabDaily">Daily Output</button>
-          <button class="sub-btn" data-subtab="weekly" id="subtabWeekly">Last 7 Days</button>
+          <button class="sub-btn" data-subtab="yesterday" id="subtabYesterday">Yesterday</button>
           <button class="sub-btn" data-subtab="monthly" id="subtabMonthly">Monthly Output</button>
         </div>
 
@@ -264,6 +266,102 @@
       </div>
     </section>
 
+    <!-- =====================================================================
+         TAB 5: WORKFLOW <JAS> (Live Google Sheet gid: 820015548 Replica)
+         ===================================================================== -->
+    <section id="sectionWorkflow" style="display:none;">
+      
+      <!-- Summary Banner & Sheet Link -->
+      <div class="simple-banner" id="workflowBanner">
+        <div class="banner-left">
+          <h3>Workflow &lt;JAS&gt; - Live Content Operations Tracker</h3>
+          <p>Live sync from Google Sheet: <a href="https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=820015548#gid=820015548" target="_blank" style="color:#1d4ed8; text-decoration:underline;">Workflow &lt;JAS&gt; (gid: 820015548) ↗</a></p>
+        </div>
+        <div class="banner-tags">
+          <span class="simple-tag" style="background:#e0f2fe; color:#0369a1;">📅 <strong>Today Default</strong></span>
+          <span class="simple-tag" style="background:#fef3c7; color:#92400e;">✍️ <strong>Article Workflow Replica</strong></span>
+          <span class="simple-tag" style="background:#dcfce7; color:#15803d;" id="workflowLiveBadge">🟢 Live Synced</span>
+        </div>
+      </div>
+
+      <!-- Summary KPI Cards -->
+      <div class="kpi-cards" id="workflowKpiCards"></div>
+
+      <!-- Sub Bar: Filters & Actions -->
+      <div class="sub-bar" style="flex-wrap: wrap; gap: 0.6rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+          
+          <!-- Date Filter (Default: Today) -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">📅 Date Range:</label>
+            <select class="select-simple" id="workflowDateFilter">
+              <option value="today" id="optWorkflowToday" selected>Today (Default)</option>
+              <option value="yesterday" id="optWorkflowYesterday">Yesterday</option>
+              <option value="today_yesterday">Today &amp; Yesterday</option>
+              <option value="last7days">Last 7 Days</option>
+              <option value="last14days">Last 14 Days</option>
+              <option value="last30days">Last 30 Days</option>
+              <option value="all">All Dates (Entire Sheet)</option>
+            </select>
+          </div>
+
+          <!-- Category Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">📂 Category:</label>
+            <select class="select-simple" id="workflowCategoryFilter">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+
+          <!-- Writer Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">👤 Writer:</label>
+            <select class="select-simple" id="workflowWriterFilter">
+              <option value="all">All Writers</option>
+            </select>
+          </div>
+
+          <!-- Task Type Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;">🏷️ Task Type:</label>
+            <select class="select-simple" id="workflowTaskTypeFilter">
+              <option value="all">All Task Types</option>
+            </select>
+          </div>
+
+          <!-- Search (Topic, Category, Writer, FK) -->
+          <input type="text" class="input-simple" id="workflowSearch" placeholder="Search topic, category, writer, FK..." style="width:240px;">
+          <span id="workflowCountLabel" style="font-size:0.75rem; color:#6b7280; font-weight:500;"></span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <button class="btn-action" id="btnExportWorkflowCSV">Export CSV</button>
+        </div>
+      </div>
+
+      <!-- Workflow Data Table -->
+      <div class="table-wrap" style="max-height: 720px; overflow: auto;">
+        <table class="data-table" id="workflowTable">
+          <thead>
+            <tr>
+              <th style="width:110px;">Date</th>
+              <th style="min-width:240px;">Topic</th>
+              <th style="width:130px;">Category</th>
+              <th style="width:130px;">Task Type</th>
+              <th style="width:90px;">Type</th>
+              <th style="width:110px;">Page Type</th>
+              <th style="width:130px;">Writer</th>
+              <th style="min-width:180px;">FK</th>
+              <th style="width:110px; text-align:right;">Word Count</th>
+              <th style="width:130px; text-align:center;">New Content (Doc)</th>
+              <th style="width:110px; text-align:center;">URL</th>
+            </tr>
+          </thead>
+          <tbody id="workflowTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <!-- Data & Application Logic -->
@@ -271,6 +369,7 @@
   <script src="sheets-data.js"></script>
   <script src="category-data.js"></script>
   <script src="upcoming-data.js"></script>
+  <script src="workflow-data.js"></script>
   <script src="sheets-client.js"></script>
   <script src="app.js"></script>
 </body>
