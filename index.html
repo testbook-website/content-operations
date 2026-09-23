@@ -78,7 +78,7 @@
           <div class="night-header-left">
             <div class="night-title-row">
               <span style="font-size:1.1rem;">🌙</span>
-              <span class="night-title">Night Shift Schedule (Monday – Saturday)</span>
+              <span class="night-title">Night Updates (Monday – Saturday)</span>
               <span class="sunday-off-badge">Sunday OFF</span>
             </div>
           </div>
@@ -136,8 +136,8 @@
       <!-- Sub-tabs (Default: Daily) -->
       <div class="sub-bar">
         <div class="sub-btns">
-          <button class="sub-btn active" data-subtab="daily" id="subtabDaily">Daily Output</button>
-          <button class="sub-btn" data-subtab="yesterday" id="subtabYesterday">Yesterday</button>
+          <button class="sub-btn" data-subtab="daily" id="subtabDaily">Daily Output</button>
+          <button class="sub-btn active" data-subtab="yesterday" id="subtabYesterday">Yesterday</button>
           <button class="sub-btn" data-subtab="monthly" id="subtabMonthly">Monthly Output</button>
         </div>
 
@@ -259,7 +259,7 @@
               <th style="width:130px;">Picked By</th>
               <th style="width:80px;">Priority</th>
               <th style="width:80px;">Type</th>
-              <th style="width:130px; text-align:center;">Doc Link (Col O)</th>
+              <th style="width:145px; text-align:center;">Doc &amp; WP Links</th>
             </tr>
           </thead>
           <tbody id="upcomingTableBody"></tbody>
@@ -292,14 +292,14 @@
       <div class="sub-bar" style="flex-wrap: wrap; gap: 0.6rem;">
         <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
           
-          <!-- Date Filter (Default: Today) -->
+          <!-- Date Filter (Default: Last 7 Days) -->
           <div style="display:flex; align-items:center; gap:0.3rem;">
             <label style="font-size:0.8rem; font-weight:600;">📅 Date Range:</label>
             <select class="select-simple" id="workflowDateFilter">
-              <option value="today" id="optWorkflowToday" selected>Today (Default)</option>
+              <option value="last7days" selected>Last 7 Days (Default)</option>
+              <option value="today" id="optWorkflowToday">Today</option>
               <option value="yesterday" id="optWorkflowYesterday">Yesterday</option>
               <option value="today_yesterday">Today &amp; Yesterday</option>
-              <option value="last7days">Last 7 Days</option>
               <option value="last14days">Last 14 Days</option>
               <option value="last30days">Last 30 Days</option>
               <option value="all">All Dates (Entire Sheet)</option>

@@ -242,7 +242,7 @@ class SheetsClient {
 
       const date = getVal(0);
       const topic = getVal(1);
-      if (!date && !topic) continue;
+      if (!topic || topic === '-' || topic.toLowerCase() === 'topic') continue;
 
       const category = getVal(5) || 'Others';
       const taskType = getVal(6);
@@ -474,7 +474,7 @@ class SheetsClient {
       if (!r || r.length === 0) continue;
       const date = (r[0] || '').trim();
       const topic = (r[1] || '').trim();
-      if (!date && !topic) continue;
+      if (!topic || topic === '-' || topic.toLowerCase() === 'topic') continue;
 
       const category = (r[5] || 'Others').trim() || 'Others';
       const taskType = (r[6] || '').trim();

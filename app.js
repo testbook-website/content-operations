@@ -17,7 +17,7 @@
     enteredPin: '',
     correctPin: '7730',
     activeNavTab: 'roster', // 'roster' | 'productivity' | 'category'
-    activeProdSubTab: 'daily', // DEFAULT: Daily Output as requested!
+    activeProdSubTab: 'yesterday', // DEFAULT: Yesterday as requested!
     selectedWeekId: 1,
     isMatrixView: false,
     rosterTeamFilter: 'all',
@@ -29,7 +29,7 @@
     upcomingCategoryFilter: 'all',
     upcomingStatusFilter: 'all', // 'all' | 'done' | 'pending' | 'draft'
     upcomingSearch: '',
-    workflowDateFilter: 'today', // 'today' (default) | 'yesterday' | 'today_yesterday' | 'last7days' | 'last14days' | 'last30days' | 'all'
+    workflowDateFilter: 'last7days', // 'last7days' (default) | 'today' | 'yesterday' | 'today_yesterday' | 'last14days' | 'last30days' | 'all'
     workflowCategoryFilter: 'all',
     workflowWriterFilter: 'all',
     workflowTaskTypeFilter: 'all',
@@ -1321,12 +1321,25 @@
         priorityBadge = escapeHtml(e.priority);
       }
 
-      // Doc Link (Col O) Action - STRICTLY Google Doc links from Column O, no WordPress links
+      // Doc Link (Col O) & WordPress Link (Col P) Action
       let linkHtml = '<span style="color:#94a3b8;">—</span>';
       const docLink = (e.docLink || '').trim();
+      const postUrl = (e.url || '').trim();
 
-      if (docLink && (docLink.startsWith('http://') || docLink.startsWith('https://'))) {
+      const hasDoc = docLink && (docLink.startsWith('http://') || docLink.startsWith('https://'));
+      const hasUrl = postUrl && (postUrl.startsWith('http://') || postUrl.startsWith('https://'));
+
+      if (hasDoc && hasUrl) {
+        linkHtml = `
+          <div style="display:flex; gap:0.3rem; justify-content:center; align-items:center;">
+            <a href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link" title="Open Google Doc">Doc 📄</a>
+            <a href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link" title="View Published WordPress Post">Visit ↗</a>
+          </div>
+        `;
+      } else if (hasDoc) {
         linkHtml = `<a href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link" title="Open Google Doc">Doc 📄</a>`;
+      } else if (hasUrl) {
+        linkHtml = `<a href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link" title="View Published WordPress Post">Visit ↗</a>`;
       }
 
       rowsHtml += `
@@ -1397,13 +1410,17 @@
   // TAB 5: WORKFLOW <JAS> (Live Google Sheet gid: 820015548 Replica)
   // =========================================================================
   function getWorkflowList() {
+    let raw = [];
     if (state.sheetsData && Array.isArray(state.sheetsData.workflow_jas) && state.sheetsData.workflow_jas.length > 0) {
-      return state.sheetsData.workflow_jas;
+      raw = state.sheetsData.workflow_jas;
+    } else if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && Array.isArray(BASELINE_WORKFLOW_DATA)) {
+      raw = BASELINE_WORKFLOW_DATA;
     }
-    if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && Array.isArray(BASELINE_WORKFLOW_DATA)) {
-      return BASELINE_WORKFLOW_DATA;
-    }
-    return [];
+    // Filter out rows without a topic (skip empty/blank rows)
+    return raw.filter(item => {
+      const topic = (item.topic || '').trim();
+      return topic && topic !== '-' && topic.toLowerCase() !== 'topic';
+    });
   }
 
   function parseWorkflowDate(dateStr) {
@@ -1555,7 +1572,7 @@
       <div class="kpi-card kpi-planned">
         <div class="kpi-label">📝 Total Tasks / Articles</div>
         <div class="kpi-val" style="color:#1d4ed8;">${totalTasks.toLocaleString()}</div>
-        <div class="kpi-sub">${state.workflowDateFilter === 'today' ? 'Today (Default)' : (state.workflowDateFilter === 'today_yesterday' ? 'Today & Yesterday' : state.workflowDateFilter)}</div>
+        <div class="kpi-sub">${state.workflowDateFilter === 'last7days' ? 'Last 7 Days (Default)' : (state.workflowDateFilter === 'today' ? 'Today' : (state.workflowDateFilter === 'today_yesterday' ? 'Today & Yesterday' : (state.workflowDateFilter === 'yesterday' ? 'Yesterday' : state.workflowDateFilter)))}</div>
       </div>
       <div class="kpi-card kpi-rate">
         <div class="kpi-label">✍️ Total Word Count</div>
