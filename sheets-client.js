@@ -113,7 +113,7 @@ class SheetsClient {
         reject(new Error(`Failed to load GViz script for gid ${gid}`));
       };
 
-      script.src = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=responseHandler:${callbackName}&gid=${gid}&_t=${Date.now()}`;
+      script.src = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=responseHandler:${callbackName}&gid=${gid}&headers=1&_t=${Date.now()}`;
       document.body.appendChild(script);
     });
   }
@@ -184,10 +184,10 @@ class SheetsClient {
       };
 
       const date = getVal(0);
-      const topic = getVal(7);
+      const topic = getVal(6) || getVal(7); // Column G: Page (Topic)
       if (!date && !topic) continue;
 
-      let cat = getVal(6) || 'Others';
+      let cat = getVal(5) || 'Others'; // Column F: Category
       if (cat === 'Insuarnce') cat = 'Insurance';
       if (cat === 'Railways') cat = 'Railway';
       if (cat === 'Other') cat = 'Others';

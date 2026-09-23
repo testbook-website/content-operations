@@ -1321,22 +1321,12 @@
         priorityBadge = escapeHtml(e.priority);
       }
 
-      // Doc Link (Col O) & URL Action
+      // Doc Link (Col O) Action - STRICTLY Google Doc links from Column O, no WordPress links
       let linkHtml = '<span style="color:#94a3b8;">—</span>';
       const docLink = (e.docLink || '').trim();
-      const postUrl = (e.url || '').trim();
 
-      if (docLink && postUrl) {
-        linkHtml = `
-          <div style="display:flex; gap:0.3rem; justify-content:center; align-items:center;">
-            <a href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link" title="Open Google Doc">Doc 📄</a>
-            <a href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link" title="View Published Post">Visit ↗</a>
-          </div>
-        `;
-      } else if (docLink) {
+      if (docLink && (docLink.startsWith('http://') || docLink.startsWith('https://'))) {
         linkHtml = `<a href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link" title="Open Google Doc">Doc 📄</a>`;
-      } else if (postUrl) {
-        linkHtml = `<a href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link" title="View Published Post">Visit ↗</a>`;
       }
 
       rowsHtml += `
