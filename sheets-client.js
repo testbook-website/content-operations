@@ -563,45 +563,66 @@ class SheetsClient {
       
       let s1, s2, s3, upcoming, workflow;
 
-      // 1. Try GViz JSONP (Reliable in all browsers, file:// and http://)
+      // 1. Fetch Productivity (Sheets 1, 2, 3) - Fast (~100KB each)
       try {
-        const [t1, t2, t3, tUpcoming, tWorkflow] = await Promise.all([
-          this.fetchSheetGViz(SHEETS_CONFIG.spreadsheetId, SHEETS_CONFIG.sheet1_gid),
-          this.fetchSheetGViz(SHEETS_CONFIG.spreadsheetId, SHEETS_CONFIG.sheet2_gid),
-          this.fetchSheetGViz(SHEETS_CONFIG.spreadsheetId, SHEETS_CONFIG.sheet3_gid),
-          this.fetchSheetGViz(SHEETS_CONFIG.upcomingSpreadsheetId, SHEETS_CONFIG.upcoming_gid),
-          this.fetchSheetGViz(SHEETS_CONFIG.workflowSpreadsheetId, SHEETS_CONFIG.workflow_gid)
+        const [t1, t2, t3] = await Promise.all([
+          this.fetchSheetGViz(SHEETS_CONFIG.spreadsheetId, SHEETS_CONFIG.sheet1_gid, 15000),
+          this.fetchSheetGViz(SHEETS_CONFIG.spreadsheetId, SHEETS_CONFIG.sheet2_gid, 15000),
+          this.fetchSheetGViz(SHEETS_CONFIG.spreadsheetId, SHEETS_CONFIG.sheet3_gid, 15000)
         ]);
-
         s1 = this.parseGVizProductivity(t1, false);
         s2 = this.parseGVizProductivity(t2, false);
         s3 = this.parseGVizProductivity(t3, true);
-        upcoming = this.parseGVizUpcoming(tUpcoming);
-        workflow = this.parseGVizWorkflow(tWorkflow);
-      } catch (gvizError) {
-        console.warn("GViz JSONP failed, attempting direct CSV fetch fallback...", gvizError);
-
-        // 2. Direct CSV fetch fallback (if hosted on HTTP/HTTPS)
-        const [csv1, csv2, csv3, csvUpcoming, csvWorkflow] = await Promise.all([
-          this.fetchSheetCSV(SHEETS_CONFIG.sheet1_gid),
-          this.fetchSheetCSV(SHEETS_CONFIG.sheet2_gid),
-          this.fetchSheetCSV(SHEETS_CONFIG.sheet3_gid),
-          this.fetchSheetCSV(SHEETS_CONFIG.upcoming_gid, SHEETS_CONFIG.upcomingSpreadsheetId),
-          this.fetchSheetCSV(SHEETS_CONFIG.workflow_gid, SHEETS_CONFIG.workflowSpreadsheetId)
-        ]);
-
-        s1 = this.parseCSV(csv1);
-        s2 = this.parseCSV(csv2);
-        s3 = this.parseCSV(csv3);
-        upcoming = this.parseUpcomingCSV(csvUpcoming);
-        workflow = this.parseWorkflowCSV(csvWorkflow);
+        console.log("✓ Productivity sheets (Published, Word Count, Picked) fetched successfully");
+      } catch (prodErr) {
+        console.warn("Productivity GViz failed, trying CSV fallback...", prodErr);
+        try {
+          const [csv1, csv2, csv3] = await Promise.all([
+            this.fetchSheetCSV(SHEETS_CONFIG.sheet1_gid),
+            this.fetchSheetCSV(SHEETS_CONFIG.sheet2_gid),
+            this.fetchSheetCSV(SHEETS_CONFIG.sheet3_gid)
+          ]);
+          s1 = this.parseCSV(csv1);
+          s2 = this.parseCSV(csv2);
+          s3 = this.parseCSV(csv3);
+        } catch (csvErr) {
+          console.warn("Productivity CSV fallback failed:", csvErr);
+        }
       }
 
-      // Fetch all calendar sub-sheets (Railway, SSC, Engineering, Teaching, State, Police)
+      // 2. Fetch Upcoming Events
+      try {
+        const tUpcoming = await this.fetchSheetGViz(SHEETS_CONFIG.upcomingSpreadsheetId, SHEETS_CONFIG.upcoming_gid, 15000);
+        upcoming = this.parseGVizUpcoming(tUpcoming);
+      } catch (upErr) {
+        console.warn("Upcoming GViz failed, trying CSV:", upErr);
+        try {
+          const csvUpcoming = await this.fetchSheetCSV(SHEETS_CONFIG.upcoming_gid, SHEETS_CONFIG.upcomingSpreadsheetId);
+          upcoming = this.parseUpcomingCSV(csvUpcoming);
+        } catch (e) {
+          console.warn("Upcoming CSV failed:", e);
+        }
+      }
+
+      // 3. Fetch Workflow <JAS> (Large sheet ~5MB, 35s timeout)
+      try {
+        const tWorkflow = await this.fetchSheetGViz(SHEETS_CONFIG.workflowSpreadsheetId, SHEETS_CONFIG.workflow_gid, 35000);
+        workflow = this.parseGVizWorkflow(tWorkflow);
+      } catch (wfErr) {
+        console.warn("Workflow GViz failed/timed out, trying CSV:", wfErr);
+        try {
+          const csvWorkflow = await this.fetchSheetCSV(SHEETS_CONFIG.workflow_gid, SHEETS_CONFIG.workflowSpreadsheetId);
+          workflow = this.parseWorkflowCSV(csvWorkflow);
+        } catch (e) {
+          console.warn("Workflow CSV fallback failed:", e);
+        }
+      }
+
+      // 4. Fetch all calendar sub-sheets (Railway, SSC, Engineering, Teaching, State, Police)
       let calendarEvents = [];
       try {
         const calPromises = SHEETS_CONFIG.calendarSheets.map(cs =>
-          this.fetchSheetGViz(SHEETS_CONFIG.calendarSpreadsheetId, cs.gid)
+          this.fetchSheetGViz(SHEETS_CONFIG.calendarSpreadsheetId, cs.gid, 15000)
             .then(tbl => this.parseGVizCalendar(tbl, cs.category))
             .catch(err => {
               console.warn(`Calendar GViz failed for ${cs.category}, trying CSV:`, err);
@@ -616,22 +637,24 @@ class SheetsClient {
         console.warn("Could not fetch live calendar sheets, keeping existing data:", calErr);
       }
 
+      // Update data store with fresh data or preserve previous
       this.data = {
         timestamp: new Date().toISOString(),
-        sheet1_published: s1,
-        sheet2_wordcount: s2,
-        sheet3_picked: s3,
+        sheet1_published: s1 || this.data.sheet1_published,
+        sheet2_wordcount: s2 || this.data.sheet2_wordcount,
+        sheet3_picked: s3 || this.data.sheet3_picked,
         upcoming_events: upcoming && upcoming.length > 0 ? upcoming : (this.data.upcoming_events || []),
         workflow_jas: workflow && workflow.length > 0 ? workflow : (this.data.workflow_jas || []),
         calendar_events: calendarEvents && calendarEvents.length > 0 ? calendarEvents : (this.data.calendar_events || [])
       };
 
+      const hasAnyLive = !!(s1 || upcoming || workflow || (calendarEvents && calendarEvents.length > 0));
       this.lastSync = new Date();
-      this.syncStatus = 'live';
+      this.syncStatus = hasAnyLive ? 'live' : 'fallback';
       this.countdownSeconds = 300;
       this.notify();
-      console.log("✓ Google Sheets live data successfully synced at", this.lastSync.toLocaleTimeString());
-      return { success: true, timestamp: this.lastSync };
+      console.log(`✓ Google Sheets data sync finished [${this.syncStatus}] at`, this.lastSync.toLocaleTimeString());
+      return { success: true, timestamp: this.lastSync, status: this.syncStatus };
     } catch (err) {
       console.warn("Could not sync live Google Sheets. Utilizing snapshot data.", err);
       this.syncStatus = 'fallback';
