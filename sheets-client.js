@@ -197,12 +197,14 @@ class SheetsClient {
       if (cat === 'police') cat = 'Police';
       if (cat === 'UGC') cat = 'UGC NET';
 
-      const status = getVal(13);
-      const pickedBy = getVal(4);
-      const priority = getVal(5);
-      const type = getVal(8);
-      let url = getVal(15);
-      if (!url && getVal(10).startsWith('http')) url = getVal(10);
+      const status = getVal(12) || getVal(13);
+      const pickedBy = getVal(3) || getVal(4);
+      const priority = getVal(4) || getVal(5);
+      const type = getVal(7) || getVal(8);
+      const docLink = getVal(14); // Column O: DOCS LINK
+      let url = getVal(15);       // Column P: URL
+      if (!url && getVal(9) && getVal(9).startsWith('http')) url = getVal(9);
+      if (!url && getVal(10) && getVal(10).startsWith('http')) url = getVal(10);
 
       items.push({
         date,
@@ -212,11 +214,12 @@ class SheetsClient {
         pickedBy,
         priority,
         type,
+        docLink,
         url,
         assignedBy: getVal(1),
         datePicked: getVal(2),
-        keywords: getVal(11),
-        seoSuggestion: getVal(12),
+        keywords: getVal(10) || getVal(11),
+        seoSuggestion: getVal(11) || getVal(12),
         expectedEventDate: getVal(19)
       });
     }
@@ -432,11 +435,13 @@ class SheetsClient {
       if (cat === 'police') cat = 'Police';
       if (cat === 'UGC') cat = 'UGC NET';
 
-      const status = (r[13] || '').trim();
-      const pickedBy = (r[4] || '').trim();
-      const priority = (r[5] || '').trim();
-      const type = (r[8] || '').trim();
-      let url = (r[15] || '').trim();
+      const status = (r[12] || r[13] || '').trim();
+      const pickedBy = (r[3] || r[4] || '').trim();
+      const priority = (r[4] || r[5] || '').trim();
+      const type = (r[7] || r[8] || '').trim();
+      const docLink = (r[14] || '').trim(); // Column O: DOCS LINK
+      let url = (r[15] || '').trim();       // Column P: URL
+      if (!url && r[9] && r[9].startsWith('http')) url = r[9].trim();
       if (!url && r[10] && r[10].startsWith('http')) url = r[10].trim();
 
       items.push({
@@ -447,11 +452,12 @@ class SheetsClient {
         pickedBy,
         priority,
         type,
+        docLink,
         url,
         assignedBy: (r[1] || '').trim(),
         datePicked: (r[2] || '').trim(),
-        keywords: (r[11] || '').trim(),
-        seoSuggestion: (r[12] || '').trim(),
+        keywords: (r[10] || r[11] || '').trim(),
+        seoSuggestion: (r[11] || r[12] || '').trim(),
         expectedEventDate: (r[19] || '').trim()
       });
     }

@@ -109,7 +109,6 @@
 
     // Event Calendar
     sectionCalendar: document.getElementById('sectionCalendar'),
-    calendarKpiCards: document.getElementById('calendarKpiCards'),
     calendarCategoryFilter: document.getElementById('calendarCategoryFilter'),
     calendarMonthFilter: document.getElementById('calendarMonthFilter'),
     calendarSearch: document.getElementById('calendarSearch'),
@@ -1322,10 +1321,22 @@
         priorityBadge = escapeHtml(e.priority);
       }
 
-      // URL Action
-      let linkHtml = '—';
-      if (e.url) {
-        linkHtml = `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener noreferrer" class="btn-link-action">View Post ↗</a>`;
+      // Doc Link (Col O) & URL Action
+      let linkHtml = '<span style="color:#94a3b8;">—</span>';
+      const docLink = (e.docLink || '').trim();
+      const postUrl = (e.url || '').trim();
+
+      if (docLink && postUrl) {
+        linkHtml = `
+          <div style="display:flex; gap:0.3rem; justify-content:center; align-items:center;">
+            <a href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link" title="Open Google Doc">Doc 📄</a>
+            <a href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link" title="View Published Post">Visit ↗</a>
+          </div>
+        `;
+      } else if (docLink) {
+        linkHtml = `<a href="${escapeHtml(docLink)}" target="_blank" rel="noopener noreferrer" class="btn-doc-link" title="Open Google Doc">Doc 📄</a>`;
+      } else if (postUrl) {
+        linkHtml = `<a href="${escapeHtml(postUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link" title="View Published Post">Visit ↗</a>`;
       }
 
       rowsHtml += `
@@ -1340,7 +1351,7 @@
           <td style="font-weight:500;">${e.pickedBy ? escapeHtml(e.pickedBy) : '<span style="color:#94a3b8;">—</span>'}</td>
           <td>${priorityBadge}</td>
           <td style="font-size:0.78rem; color:#64748b;">${escapeHtml(e.type || 'News')}</td>
-          <td>${linkHtml}</td>
+          <td style="text-align:center;">${linkHtml}</td>
         </tr>
       `;
     });
@@ -1368,7 +1379,7 @@
       return true;
     });
 
-    const headers = ['Date', 'Category', 'Topic', 'Status', 'Status_Type', 'Picked_By', 'Priority', 'Type', 'URL'];
+    const headers = ['Date', 'Category', 'Topic', 'Status', 'Status_Type', 'Picked_By', 'Priority', 'Type', 'Doc_Link', 'URL'];
     const csvLines = [headers.join(',')];
 
     filteredEvents.forEach(e => {
@@ -1382,6 +1393,7 @@
         `"${(e.pickedBy || '').replace(/"/g, '""')}"`,
         `"${(e.priority || '').replace(/"/g, '""')}"`,
         `"${(e.type || '').replace(/"/g, '""')}"`,
+        `"${(e.docLink || '').replace(/"/g, '""')}"`,
         `"${(e.url || '').replace(/"/g, '""')}"`
       ];
       csvLines.push(row.join(','));
@@ -1836,40 +1848,6 @@
     const allItems = getCalendarList();
     populateCalendarMonths(allItems);
     updateCalendarPillCounts(allItems);
-
-    // KPI Calculations
-    const totalEvents = allItems.length;
-    const uniqueExams = new Set(allItems.map(e => e.exam).filter(Boolean)).size;
-    const categoriesCount = new Set(allItems.map(e => e.category).filter(Boolean)).size;
-    const soonEvents = allItems.filter(e => {
-      const d = (e.expectedDate || '').toLowerCase();
-      return d.includes('sep') || d.includes('oct') || d.includes('2026');
-    }).length;
-
-    if (els.calendarKpiCards) {
-      els.calendarKpiCards.innerHTML = `
-        <div class="kpi-card">
-          <div class="kpi-title">📅 Total Events Tracked</div>
-          <div class="kpi-val" style="color:#1d4ed8;">${totalEvents}</div>
-          <div class="kpi-sub">Across 6 Exam Verticals</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-title">🏛️ Distinct Exams Covered</div>
-          <div class="kpi-val" style="color:#7e22ce;">${uniqueExams}</div>
-          <div class="kpi-sub">RRB, SSC, UPSSSC, Police etc.</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-title">📂 Sub-Sheet Categories</div>
-          <div class="kpi-val" style="color:#059669;">${categoriesCount}</div>
-          <div class="kpi-sub">Combined view by default</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-title">⚡ Q4 2026 Key Milestones</div>
-          <div class="kpi-val" style="color:#b45309;">${soonEvents}</div>
-          <div class="kpi-sub">Upcoming Conductions & Releases</div>
-        </div>
-      `;
-    }
 
     // Filter Items
     const filtered = allItems.filter(e => {
