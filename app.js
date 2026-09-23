@@ -944,6 +944,13 @@
       rows = rows.filter(r => r.date.toLowerCase().includes(state.catDateSearch));
     }
 
+    // Sort dates from Latest to Old (Descending)
+    rows.sort((a, b) => {
+      const da = new Date(a.date);
+      const db = new Date(b.date);
+      return db - da;
+    });
+
     // Category Totals
     const catTotals = {};
     categories.forEach(c => { catTotals[c] = 0; });
@@ -1210,6 +1217,15 @@
       }
 
       return true;
+    });
+
+    // Sort events from Latest to Old (Descending)
+    filteredEvents.sort((a, b) => {
+      const da = parseUpcomingDate(a.date);
+      const db = parseUpcomingDate(b.date);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+      return tb - ta;
     });
 
     // Render KPI Cards (Number of Events Planned - Number of Articles Done)
@@ -1543,6 +1559,15 @@
       return true;
     });
 
+    // Sort tasks from Latest to Old (Descending)
+    filteredItems.sort((a, b) => {
+      const da = parseWorkflowDate(a.date);
+      const db = parseWorkflowDate(b.date);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+      return tb - ta;
+    });
+
     renderWorkflowKpis(filteredItems, dateScopedItems.length);
     renderWorkflowTable(filteredItems);
 
@@ -1790,6 +1815,62 @@
     });
   }
 
+  function parseCalendarDate(str) {
+    if (!str) return 0;
+    const clean = String(str).trim().toLowerCase();
+
+    let year = 2026;
+    if (clean.includes('2027')) {
+      year = 2027;
+    } else if (clean.includes('2025')) {
+      year = 2025;
+    }
+
+    const months = {
+      january: 0, jan: 0,
+      february: 1, feb: 1,
+      march: 2, mar: 2,
+      april: 3, apr: 3,
+      may: 4,
+      june: 5, jun: 5,
+      july: 6, jul: 6,
+      august: 7, aug: 7,
+      september: 8, sept: 8, sep: 8,
+      octobber: 9, october: 9, oct: 9,
+      november: 10, nov: 10,
+      december: 11, dec: 11
+    };
+
+    let month = -1;
+    for (const [mName, mIdx] of Object.entries(months)) {
+      const regex = new RegExp(`\\b${mName}\\b`, 'i');
+      if (regex.test(clean)) {
+        month = mIdx;
+        break;
+      }
+    }
+
+    if (month === -1) return 0;
+    if (month === 0 && !clean.includes('2026') && !clean.includes('2025')) {
+      year = 2027;
+    }
+
+    let day = 15;
+    const matches = clean.match(/\\b(\\d{1,2})(?:st|nd|rd|th)?\\b/g);
+    if (matches && matches.length > 0) {
+      const validDays = matches.map(d => parseInt(d, 10)).filter(d => d >= 1 && d <= 31);
+      if (validDays.length > 0) day = validDays[0];
+    } else if (clean.includes('last')) {
+      day = 28;
+    } else if (clean.includes('1st week')) {
+      day = 7;
+    } else if (clean.includes('2nd week')) {
+      day = 14;
+    }
+
+    return new Date(year, month, day).getTime();
+  }
+
   let calendarMonthsPopulated = false;
   function populateCalendarMonths(items) {
     if (calendarMonthsPopulated || !els.calendarMonthFilter) return;
@@ -1809,10 +1890,11 @@
       }
     });
 
+    // Sort months from Latest to Old (Descending)
     const sortedMonths = Array.from(monthsSet).sort((a, b) => {
       const dateA = new Date(a);
       const dateB = new Date(b);
-      return dateA - dateB;
+      return dateB - dateA;
     });
 
     sortedMonths.forEach(m => {
@@ -1889,6 +1971,13 @@
       els.calendarCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} events`;
     }
 
+    // Sort events from Latest to Old (Descending)
+    filtered.sort((a, b) => {
+      const ta = parseCalendarDate(a.expectedDate);
+      const tb = parseCalendarDate(b.expectedDate);
+      return tb - ta;
+    });
+
     if (filtered.length === 0) {
       els.calendarTableBody.innerHTML = `
         <tr>
@@ -1952,6 +2041,13 @@
         if (!match) return false;
       }
       return true;
+    });
+
+    // Sort exported CSV from Latest to Old (Descending)
+    filtered.sort((a, b) => {
+      const ta = parseCalendarDate(a.expectedDate);
+      const tb = parseCalendarDate(b.expectedDate);
+      return tb - ta;
     });
 
     const headers = ['Category', 'Exam', 'Event Name', 'Expected Month/Date', 'TAM', 'Expected Traffic', 'Number of Blogs Required'];
