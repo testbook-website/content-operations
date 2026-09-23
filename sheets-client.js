@@ -21,6 +21,15 @@ const SHEETS_CONFIG = {
   upcoming_gid: '1107724151',
   workflowSpreadsheetId: '1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A',
   workflow_gid: '820015548',
+  calendarSpreadsheetId: '1Ike2Gydj1_1m7NgDJQV5hfFzPpq6VyemByx5wpJXLjY',
+  calendarSheets: [
+    { category: 'Railway', gid: '0' },
+    { category: 'SSC', gid: '1450766282' },
+    { category: 'Engineering', gid: '675438041' },
+    { category: 'Teaching', gid: '1669063915' },
+    { category: 'State', gid: '1952134358' },
+    { category: 'Police', gid: '1548212159' }
+  ],
   refreshIntervalMs: 5 * 60 * 1000 // 5 minutes
 };
 
@@ -32,6 +41,9 @@ class SheetsClient {
     }
     if (typeof BASELINE_WORKFLOW_DATA !== 'undefined') {
       this.data.workflow_jas = BASELINE_WORKFLOW_DATA;
+    }
+    if (typeof BASELINE_CALENDAR_DATA !== 'undefined') {
+      this.data.calendar_events = BASELINE_CALENDAR_DATA;
     }
     this.lastSync = this.data && this.data.timestamp ? new Date(this.data.timestamp) : new Date();
     this.subscribers = [];
@@ -259,6 +271,47 @@ class SheetsClient {
     return items;
   }
 
+  // Parse GViz Table for Event Calendar Sub-Sheets
+  parseGVizCalendar(table, category) {
+    if (!table || !table.rows) return [];
+    const items = [];
+    let currentExam = '';
+
+    for (let i = 0; i < table.rows.length; i++) {
+      const r = table.rows[i].c || [];
+      const getVal = (idx) => {
+        if (!r[idx]) return '';
+        if (r[idx].f !== undefined && r[idx].f !== null) return String(r[idx].f).trim();
+        if (r[idx].v !== undefined && r[idx].v !== null) return String(r[idx].v).trim();
+        return '';
+      };
+
+      const examCol = getVal(0);
+      const eventName = getVal(1);
+      const expectedDate = getVal(2);
+      const tam = getVal(3);
+      const expectedTraffic = getVal(4);
+      const blogsRequired = getVal(5);
+
+      if (examCol) {
+        currentExam = examCol;
+      }
+
+      if (!eventName && !expectedDate) continue;
+
+      items.push({
+        category,
+        exam: currentExam,
+        eventName,
+        expectedDate,
+        tam,
+        expectedTraffic,
+        blogsRequired
+      });
+    }
+    return items;
+  }
+
   // =========================================================================
   // Fallback CSV Parser (Used if direct HTTP fetch succeeds)
   // =========================================================================
@@ -447,6 +500,41 @@ class SheetsClient {
     return items;
   }
 
+  parseCalendarCSV(text, category) {
+    const rows = this.parseCSVRows(text);
+    if (rows.length <= 1) return [];
+    const items = [];
+    let currentExam = '';
+
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r || r.length === 0) continue;
+      const examCol = (r[0] || '').trim();
+      const eventName = (r[1] || '').trim();
+      const expectedDate = (r[2] || '').trim();
+      const tam = (r[3] || '').trim();
+      const expectedTraffic = (r[4] || '').trim();
+      const blogsRequired = (r[5] || '').trim();
+
+      if (examCol) {
+        currentExam = examCol;
+      }
+
+      if (!eventName && !expectedDate) continue;
+
+      items.push({
+        category,
+        exam: currentExam,
+        eventName,
+        expectedDate,
+        tam,
+        expectedTraffic,
+        blogsRequired
+      });
+    }
+    return items;
+  }
+
   async fetchSheetCSV(gid, spreadsheetId = SHEETS_CONFIG.spreadsheetId) {
     const directUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}&_t=${Date.now()}`;
     const res = await fetch(directUrl);
@@ -503,13 +591,33 @@ class SheetsClient {
         workflow = this.parseWorkflowCSV(csvWorkflow);
       }
 
+      // Fetch all calendar sub-sheets (Railway, SSC, Engineering, Teaching, State, Police)
+      let calendarEvents = [];
+      try {
+        const calPromises = SHEETS_CONFIG.calendarSheets.map(cs =>
+          this.fetchSheetGViz(SHEETS_CONFIG.calendarSpreadsheetId, cs.gid)
+            .then(tbl => this.parseGVizCalendar(tbl, cs.category))
+            .catch(err => {
+              console.warn(`Calendar GViz failed for ${cs.category}, trying CSV:`, err);
+              return this.fetchSheetCSV(cs.gid, SHEETS_CONFIG.calendarSpreadsheetId)
+                .then(csv => this.parseCalendarCSV(csv, cs.category))
+                .catch(() => []);
+            })
+        );
+        const calResults = await Promise.all(calPromises);
+        calendarEvents = calResults.flat();
+      } catch (calErr) {
+        console.warn("Could not fetch live calendar sheets, keeping existing data:", calErr);
+      }
+
       this.data = {
         timestamp: new Date().toISOString(),
         sheet1_published: s1,
         sheet2_wordcount: s2,
         sheet3_picked: s3,
         upcoming_events: upcoming && upcoming.length > 0 ? upcoming : (this.data.upcoming_events || []),
-        workflow_jas: workflow && workflow.length > 0 ? workflow : (this.data.workflow_jas || [])
+        workflow_jas: workflow && workflow.length > 0 ? workflow : (this.data.workflow_jas || []),
+        calendar_events: calendarEvents && calendarEvents.length > 0 ? calendarEvents : (this.data.calendar_events || [])
       };
 
       this.lastSync = new Date();

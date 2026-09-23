@@ -34,6 +34,9 @@
     workflowWriterFilter: 'all',
     workflowTaskTypeFilter: 'all',
     workflowSearch: '',
+    calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
+    calendarMonthFilter: 'all',
+    calendarSearch: '',
     sheetsData: null,
     lastSyncTime: null
   };
@@ -102,7 +105,19 @@
     workflowCountLabel: document.getElementById('workflowCountLabel'),
     workflowTableBody: document.getElementById('workflowTableBody'),
     btnExportWorkflowCSV: document.getElementById('btnExportWorkflowCSV'),
-    workflowLiveBadge: document.getElementById('workflowLiveBadge')
+    workflowLiveBadge: document.getElementById('workflowLiveBadge'),
+
+    // Event Calendar
+    sectionCalendar: document.getElementById('sectionCalendar'),
+    calendarKpiCards: document.getElementById('calendarKpiCards'),
+    calendarCategoryFilter: document.getElementById('calendarCategoryFilter'),
+    calendarMonthFilter: document.getElementById('calendarMonthFilter'),
+    calendarSearch: document.getElementById('calendarSearch'),
+    calendarCountLabel: document.getElementById('calendarCountLabel'),
+    calendarTableBody: document.getElementById('calendarTableBody'),
+    btnExportCalendarCSV: document.getElementById('btnExportCalendarCSV'),
+    calendarLiveBadge: document.getElementById('calendarLiveBadge'),
+    calendarCategoryPills: document.getElementById('calendarCategoryPills')
   };
 
   // =========================================================================
@@ -227,6 +242,7 @@
           if (state.activeNavTab === 'productivity') renderProductivity();
           if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
           if (state.activeNavTab === 'workflow') renderWorkflow();
+          if (state.activeNavTab === 'calendar') renderCalendar();
         }
       });
 
@@ -390,6 +406,45 @@
     if (els.btnExportWorkflowCSV) {
       els.btnExportWorkflowCSV.addEventListener('click', exportWorkflowCSV);
     }
+
+    // Event Calendar Controls
+    if (els.calendarCategoryFilter) {
+      els.calendarCategoryFilter.addEventListener('change', (e) => {
+        state.calendarCategoryFilter = e.target.value;
+        syncCalendarPills(e.target.value);
+        renderCalendar();
+      });
+    }
+
+    if (els.calendarCategoryPills) {
+      els.calendarCategoryPills.querySelectorAll('.cat-pill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const cat = btn.dataset.category || 'all';
+          state.calendarCategoryFilter = cat;
+          if (els.calendarCategoryFilter) els.calendarCategoryFilter.value = cat;
+          syncCalendarPills(cat);
+          renderCalendar();
+        });
+      });
+    }
+
+    if (els.calendarMonthFilter) {
+      els.calendarMonthFilter.addEventListener('change', (e) => {
+        state.calendarMonthFilter = e.target.value;
+        renderCalendar();
+      });
+    }
+
+    if (els.calendarSearch) {
+      els.calendarSearch.addEventListener('input', (e) => {
+        state.calendarSearch = e.target.value.toLowerCase().trim();
+        renderCalendar();
+      });
+    }
+
+    if (els.btnExportCalendarCSV) {
+      els.btnExportCalendarCSV.addEventListener('click', exportCalendarCSV);
+    }
   }
 
   function switchNavTab(tab) {
@@ -401,12 +456,14 @@
     if (els.sectionCategory) els.sectionCategory.style.display = tab === 'category' ? 'block' : 'none';
     if (els.sectionUpcoming) els.sectionUpcoming.style.display = tab === 'upcoming' ? 'block' : 'none';
     if (els.sectionWorkflow) els.sectionWorkflow.style.display = tab === 'workflow' ? 'block' : 'none';
+    if (els.sectionCalendar) els.sectionCalendar.style.display = tab === 'calendar' ? 'block' : 'none';
 
     if (tab === 'roster') renderRoster();
     if (tab === 'productivity') renderProductivity();
     if (tab === 'category') renderCategoryGrid();
     if (tab === 'upcoming') renderUpcomingEvents();
     if (tab === 'workflow') renderWorkflow();
+    if (tab === 'calendar') renderCalendar();
   }
 
   function switchProdSubTab(subtab) {
@@ -1695,6 +1752,244 @@
   }
 
   // =========================================================================
+  // TAB 6: Event Calendar Rendering (Aggregated Sub-Sheets + Category Filter)
+  // =========================================================================
+  function getCalendarList() {
+    if (state.sheetsData && state.sheetsData.calendar_events && state.sheetsData.calendar_events.length > 0) {
+      return state.sheetsData.calendar_events;
+    }
+    if (typeof BASELINE_CALENDAR_DATA !== 'undefined') {
+      return BASELINE_CALENDAR_DATA;
+    }
+    return [];
+  }
+
+  function syncCalendarPills(activeCat) {
+    if (!els.calendarCategoryPills) return;
+    els.calendarCategoryPills.querySelectorAll('.cat-pill-btn').forEach(b => {
+      b.classList.toggle('active', (b.dataset.category || 'all') === activeCat);
+    });
+  }
+
+  let calendarMonthsPopulated = false;
+  function populateCalendarMonths(items) {
+    if (calendarMonthsPopulated || !els.calendarMonthFilter) return;
+    const monthsSet = new Set();
+    items.forEach(e => {
+      const d = (e.expectedDate || '').trim();
+      if (!d) return;
+      const match = d.match(/(January|February|March|April|May|June|July|August|September|October|November|December|Sep|Oct|Nov|Dec)\s*(\d{4})?/i);
+      if (match) {
+        let m = match[1];
+        if (m.toLowerCase() === 'sep') m = 'September';
+        if (m.toLowerCase() === 'oct') m = 'October';
+        if (m.toLowerCase() === 'nov') m = 'November';
+        if (m.toLowerCase() === 'dec') m = 'December';
+        const y = match[2] || '2026';
+        monthsSet.add(`${m} ${y}`);
+      }
+    });
+
+    const sortedMonths = Array.from(monthsSet).sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      return dateA - dateB;
+    });
+
+    sortedMonths.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      els.calendarMonthFilter.appendChild(opt);
+    });
+    calendarMonthsPopulated = true;
+  }
+
+  function updateCalendarPillCounts(items) {
+    const counts = { all: items.length, Railway: 0, SSC: 0, Engineering: 0, Teaching: 0, State: 0, Police: 0 };
+    items.forEach(e => {
+      if (counts[e.category] !== undefined) counts[e.category]++;
+    });
+
+    ['All', 'Railway', 'SSC', 'Engineering', 'Teaching', 'State', 'Police'].forEach(c => {
+      const el = document.getElementById(`pillCount${c}`);
+      if (el) el.textContent = c === 'All' ? counts.all : (counts[c] || 0);
+    });
+  }
+
+  function getEventIcon(eventName) {
+    const name = (eventName || '').toLowerCase();
+    if (name.includes('notification')) return '📢';
+    if (name.includes('apply') || name.includes('application') || name.includes('form')) return '📝';
+    if (name.includes('city') || name.includes('slip')) return '📍';
+    if (name.includes('admit') || name.includes('hall ticket')) return '🎫';
+    if (name.includes('exam') || name.includes('conduction') || name.includes('cbt')) return '🎯';
+    if (name.includes('key')) return '🔑';
+    if (name.includes('result') || name.includes('merit') || name.includes('score')) return '🏆';
+    if (name.includes('cut off')) return '📊';
+    return '📌';
+  }
+
+  function renderCalendar() {
+    if (!els.sectionCalendar || !els.calendarTableBody) return;
+
+    const allItems = getCalendarList();
+    populateCalendarMonths(allItems);
+    updateCalendarPillCounts(allItems);
+
+    // KPI Calculations
+    const totalEvents = allItems.length;
+    const uniqueExams = new Set(allItems.map(e => e.exam).filter(Boolean)).size;
+    const categoriesCount = new Set(allItems.map(e => e.category).filter(Boolean)).size;
+    const soonEvents = allItems.filter(e => {
+      const d = (e.expectedDate || '').toLowerCase();
+      return d.includes('sep') || d.includes('oct') || d.includes('2026');
+    }).length;
+
+    if (els.calendarKpiCards) {
+      els.calendarKpiCards.innerHTML = `
+        <div class="kpi-card">
+          <div class="kpi-title">📅 Total Events Tracked</div>
+          <div class="kpi-val" style="color:#1d4ed8;">${totalEvents}</div>
+          <div class="kpi-sub">Across 6 Exam Verticals</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">🏛️ Distinct Exams Covered</div>
+          <div class="kpi-val" style="color:#7e22ce;">${uniqueExams}</div>
+          <div class="kpi-sub">RRB, SSC, UPSSSC, Police etc.</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">📂 Sub-Sheet Categories</div>
+          <div class="kpi-val" style="color:#059669;">${categoriesCount}</div>
+          <div class="kpi-sub">Combined view by default</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">⚡ Q4 2026 Key Milestones</div>
+          <div class="kpi-val" style="color:#b45309;">${soonEvents}</div>
+          <div class="kpi-sub">Upcoming Conductions & Releases</div>
+        </div>
+      `;
+    }
+
+    // Filter Items
+    const filtered = allItems.filter(e => {
+      // Category filter (Default: 'all' combined view!)
+      if (state.calendarCategoryFilter !== 'all' && e.category !== state.calendarCategoryFilter) {
+        return false;
+      }
+      // Month filter
+      if (state.calendarMonthFilter !== 'all') {
+        const target = state.calendarMonthFilter.toLowerCase();
+        const dateStr = (e.expectedDate || '').toLowerCase();
+        const parts = target.split(' ');
+        const mName = parts[0];
+        if (!dateStr.includes(mName.substring(0, 3))) {
+          return false;
+        }
+      }
+      // Search filter
+      if (state.calendarSearch) {
+        const q = state.calendarSearch;
+        const match = (e.exam && e.exam.toLowerCase().includes(q)) ||
+                      (e.eventName && e.eventName.toLowerCase().includes(q)) ||
+                      (e.expectedDate && e.expectedDate.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.tam && e.tam.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    if (els.calendarCountLabel) {
+      els.calendarCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} events`;
+    }
+
+    if (filtered.length === 0) {
+      els.calendarTableBody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding:3rem; color:#64748b;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔍</div>
+            <div style="font-weight:600;">No events match your current filter criteria.</div>
+            <div style="font-size:0.8rem; margin-top:0.25rem;">Try selecting "All Categories (Combined)" or clearing your search.</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    let rowsHtml = '';
+    filtered.forEach(e => {
+      const catClass = `badge-cal-${(e.category || 'default').toLowerCase()}`;
+      const icon = getEventIcon(e.eventName);
+      const isSoon = (e.expectedDate || '').toLowerCase().includes('sep') || (e.expectedDate || '').toLowerCase().includes('oct');
+      const dateBadgeClass = isSoon ? 'badge-cal-date highlight-soon' : 'badge-cal-date';
+      const tamHtml = e.tam ? `<span class="badge-cal-tam">${escapeHtml(e.tam)}</span>` : '<span style="color:#94a3b8;">—</span>';
+      const trafficHtml = e.expectedTraffic ? `<span class="badge-cal-metric">${escapeHtml(e.expectedTraffic)}</span>` : '<span style="color:#94a3b8;">—</span>';
+      const blogsHtml = e.blogsRequired ? `<span class="badge-cal-metric">${escapeHtml(e.blogsRequired)}</span>` : '<span style="color:#94a3b8;">—</span>';
+
+      rowsHtml += `
+        <tr>
+          <td><span class="badge-cal-category ${catClass}">${escapeHtml(e.category)}</span></td>
+          <td><div class="cal-exam-title">${escapeHtml(e.exam || 'General')}</div></td>
+          <td>
+            <div class="cal-event-title">
+              <span style="margin-right:0.35rem;">${icon}</span>${escapeHtml(e.eventName)}
+            </div>
+          </td>
+          <td><span class="${dateBadgeClass}">📅 ${escapeHtml(e.expectedDate || 'TBD')}</span></td>
+          <td style="text-align:center;">${tamHtml}</td>
+          <td style="text-align:center;">${trafficHtml}</td>
+          <td style="text-align:center;">${blogsHtml}</td>
+        </tr>
+      `;
+    });
+
+    els.calendarTableBody.innerHTML = rowsHtml;
+  }
+
+  function exportCalendarCSV() {
+    const allItems = getCalendarList();
+    const filtered = allItems.filter(e => {
+      if (state.calendarCategoryFilter !== 'all' && e.category !== state.calendarCategoryFilter) return false;
+      if (state.calendarMonthFilter !== 'all') {
+        const target = state.calendarMonthFilter.toLowerCase();
+        const dateStr = (e.expectedDate || '').toLowerCase();
+        const parts = target.split(' ');
+        if (!dateStr.includes(parts[0].substring(0, 3))) return false;
+      }
+      if (state.calendarSearch) {
+        const q = state.calendarSearch;
+        const match = (e.exam && e.exam.toLowerCase().includes(q)) ||
+                      (e.eventName && e.eventName.toLowerCase().includes(q)) ||
+                      (e.expectedDate && e.expectedDate.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.tam && e.tam.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    const headers = ['Category', 'Exam', 'Event Name', 'Expected Month/Date', 'TAM', 'Expected Traffic', 'Number of Blogs Required'];
+    const csvLines = [headers.join(',')];
+
+    filtered.forEach(e => {
+      const row = [
+        `"${(e.category || '').replace(/"/g, '""')}"`,
+        `"${(e.exam || '').replace(/"/g, '""')}"`,
+        `"${(e.eventName || '').replace(/"/g, '""')}"`,
+        `"${(e.expectedDate || '').replace(/"/g, '""')}"`,
+        `"${(e.tam || '').replace(/"/g, '""')}"`,
+        `"${(e.expectedTraffic || '').replace(/"/g, '""')}"`,
+        `"${(e.blogsRequired || '').replace(/"/g, '""')}"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    const filename = `Event_Calendar_${state.calendarCategoryFilter}_${Date.now()}.csv`;
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
   // Master Initialization
   // =========================================================================
   function renderApp() {
@@ -1703,6 +1998,7 @@
     renderCategoryGrid();
     renderUpcomingEvents();
     renderWorkflow();
+    renderCalendar();
   }
 
   function init() {

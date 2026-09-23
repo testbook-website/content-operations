@@ -52,6 +52,7 @@
         <button class="tab-btn" data-tab="category" id="tabBtnCategory">📂 Category Wise Date</button>
         <button class="tab-btn" data-tab="upcoming" id="tabBtnUpcoming">⚡ Upcoming Events</button>
         <button class="tab-btn" data-tab="workflow" id="tabBtnWorkflow">📋 Workflow &lt;JAS&gt;</button>
+        <button class="tab-btn" data-tab="calendar" id="tabBtnCalendar">🗓️ Event Calendar</button>
       </div>
 
       <div class="nav-actions">
@@ -362,6 +363,100 @@
       </div>
     </section>
 
+    <!-- =====================================================================
+         TAB 6: EVENT CALENDAR (Combined Sheets & Category Filter)
+         ===================================================================== -->
+    <section id="sectionCalendar" style="display:none;">
+      
+      <!-- Source & Quick Info Banner -->
+      <div class="calendar-banner" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.25rem;">
+        <div>
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:1.25rem;">🗓️</span>
+            <span style="font-size:1.05rem; font-weight:700; color:#0f172a;">Exam Event Calendar (Expected Months & Dates)</span>
+            <span class="live-sync-indicator" id="calendarLiveBadge">🟢 Live Synced</span>
+          </div>
+          <div style="font-size:0.8rem; color:#64748b; margin-top:0.25rem;">
+            Unified timeline aggregating Railway, SSC, Engineering, Teaching, State, and Police exam cycles.
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <a href="https://docs.google.com/spreadsheets/d/1Ike2Gydj1_1m7NgDJQV5hfFzPpq6VyemByx5wpJXLjY/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" class="btn-link-action" style="font-size:0.78rem;">
+            Open Source Sheet ↗
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid" id="calendarKpiCards" style="margin-bottom:1.25rem;"></div>
+
+      <!-- Category Filter Pills / Bar -->
+      <div class="calendar-category-pills" id="calendarCategoryPills" style="margin-bottom:1rem; display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center;">
+        <span style="font-size:0.8rem; font-weight:700; color:#475569; margin-right:0.25rem;">Categories:</span>
+        <button class="cat-pill-btn active" data-category="all">All Combined (<span id="pillCountAll">0</span>)</button>
+        <button class="cat-pill-btn" data-category="Railway">🚆 Railway (<span id="pillCountRailway">0</span>)</button>
+        <button class="cat-pill-btn" data-category="SSC">🏛️ SSC (<span id="pillCountSSC">0</span>)</button>
+        <button class="cat-pill-btn" data-category="Engineering">⚙️ Engineering (<span id="pillCountEngineering">0</span>)</button>
+        <button class="cat-pill-btn" data-category="Teaching">🎓 Teaching (<span id="pillCountTeaching">0</span>)</button>
+        <button class="cat-pill-btn" data-category="State">📍 State (<span id="pillCountState">0</span>)</button>
+        <button class="cat-pill-btn" data-category="Police">👮 Police (<span id="pillCountPolice">0</span>)</button>
+      </div>
+
+      <!-- Controls Sub-Bar -->
+      <div class="sub-bar" style="margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.6rem;">
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          
+          <!-- Category Dropdown (As explicitly requested!) -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;" for="calendarCategoryFilter">📂 Category:</label>
+            <select class="select-simple" id="calendarCategoryFilter" style="font-weight:600; min-width:180px;">
+              <option value="all" selected>All Categories (Combined)</option>
+              <option value="Railway">Railway</option>
+              <option value="SSC">SSC</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Teaching">Teaching</option>
+              <option value="State">State</option>
+              <option value="Police">Police</option>
+            </select>
+          </div>
+
+          <!-- Expected Month / Date Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600;" for="calendarMonthFilter">📅 Expected Month:</label>
+            <select class="select-simple" id="calendarMonthFilter">
+              <option value="all">All Expected Months/Dates</option>
+            </select>
+          </div>
+
+          <!-- Search Input -->
+          <input type="text" class="input-simple" id="calendarSearch" placeholder="Search exam, event, date, TAM..." style="width:240px;">
+          <span id="calendarCountLabel" style="font-size:0.75rem; color:#6b7280; font-weight:500;"></span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:0.4rem;">
+          <button class="btn-action" id="btnExportCalendarCSV">Export CSV</button>
+        </div>
+      </div>
+
+      <!-- Calendar Data Table -->
+      <div class="table-wrap" style="max-height: 720px; overflow: auto;">
+        <table class="data-table" id="calendarTable">
+          <thead>
+            <tr>
+              <th style="width:130px;">Category</th>
+              <th style="min-width:200px;">Exam</th>
+              <th style="min-width:260px;">Event Name</th>
+              <th style="width:190px;">Expected Month / Date</th>
+              <th style="width:110px; text-align:center;">TAM</th>
+              <th style="width:130px; text-align:center;">Expected Traffic</th>
+              <th style="width:120px; text-align:center;">Blogs Required</th>
+            </tr>
+          </thead>
+          <tbody id="calendarTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
   </main>
 
   <!-- Data & Application Logic -->
@@ -370,6 +465,7 @@
   <script src="category-data.js"></script>
   <script src="upcoming-data.js"></script>
   <script src="workflow-data.js"></script>
+  <script src="calendar-data.js"></script>
   <script src="sheets-client.js"></script>
   <script src="app.js"></script>
 </body>
