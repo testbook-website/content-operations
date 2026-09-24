@@ -1818,6 +1818,7 @@
   function parseCalendarDate(str) {
     if (!str) return 0;
     const clean = String(str).trim().toLowerCase();
+    if (!clean || clean === '-' || clean === 'tbd' || clean === 'na') return 0;
 
     let year = 2026;
     if (clean.includes('2027')) {
@@ -1851,24 +1852,38 @@
     }
 
     if (month === -1) return 0;
-    if (month === 0 && !clean.includes('2026') && !clean.includes('2025')) {
+    if ((month === 0 || month === 1) && !clean.includes('2026') && !clean.includes('2025')) {
       year = 2027;
     }
 
     let day = 15;
-    const matches = clean.match(/\\b(\\d{1,2})(?:st|nd|rd|th)?\\b/g);
-    if (matches && matches.length > 0) {
-      const validDays = matches.map(d => parseInt(d, 10)).filter(d => d >= 1 && d <= 31);
-      if (validDays.length > 0) day = validDays[0];
-    } else if (clean.includes('last')) {
-      day = 28;
-    } else if (clean.includes('1st week')) {
+    if (clean.includes('1st week') || clean.includes('first week')) {
       day = 7;
-    } else if (clean.includes('2nd week')) {
+    } else if (clean.includes('2nd week') || clean.includes('second week')) {
       day = 14;
+    } else if (clean.includes('3rd week') || clean.includes('third week')) {
+      day = 21;
+    } else if (clean.includes('4th week') || clean.includes('fourth week') || clean.includes('last week') || clean.includes('last')) {
+      day = 28;
+    } else {
+      const withoutYear = clean.replace(/\b20\d\d\b/g, '');
+      const dayMatch = withoutYear.match(/\b(\d{1,2})(?:st|nd|rd|th)?\b/);
+      if (dayMatch) {
+        const d = parseInt(dayMatch[1], 10);
+        if (d >= 1 && d <= 31) day = d;
+      }
     }
 
     return new Date(year, month, day).getTime();
+  }
+
+  function compareCalendarEvents(a, b) {
+    const ta = parseCalendarDate(a.expectedDate);
+    const tb = parseCalendarDate(b.expectedDate);
+    if (ta === 0 && tb === 0) return 0;
+    if (ta === 0) return 1;
+    if (tb === 0) return -1;
+    return ta - tb;
   }
 
   let calendarMonthsPopulated = false;
@@ -1890,11 +1905,11 @@
       }
     });
 
-    // Sort months from Latest to Old (Descending)
+    // Sort months chronologically starting with immediate upcoming (Sep -> Oct -> Nov -> Dec -> Jan 2027)
     const sortedMonths = Array.from(monthsSet).sort((a, b) => {
       const dateA = new Date(a);
       const dateB = new Date(b);
-      return dateB - dateA;
+      return dateA - dateB;
     });
 
     sortedMonths.forEach(m => {
@@ -1971,12 +1986,8 @@
       els.calendarCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} events`;
     }
 
-    // Sort events from Latest to Old (Descending)
-    filtered.sort((a, b) => {
-      const ta = parseCalendarDate(a.expectedDate);
-      const tb = parseCalendarDate(b.expectedDate);
-      return tb - ta;
-    });
+    // Sort events from immediate upcoming chronologically (Sep -> Oct -> Nov -> Dec -> Jan 2027)
+    filtered.sort(compareCalendarEvents);
 
     if (filtered.length === 0) {
       els.calendarTableBody.innerHTML = `
@@ -2043,12 +2054,8 @@
       return true;
     });
 
-    // Sort exported CSV from Latest to Old (Descending)
-    filtered.sort((a, b) => {
-      const ta = parseCalendarDate(a.expectedDate);
-      const tb = parseCalendarDate(b.expectedDate);
-      return tb - ta;
-    });
+    // Sort exported CSV from immediate upcoming chronologically (Sep -> Oct -> Nov -> Dec -> Jan 2027)
+    filtered.sort(compareCalendarEvents);
 
     const headers = ['Category', 'Exam', 'Event Name', 'Expected Month/Date', 'TAM', 'Expected Traffic', 'Number of Blogs Required'];
     const csvLines = [headers.join(',')];
