@@ -21,6 +21,8 @@ const SHEETS_CONFIG = {
   upcoming_gid: '1107724151',
   workflowSpreadsheetId: '1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A',
   workflow_gid: '820015548',
+  categorySpreadsheetId: '1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A',
+  category_gid: '764437772',
   calendarSpreadsheetId: '1Ike2Gydj1_1m7NgDJQV5hfFzPpq6VyemByx5wpJXLjY',
   calendarSheets: [
     { category: 'Railway', gid: '0' },
@@ -44,6 +46,9 @@ class SheetsClient {
     }
     if (typeof BASELINE_CALENDAR_DATA !== 'undefined') {
       this.data.calendar_events = BASELINE_CALENDAR_DATA;
+    }
+    if (typeof CATEGORY_GRID_DATA !== 'undefined') {
+      this.data.category_grid = CATEGORY_GRID_DATA;
     }
     this.lastSync = this.data && this.data.timestamp ? new Date(this.data.timestamp) : new Date();
     this.subscribers = [];
@@ -272,6 +277,45 @@ class SheetsClient {
       });
     }
     return items;
+  }
+
+  // Parse GViz Table for Category Wise Date Tab
+  parseGVizCategory(table) {
+    if (!table || !table.cols || !table.rows) return null;
+    const categories = [];
+    for (let c = 1; c < table.cols.length; c++) {
+      const lbl = (table.cols[c].label || '').trim();
+      if (lbl && !categories.includes(lbl) && lbl.toLowerCase() !== 'total') {
+        categories.push(lbl);
+      }
+    }
+    const rows = [];
+    for (let i = 0; i < table.rows.length; i++) {
+      const r = table.rows[i].c || [];
+      const dateStr = (r[0] && (r[0].f || r[0].v)) ? String(r[0].f || r[0].v).trim() : '';
+      if (!dateStr || dateStr.toLowerCase() === 'date') continue;
+
+      let normDate = dateStr;
+      const m = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        normDate = `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
+      }
+
+      const counts = {};
+      let total = 0;
+      for (let c = 1; c < table.cols.length; c++) {
+        const cat = (table.cols[c].label || '').trim();
+        const val = r[c] ? (parseInt(r[c].v, 10) || 0) : 0;
+        if (cat) {
+          counts[cat] = (counts[cat] || 0) + val;
+          total += val;
+        }
+      }
+      if (total > 0) {
+        rows.push({ date: normDate, counts, total });
+      }
+    }
+    return { categories, rows };
   }
 
   // Parse GViz Table for Event Calendar Sub-Sheets
@@ -637,6 +681,18 @@ class SheetsClient {
         console.warn("Could not fetch live calendar sheets, keeping existing data:", calErr);
       }
 
+      // 5. Fetch Category Wise Date
+      let catGrid;
+      try {
+        const tCat = await this.fetchSheetGViz(SHEETS_CONFIG.categorySpreadsheetId, SHEETS_CONFIG.category_gid, 15000);
+        catGrid = this.parseGVizCategory(tCat);
+        if (catGrid && catGrid.rows && catGrid.rows.length > 0) {
+          console.log(`✓ Category Wise Date fetched successfully (${catGrid.rows.length} active dates)`);
+        }
+      } catch (catErr) {
+        console.warn("Category GViz failed, will use workflow aggregation fallback:", catErr);
+      }
+
       // Update data store with fresh data or preserve previous
       this.data = {
         timestamp: new Date().toISOString(),
@@ -645,10 +701,11 @@ class SheetsClient {
         sheet3_picked: s3 || this.data.sheet3_picked,
         upcoming_events: upcoming && upcoming.length > 0 ? upcoming : (this.data.upcoming_events || []),
         workflow_jas: workflow && workflow.length > 0 ? workflow : (this.data.workflow_jas || []),
-        calendar_events: calendarEvents && calendarEvents.length > 0 ? calendarEvents : (this.data.calendar_events || [])
+        calendar_events: calendarEvents && calendarEvents.length > 0 ? calendarEvents : (this.data.calendar_events || []),
+        category_grid: (catGrid && catGrid.rows && catGrid.rows.length > 0) ? catGrid : (this.data.category_grid || null)
       };
 
-      const hasAnyLive = !!(s1 || upcoming || workflow || (calendarEvents && calendarEvents.length > 0));
+      const hasAnyLive = !!(s1 || upcoming || workflow || (calendarEvents && calendarEvents.length > 0) || (catGrid && catGrid.rows && catGrid.rows.length > 0));
       this.lastSync = new Date();
       this.syncStatus = hasAnyLive ? 'live' : 'fallback';
       this.countdownSeconds = 300;

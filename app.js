@@ -239,6 +239,7 @@
         }
         if (state.isAuthenticated) {
           if (state.activeNavTab === 'productivity') renderProductivity();
+          if (state.activeNavTab === 'category') renderCategoryGrid();
           if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
           if (state.activeNavTab === 'workflow') renderWorkflow();
           if (state.activeNavTab === 'calendar') renderCalendar();
@@ -928,11 +929,68 @@
   // =========================================================================
   // TAB 3: Category Wise Date Rendering (Categories in Columns)
   // =========================================================================
-  function renderCategoryGrid() {
-    if (typeof CATEGORY_GRID_DATA === 'undefined') return;
+  function getActiveCategoryData() {
+    let gridSource = (typeof sheetsClient !== 'undefined' && sheetsClient.data && sheetsClient.data.category_grid)
+      ? sheetsClient.data.category_grid
+      : (typeof CATEGORY_GRID_DATA !== 'undefined' ? CATEGORY_GRID_DATA : null);
 
-    const categories = CATEGORY_GRID_DATA.categories || [];
-    let rows = CATEGORY_GRID_DATA.rows || [];
+    if (!gridSource) return { categories: [], rows: [] };
+
+    const categories = (gridSource.categories || []).slice();
+    const rowsMap = {};
+
+    // 1. Populate from base gridSource
+    (gridSource.rows || []).forEach(r => {
+      if (r && r.date) {
+        rowsMap[r.date] = {
+          date: r.date,
+          counts: { ...(r.counts || {}) },
+          total: r.total || 0
+        };
+      }
+    });
+
+    // 2. Augment with real-time Workflow entries if available
+    if (typeof sheetsClient !== 'undefined' && sheetsClient.data && sheetsClient.data.workflow_jas && sheetsClient.data.workflow_jas.length > 0) {
+      const liveDateMap = {};
+      sheetsClient.data.workflow_jas.forEach(item => {
+        if (!item.date || !item.category) return;
+        const m = item.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        const normDate = m ? `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}` : item.date;
+        if (!liveDateMap[normDate]) liveDateMap[normDate] = {};
+
+        let cat = item.category.trim();
+        if (cat === 'Judiciary Exams') cat = 'Judiciary';
+        if (cat === 'UGC NET Paper 1') cat = 'UGC NET';
+        if (cat === 'State Govt Exams' || cat === 'State-Govt Exams') cat = 'State Exams';
+        if (cat === 'Insurance Exam') cat = 'Insurance';
+        if (cat === 'UPSC Civil Services') cat = 'UPSC';
+        if (cat === 'Railway Exams') cat = 'Railways';
+        if (cat === 'Police Exams') cat = 'Police';
+        if (cat === 'Teaching Exams') cat = 'Teaching';
+        if (cat === 'Banking Exams') cat = 'Banking';
+        if (cat === 'SSC Exams') cat = 'SSC';
+        if (cat === 'Defence Exams') cat = 'Defence';
+
+        liveDateMap[normDate][cat] = (liveDateMap[normDate][cat] || 0) + 1;
+      });
+
+      // Update or insert any date from live workflow
+      Object.keys(liveDateMap).forEach(d => {
+        let total = 0;
+        const counts = {};
+        categories.forEach(c => {
+          counts[c] = liveDateMap[d][c] || 0;
+          total += counts[c];
+        });
+        if (total > 0) {
+          rowsMap[d] = { date: d, counts, total };
+        }
+      });
+    }
+
+    // Filter out rows with 0 articles so blank/placeholder rows don't show
+    let rows = Object.values(rowsMap).filter(r => r.total > 0);
 
     // Filter by Month
     if (state.catMonthFilter !== 'all') {
@@ -950,6 +1008,13 @@
       const db = new Date(b.date);
       return db - da;
     });
+
+    return { categories, rows };
+  }
+
+  function renderCategoryGrid() {
+    const { categories, rows } = getActiveCategoryData();
+    if (!categories || categories.length === 0) return;
 
     // Category Totals
     const catTotals = {};
@@ -1009,17 +1074,8 @@
   }
 
   function exportCategoryGridCSV() {
-    if (typeof CATEGORY_GRID_DATA === 'undefined') return;
-
-    const categories = CATEGORY_GRID_DATA.categories || [];
-    let rows = CATEGORY_GRID_DATA.rows || [];
-
-    if (state.catMonthFilter !== 'all') {
-      rows = rows.filter(r => r.date.startsWith(state.catMonthFilter + '/'));
-    }
-    if (state.catDateSearch) {
-      rows = rows.filter(r => r.date.toLowerCase().includes(state.catDateSearch));
-    }
+    const { categories, rows } = getActiveCategoryData();
+    if (!categories || categories.length === 0) return;
 
     // Header row
     const headers = ['Date', ...categories.map(c => `"${c}"`), 'Total'];
