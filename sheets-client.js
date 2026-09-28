@@ -22,7 +22,7 @@ const SHEETS_CONFIG = {
   workflowSpreadsheetId: '1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A',
   workflow_gid: '820015548',
   categorySpreadsheetId: '1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A',
-  category_gid: '764437772',
+  category_gid: '1053610017',
   calendarSpreadsheetId: '1Ike2Gydj1_1m7NgDJQV5hfFzPpq6VyemByx5wpJXLjY',
   calendarSheets: [
     { category: 'Railway', gid: '0' },
@@ -279,43 +279,87 @@ class SheetsClient {
     return items;
   }
 
-  // Parse GViz Table for Category Wise Date Tab
+  // Parse GViz Table for Category Wise Date Tab (gid: 1053610017 Replica)
   parseGVizCategory(table) {
     if (!table || !table.cols || !table.rows) return null;
     const categories = [];
+    const colIndexToCategory = {};
     for (let c = 1; c < table.cols.length; c++) {
       const lbl = (table.cols[c].label || '').trim();
-      if (lbl && !categories.includes(lbl) && lbl.toLowerCase() !== 'total') {
-        categories.push(lbl);
+      if (lbl && lbl.toLowerCase() !== 'total') {
+        if (!categories.includes(lbl)) {
+          categories.push(lbl);
+        }
+        colIndexToCategory[c] = lbl;
       }
     }
-    const rows = [];
-    for (let i = 0; i < table.rows.length; i++) {
+
+    const summaryLabels = [
+      "Yesterday", "Today", "Day Before", "Last 7 Days", "Till Now",
+      "April", "May", "June", "July", "August", "September"
+    ];
+
+    const summaryRows = [];
+    for (let i = 0; i < Math.min(summaryLabels.length, table.rows.length); i++) {
       const r = table.rows[i].c || [];
-      const dateStr = (r[0] && (r[0].f || r[0].v)) ? String(r[0].f || r[0].v).trim() : '';
-      if (!dateStr || dateStr.toLowerCase() === 'date') continue;
-
-      let normDate = dateStr;
-      const m = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (m) {
-        normDate = `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
-      }
-
+      const label = summaryLabels[i];
       const counts = {};
+      categories.forEach(cat => { counts[cat] = 0; });
       let total = 0;
       for (let c = 1; c < table.cols.length; c++) {
-        const cat = (table.cols[c].label || '').trim();
+        const cat = colIndexToCategory[c];
         const val = r[c] ? (parseInt(r[c].v, 10) || 0) : 0;
         if (cat) {
           counts[cat] = (counts[cat] || 0) + val;
           total += val;
         }
       }
-      if (total > 0) {
+      summaryRows.push({ label, counts, total });
+    }
+
+    const rows = [];
+    for (let i = 11; i < table.rows.length; i++) {
+      const r = table.rows[i].c || [];
+      const dateCell = r[0];
+      const dateStr = (dateCell && (dateCell.f || dateCell.v)) ? String(dateCell.f || dateCell.v).trim() : '';
+      if (!dateStr || dateStr.toLowerCase() === 'date' || dateStr.toLowerCase() === 'day') continue;
+
+      let normDate = dateStr;
+      const m = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        normDate = `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
+      } else {
+        const dMatch = dateStr.match(/Date\((\d{4}),\s*(\d+),\s*(\d+)\)/);
+        if (dMatch) {
+          const y = dMatch[1];
+          const mo = String(parseInt(dMatch[2], 10) + 1).padStart(2, '0');
+          const dy = String(dMatch[3]).padStart(2, '0');
+          normDate = `${mo}/${dy}/${y}`;
+        }
+      }
+
+      const counts = {};
+      categories.forEach(cat => { counts[cat] = 0; });
+      let total = 0;
+      for (let c = 1; c < table.cols.length; c++) {
+        const cat = colIndexToCategory[c];
+        const val = r[c] ? (parseInt(r[c].v, 10) || 0) : 0;
+        if (cat) {
+          counts[cat] = (counts[cat] || 0) + val;
+          total += val;
+        }
+      }
+      if (normDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
         rows.push({ date: normDate, counts, total });
       }
     }
-    return { categories, rows };
+
+    return {
+      source: "Google Sheet gid: 1053610017",
+      categories,
+      summaryRows,
+      rows
+    };
   }
 
   // Parse GViz Table for Event Calendar Sub-Sheets

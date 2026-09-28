@@ -632,6 +632,12 @@ body {
   border-bottom: 2px solid #cbd5e1;
 }
 
+.data-table tr.subtotal-row td {
+  background: #f8fafc;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
 /* KPI Summary Cards */
 .kpi-cards {
   display: grid;
