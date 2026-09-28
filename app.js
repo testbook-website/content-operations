@@ -72,10 +72,7 @@
     prodSearch: document.getElementById('prodSearch'),
     prodTableContainer: document.getElementById('prodTableContainer'),
 
-    // Category Grid (Categories in Columns - gid: 1053610017 Replica)
-    catKpiCards: document.getElementById('catKpiCards'),
-    catSummaryHead: document.getElementById('catSummaryHead'),
-    catSummaryBody: document.getElementById('catSummaryBody'),
+    // Category Grid (Day Wise Breakdown from gid: 1053610017)
     catMonthFilter: document.getElementById('catMonthFilter'),
     catSearch: document.getElementById('catSearch'),
     catStatsLabel: document.getElementById('catStatsLabel'),
@@ -1017,86 +1014,10 @@
   }
 
   function renderCategoryGrid() {
-    const { categories, summaryRows, rows } = getActiveCategoryData();
+    const { categories, rows } = getActiveCategoryData();
     if (!categories || categories.length === 0) return;
 
-    // 1. Render Executive KPI Cards
-    if (els.catKpiCards) {
-      const getSumRow = (label) => (summaryRows || []).find(r => r.label && r.label.toLowerCase() === label.toLowerCase());
-      const todayRow = getSumRow('Today');
-      const yesterdayRow = getSumRow('Yesterday');
-      const dayBeforeRow = getSumRow('Day Before');
-      const last7Row = getSumRow('Last 7 Days');
-      const tillNowRow = getSumRow('Till Now');
-
-      const todayVal = todayRow ? todayRow.total : 0;
-      const yesterdayVal = yesterdayRow ? yesterdayRow.total : 0;
-      const dayBeforeVal = dayBeforeRow ? dayBeforeRow.total : 0;
-      const last7Val = last7Row ? last7Row.total : 0;
-      const tillNowVal = tillNowRow ? tillNowRow.total : 0;
-
-      els.catKpiCards.innerHTML = `
-        <div class="kpi-card kpi-done">
-          <div class="kpi-label">📅 Today (09/28)</div>
-          <div class="kpi-val" style="color:#059669;">${todayVal.toLocaleString()}</div>
-          <div class="kpi-sub">Articles logged today</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">⏪ Yesterday (09/27)</div>
-          <div class="kpi-val" style="color:#64748b;">${yesterdayVal.toLocaleString()}</div>
-          <div class="kpi-sub">Articles logged yesterday</div>
-        </div>
-        <div class="kpi-card kpi-rate">
-          <div class="kpi-label">⏮️ Day Before (09/26)</div>
-          <div class="kpi-val" style="color:#7c3aed;">${dayBeforeVal.toLocaleString()}</div>
-          <div class="kpi-sub">Articles day before</div>
-        </div>
-        <div class="kpi-card kpi-planned">
-          <div class="kpi-label">⚡ Last 7 Days</div>
-          <div class="kpi-val" style="color:#1d4ed8;">${last7Val.toLocaleString()}</div>
-          <div class="kpi-sub">Total output past week</div>
-        </div>
-        <div class="kpi-card" style="background:#f0fdf4; border-color:#bbf7d0;">
-          <div class="kpi-label" style="color:#166534;">🏆 Till Now (Total)</div>
-          <div class="kpi-val" style="color:#15803d;">${tillNowVal.toLocaleString()}</div>
-          <div class="kpi-sub" style="color:#166534;">Cumulative portal articles</div>
-        </div>
-      `;
-    }
-
-    // 2. Render Summary Performance Matrix (Top Section of Google Sheet)
-    if (els.catSummaryHead) {
-      els.catSummaryHead.innerHTML = `
-        <tr>
-          <th class="col-sticky" style="min-width:140px; background:#f8fafc;">Metric / Period</th>
-          ${categories.map(c => `<th class="num-cell" style="min-width:75px;">${c}</th>`).join('')}
-          <th class="num-cell" style="background:#f1f5f9; color:#0f172a; min-width:85px; font-weight:700;">Total</th>
-        </tr>
-      `;
-    }
-
-    if (els.catSummaryBody && summaryRows && summaryRows.length > 0) {
-      els.catSummaryBody.innerHTML = summaryRows.map(sr => {
-        const isHighlight = ['Today', 'Last 7 Days', 'Till Now'].includes(sr.label);
-        const rowClass = sr.label === 'Till Now' ? 'total-row' : (isHighlight ? 'subtotal-row' : '');
-        const labelStyle = sr.label === 'Till Now' 
-          ? 'font-weight:800; color:#1e293b;' 
-          : (sr.label === 'Today' ? 'font-weight:700; color:#059669;' : 'font-weight:600;');
-        
-        return `
-          <tr class="${rowClass}">
-            <td class="col-sticky" style="${labelStyle}">${sr.label}</td>
-            ${categories.map(c => {
-              const val = (sr.counts && sr.counts[c]) || 0;
-              return `<td class="num-cell">${val > 0 ? `<span class="pos-val">${val.toLocaleString()}</span>` : '<span class="zero-val">-</span>'}</td>`;
-            }).join('')}
-            <td class="num-cell" style="font-weight:700; color:#1d4ed8;">${(sr.total || 0).toLocaleString()}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // 3. Render Day-Wise Breakdown Matrix (Main Table)
+    // Render Day-Wise Breakdown Matrix (Main Table)
     const catTotals = {};
     categories.forEach(c => { catTotals[c] = 0; });
     let grandTotal = 0;
@@ -1150,25 +1071,11 @@
   }
 
   function exportCategoryGridCSV() {
-    const { categories, summaryRows, rows } = getActiveCategoryData();
+    const { categories, rows } = getActiveCategoryData();
     if (!categories || categories.length === 0) return;
 
-    const headers = ['Period / Date', ...categories.map(c => `"${c}"`), 'Total'];
+    const headers = ['Date', ...categories.map(c => `"${c}"`), 'Total'];
     const csvLines = [headers.join(',')];
-
-    // Export Summary Rows first
-    if (summaryRows && summaryRows.length > 0) {
-      summaryRows.forEach(sr => {
-        const line = [`"${sr.label}"`];
-        categories.forEach(c => {
-          line.push((sr.counts && sr.counts[c]) || 0);
-        });
-        line.push(sr.total || 0);
-        csvLines.push(line.join(','));
-      });
-      csvLines.push(''); // blank row separator
-      csvLines.push(['Daily Dates Breakdown', ...categories.map(() => ''), ''].join(','));
-    }
 
     // Export Daily Rows
     rows.forEach(r => {
@@ -1180,7 +1087,7 @@
       csvLines.push(line.join(','));
     });
 
-    downloadCSV(csvLines.join('\n'), 'Category_Wise_Date_Replica_1053610017.csv');
+    downloadCSV(csvLines.join('\n'), 'Category_Wise_Date_Breakdown.csv');
   }
 
   function downloadCSV(content, filename) {
