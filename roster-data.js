@@ -6,7 +6,10 @@
  * 2. In News weeks: Exactly one writer leads Night Update on call.
  *    Daily night shifts rotate Monday to Saturday (6 days).
  *    *** SUNDAY IS DELETED - NO ONE WORKS ON SUNDAY ***
- * 3. In Content weeks, members are assigned to Child Pages, SEO Optimization, or High Intent.
+ * 3. In Content weeks:
+ *    - Exactly 1 writer works on Child Pages
+ *    - Exactly 2 writers work on SEO Optimization
+ *    - Exactly 2 writers work on High Intent
  * 4. Strictly guaranteed: No member receives the same content task on consecutive content weeks.
  * 5. In Team B, Trishala replaces Shilpa Singh.
  */
@@ -106,8 +109,8 @@ const ROSTER_CONFIG = {
       tasks: {
         "Sonika": { team: "Team A", task: "Child Pages", nightDays: "-" },
         "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Somya": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Mon, Sat" },
@@ -145,10 +148,10 @@ const ROSTER_CONFIG = {
         "Atul": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
 
         "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "Child Pages", nightDays: "-" },
         "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
 
       }
     },
@@ -175,7 +178,7 @@ const ROSTER_CONFIG = {
         "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Archita": { team: "Team A", task: "Child Pages", nightDays: "-" },
         "Shemaila": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
         "Atul": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
@@ -212,11 +215,11 @@ const ROSTER_CONFIG = {
         "Somya": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
         "Atul": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
 
-        "Nadeem": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "Child Pages", nightDays: "-" },
+        "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Mohit": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
 
       }
     },
@@ -241,10 +244,10 @@ const ROSTER_CONFIG = {
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
         "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
@@ -280,10 +283,10 @@ const ROSTER_CONFIG = {
         "Somya": { team: "Team A", task: "Event Pages", nightDays: "Mon, Sat" },
         "Atul": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
 
-        "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Trishala": { team: "Team B", task: "Child Pages", nightDays: "-" },
 
       }
@@ -308,11 +311,11 @@ const ROSTER_CONFIG = {
         { day: "Sat (28 Nov)", member: "Mohit" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
         "Somya": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Atul": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Atul": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
         "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
@@ -348,11 +351,11 @@ const ROSTER_CONFIG = {
         "Somya": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
         "Atul": { team: "Team A", task: "Event Pages", nightDays: "Mon, Sat" },
 
-        "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
 
       }
     },
@@ -376,10 +379,10 @@ const ROSTER_CONFIG = {
         { day: "Sat (12 Dec)", member: "Trishala" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Archita": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Sonika": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Archita": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
         "Shemaila": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Atul": { team: "Team A", task: "Child Pages", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
@@ -416,11 +419,11 @@ const ROSTER_CONFIG = {
         "Somya": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
         "Atul": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
 
-        "Nadeem": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Aditi": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Mohit": { team: "Team B", task: "Child Pages", nightDays: "-" },
-        "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Mohit": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "High Intent", nightDays: "-" },
 
       }
     },
@@ -444,10 +447,10 @@ const ROSTER_CONFIG = {
         { day: "Sat (26 Dec)", member: "Nadeem" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
+        "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
-        "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
-        "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
+        "Shemaila": { team: "Team A", task: "Child Pages", nightDays: "-" },
+        "Somya": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
         "Atul": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Mon, Sat" },
@@ -483,8 +486,8 @@ const ROSTER_CONFIG = {
         "Atul": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Shilpa Kohli": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
-        "Aditi": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
+        "Aditi": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Mohit": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Trishala": { team: "Team B", task: "Child Pages", nightDays: "-" },
 
