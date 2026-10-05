@@ -3270,9 +3270,8 @@
         break;
       }
 
-      const item = pendingQueue[i];
-      const currentNum = i + 1;
-      updateAiRunnerUI(`⚡ AI Reviewing [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 34))}..." (${item.writer || 'Unassigned'})`);
+      const randomTip = SEO_AUDIT_INSIGHTS[i % SEO_AUDIT_INSIGHTS.length];
+      updateAiRunnerUI(`⚡ AI Reviewing [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
 
       try {
         const res = await sheetsClient.auditContentWithAI(item);
@@ -3334,6 +3333,7 @@
 
   function renderReviewHub(resetFilters = false) {
     if (!els.sectionReview) return;
+    initSeoInsightCycler();
     const allItems = getReviewList();
     populateReviewFilters(allItems);
     updateAiRunnerUI();
@@ -3808,6 +3808,37 @@
     }
   }
 
+  // Curated Modern SEO & Content Team Insights
+  const SEO_AUDIT_INSIGHTS = [
+    "Google Helpful Content System: Firsthand research, structured tables, and authentic sources always outrank generic summaries.",
+    "Search Intent Mastery: Answer the primary user question in the top 20% of your article to boost dwell time and lower bounce rate.",
+    "Internal Linking Power: Linking child pages back to parent pillar pages boosts domain authority and organic crawl budget by ~40%.",
+    "Zero-Click Optimization: Format concise bulleted takeaways directly under H2s to capture Google AI Overviews and featured snippets.",
+    "Content Decay Defense: Updating existing articles with net +300 fresh words recovers lost search rankings 3x faster than writing from scratch.",
+    "High-Intent Conversion: Authentic PDF download buttons and clear syllabus tables increase candidate session duration significantly.",
+    "Editorial Quality Standard: Strict anti-fluff policy — each section must offer actionable exam notes, verified dates, or clear pattern breakdowns.",
+    "E-E-A-T Excellence: Demonstrating deep subject knowledge with official notification references builds long-term search trust.",
+    "Keyword Strategy: Naturally incorporate secondary search variations and long-tail FAQs to capture emerging search volume.",
+    "Freshness Ranking Boost: Timely exam date and result updates signal active editorial maintenance to Google's ranking algorithms.",
+    "Table & Data Formatting: Well-structured HTML tables with clear column headers improve organic click-through rates by up to 28%.",
+    "User Experience First: Clean formatting with short paragraphs and bullet points keeps exam aspirants engaged on mobile devices."
+  ];
+
+  let seoInsightInterval = null;
+  function initSeoInsightCycler() {
+    const el = document.getElementById('seoInsightText');
+    if (!el || seoInsightInterval) return;
+    let idx = 0;
+    seoInsightInterval = setInterval(() => {
+      idx = (idx + 1) % SEO_AUDIT_INSIGHTS.length;
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.textContent = SEO_AUDIT_INSIGHTS[idx];
+        el.style.opacity = '1';
+      }, 250);
+    }, 5500);
+  }
+
   // AI Quick Audit Modal Handler
   async function openAiAuditModal(item, forceReAudit = false) {
     if (!els.modalAiAudit || !els.modalAiAuditContent) return;
@@ -3827,17 +3858,47 @@
       state.aiReviewCache[item.topic] = { running: true };
       renderReviewHub(false);
 
+      const randomQuote = SEO_AUDIT_INSIGHTS[Math.floor(Math.random() * SEO_AUDIT_INSIGHTS.length)];
+
       els.modalAiAuditContent.innerHTML = `
-        <div style="text-align:center; padding:2rem 0; color:#475569;">
+        <div style="text-align:center; padding:1.5rem 0; color:#475569;">
           <div class="spinner" style="margin:0 auto 0.75rem auto; width:36px; height:36px; border:3px solid #e2e8f0; border-top-color:#4f46e5; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
-          <div style="font-weight:700; font-size:0.95rem; color:#1e293b;">Auditing with Classplus AI Gateway (Gemini Flash)...</div>
+          <div style="font-weight:800; font-size:1rem; color:#0f172a;">Auditing with Classplus AI Gateway (Gemini Flash)...</div>
           <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">Analyzing keyword intent, word count differential, and exam syllabus depth</div>
+          
+          <!-- Rotating Live SEO & Editorial Insight Banner -->
+          <div style="margin-top:1.25rem; background:linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border:1px solid #a7f3d0; border-radius:8px; padding:0.75rem 1rem; text-align:left;">
+            <div style="font-size:0.7rem; color:#15803d; font-weight:800; text-transform:uppercase; display:flex; align-items:center; gap:0.35rem; margin-bottom:0.3rem;">
+              <span>⚡ Modern SEO &amp; Editorial Insight</span>
+            </div>
+            <div id="aiModalRotatingQuote" style="font-size:0.78rem; color:#065f46; font-weight:600; line-height:1.4; transition:opacity 0.25s ease;">
+              ${randomQuote}
+            </div>
+          </div>
         </div>
       `;
+
+      let quoteIndex = 0;
+      const modalQuoteTimer = setInterval(() => {
+        const qEl = document.getElementById('aiModalRotatingQuote');
+        if (!qEl) {
+          clearInterval(modalQuoteTimer);
+          return;
+        }
+        quoteIndex = (quoteIndex + 1) % SEO_AUDIT_INSIGHTS.length;
+        qEl.style.opacity = '0';
+        setTimeout(() => {
+          if (qEl) {
+            qEl.textContent = SEO_AUDIT_INSIGHTS[quoteIndex];
+            qEl.style.opacity = '1';
+          }
+        }, 200);
+      }, 2400);
 
       if (els.modalAiAuditFooter) {
         els.modalAiAuditFooter.innerHTML = `<button type="button" class="btn-action" id="btnCloseAuditFooter">Close</button>`;
         document.getElementById('btnCloseAuditFooter').addEventListener('click', () => {
+          clearInterval(modalQuoteTimer);
           els.modalAiAudit.style.display = 'none';
         });
       }
@@ -3847,6 +3908,8 @@
         res = await sheetsClient.auditContentWithAI(item);
       } catch (auditErr) {
         console.warn('AI Audit failed:', auditErr);
+      } finally {
+        clearInterval(modalQuoteTimer);
       }
 
       const a = (res && res.audit) ? res.audit : {};
