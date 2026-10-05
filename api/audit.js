@@ -165,7 +165,7 @@ Evaluate this content submission under the official OND Point-Based Framework:
 3. High-Intent Child Page / PYP / Mock Test Landing Page (700–800 words): 1.5 Points (Structured Q&A, exam patterns, direct resources).
 4. Data-Backed Content Optimization / Complete Rewrite (Net +300 to +800 words OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
 5. Standard Fresh Prep Article (800–1,200 words): 2.0 Points (Deep domain research, original conceptual notes).
-6. Fresh Pillar / Comprehensive Guide (1,500+ words): 3.0 Points (End-to-end curriculum coverage).
+6. Fresh Pillar / Target Page / Comprehensive Guide (1,500+ words OR Page Type is 'Target Page'/'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar page).
 
 🛡️ ANTI-MANIPULATION & REWRITE EVALUATION RULES:
 - Inspect extracted text and word counts provided.
@@ -178,7 +178,9 @@ Evaluate this content submission under the official OND Point-Based Framework:
   - If Net Diff is >= +300 words: APPROVE (1.5 pts).
   - If Net Diff is < +300 words BUT writer overhauled/rewrote sentences, pruned fluff, and updated tables with fresh research (>= 35% overhaul or >= 400 rewritten words): APPROVE (1.5 pts) with note acknowledging the complete rewrite.
   - If ONLY minor changes were made (e.g. changing 2 dates or fix typos < 15% overhaul): Mark Needs Revision.
-- For Fresh Pieces: 800-1200w = 2.0 pts; 1500+w = 3.0 pts. If <700 words, mark Needs Revision.
+- For Fresh Pieces:
+  - If Page Type is 'Target Page' or 'Pillar' and Type is 'New', OR words >= 1,500w: Classify as "Fresh Pillar" and award 3.0 pts.
+  - 800-1,400w Standard Fresh = 2.0 pts. If <700 words, mark Needs Revision.
 
 Return a strict JSON evaluation object:
 {

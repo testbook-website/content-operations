@@ -90,6 +90,7 @@
 
   function getItemPoints(item) {
     const tt = (item.taskType || '').toLowerCase();
+    const type = (item.type || '').toLowerCase();
     const pt = (item.pageType || '').toLowerCase();
     const words = parseInt(item.wordCount, 10) || 0;
     const isApproved = (item.status || '').toLowerCase().includes('done') || 
@@ -97,19 +98,33 @@
 
     if (!isApproved) return 0;
 
+    // 1. Target Page + New Type = Pillar Page (3.0 Points)
+    if ((pt.includes('target') || pt.includes('pillar')) && type === 'new') {
+      return 3.0;
+    }
+
+    // 2. Fresh Pillar / Comprehensive Guide (1500+ words)
+    if (words >= 1500 || item.classification === 'Fresh Pillar') {
+      return 3.0;
+    }
+
+    // 3. News & Updates
     if (tt.includes('news')) {
       return words < 500 ? 0.25 : 0.5;
     }
+
+    // 4. High Intent / PYP / Mock Tests
     if (tt.includes('high intent') || pt.includes('pyp') || pt.includes('ts')) {
       return 1.5;
     }
-    if (tt.includes('optimization') || (item.oldDoc && item.oldDoc.startsWith('http'))) {
+
+    // 5. Data-Backed Optimization / Refresh
+    if (tt.includes('optimization') || (item.oldDoc && item.oldDoc.startsWith('http')) || item.classification === 'Deep Optimization') {
       return 1.5;
     }
-    if (words >= 1500) {
-      return 3.0;
-    }
-    return 2.0;
+
+    // 6. Standard Fresh Prep Article
+    return 2.0; // Standard Fresh Prep
   }
 
   function getWorkflowData() {

@@ -3554,9 +3554,15 @@
           const status = getEffectiveReviewStatus(item);
           const aiRecord = state.aiReviewCache ? state.aiReviewCache[item.topic] : null;
           const tt = (item.taskType || '').toLowerCase();
+          const type = (item.type || '').toLowerCase();
+          const pt = (item.pageType || '').toLowerCase();
           
           let tierBadge = '';
-          if (tt.includes('optimi') || item.classification === 'Deep Optimization') {
+          if ((pt.includes('target') || pt.includes('pillar')) && type === 'new') {
+            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Target/Pillar (3.0p)</span>`;
+          } else if (item.classification === 'Fresh Pillar' || item.wordCount >= 1500) {
+            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Pillar (3.0p)</span>`;
+          } else if (tt.includes('optimi') || item.classification === 'Deep Optimization') {
             tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
           } else if (tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP') {
             tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 High-Intent (1.5p)</span>`;
@@ -3564,8 +3570,6 @@
             tierBadge = item.wordCount >= 500
               ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 News (0.5p)</span>`
               : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ Micro (0.25p)</span>`;
-          } else if (item.classification === 'Fresh Pillar' || item.wordCount >= 1500) {
-            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Pillar (3.0p)</span>`;
           } else {
             tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Prep (2.0p)</span>`;
           }
