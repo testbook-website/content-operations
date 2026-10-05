@@ -3,25 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SVP Executive Portal | Testbook Content Operations</title>
+  <title>Admin Portal | Content Operations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #090d16;
-      --bg-card: rgba(17, 24, 39, 0.85);
-      --bg-card-hover: rgba(31, 41, 55, 0.95);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --accent-gold: #f59e0b;
-      --accent-green: #10b981;
-      --accent-blue: #3b82f6;
-      --accent-purple: #8b5cf6;
-      --accent-rose: #f43f5e;
-      --glow-green: 0 0 20px rgba(16, 185, 129, 0.25);
-      --glow-gold: 0 0 20px rgba(245, 158, 11, 0.25);
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-sub: #64748b;
+      --primary: #2563eb;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #e11d48;
     }
 
     * {
@@ -32,23 +28,17 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-dark);
+      background-color: var(--bg);
       color: var(--text-main);
       min-height: 100vh;
-      line-height: 1.5;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
-        radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
-      background-attachment: fixed;
+      line-height: 1.4;
     }
 
     /* Auth Screen */
     #authOverlay {
       position: fixed;
       inset: 0;
-      background: rgba(9, 13, 22, 0.95);
-      backdrop-filter: blur(16px);
+      background: #f1f5f9;
       z-index: 9999;
       display: flex;
       align-items: center;
@@ -57,549 +47,391 @@
     }
 
     .auth-card {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 20px;
-      padding: 2.5rem;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.25rem;
       width: 100%;
-      max-width: 440px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(245, 158, 11, 0.15);
+      max-width: 400px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
       text-align: center;
-    }
-
-    .auth-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--accent-gold);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      padding: 0.35rem 0.85rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 1.25rem;
     }
 
     .auth-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.75rem;
+      font-size: 1.4rem;
       font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 0.4rem;
-      letter-spacing: -0.5px;
+      color: var(--text-main);
+      margin-bottom: 0.3rem;
     }
 
     .auth-sub {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      margin-bottom: 2rem;
-    }
-
-    .auth-input-group {
-      position: relative;
-      margin-bottom: 1.25rem;
+      color: var(--text-sub);
+      font-size: 0.82rem;
+      margin-bottom: 1.5rem;
     }
 
     .auth-input {
       width: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1.5px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 0.9rem 1.25rem;
-      font-size: 1rem;
-      color: #ffffff;
+      background: #f8fafc;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 0.8rem 1rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
       outline: none;
-      transition: all 0.2s ease;
-      font-family: inherit;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
     }
 
     .auth-input:focus {
-      border-color: var(--accent-gold);
-      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+      border-color: var(--primary);
+      background: #ffffff;
     }
 
     .auth-btn {
       width: 100%;
-      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-      color: #000000;
+      background: #0f172a;
+      color: #ffffff;
       border: none;
-      border-radius: 12px;
-      padding: 0.9rem;
-      font-size: 1rem;
-      font-weight: 800;
+      border-radius: 10px;
+      padding: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+      transition: background 0.2s;
     }
 
     .auth-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
+      background: #1e293b;
     }
 
     .auth-error {
-      color: var(--accent-rose);
-      font-size: 0.8rem;
+      color: var(--danger);
+      font-size: 0.78rem;
       font-weight: 600;
-      margin-top: 0.75rem;
-      min-height: 1.2rem;
+      margin-top: 0.6rem;
+      min-height: 1rem;
     }
 
     /* Header */
-    .svp-header {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color);
-      padding: 1rem 2rem;
+    .admin-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.5rem;
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
-    .svp-header-inner {
-      max-width: 1440px;
+    .admin-header-inner {
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .brand-group {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .svp-badge {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: var(--accent-gold);
-      padding: 0.35rem 0.75rem;
-      border-radius: 10px;
-      font-weight: 800;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
+      gap: 0.75rem;
     }
 
     .brand-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 1.35rem;
+      font-size: 1.2rem;
       font-weight: 800;
-      color: #ffffff;
-      letter-spacing: -0.3px;
-    }
-
-    .brand-subtitle {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      color: var(--text-main);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
-    .btn-portal-action {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--border-color);
+    .btn-action-sm {
+      background: #ffffff;
+      border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 0.5rem 0.9rem;
-      border-radius: 10px;
-      font-size: 0.8rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s ease;
+      gap: 0.35rem;
       text-decoration: none;
+      transition: all 0.15s;
     }
 
-    .btn-portal-action:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.2);
+    .btn-action-sm:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
     }
 
-    .btn-logout {
-      background: rgba(244, 63, 94, 0.12);
-      border: 1px solid rgba(244, 63, 94, 0.3);
-      color: var(--accent-rose);
-    }
-
-    .btn-logout:hover {
-      background: rgba(244, 63, 94, 0.2);
-    }
-
-    /* Container */
-    .main-container {
-      max-width: 1440px;
-      margin: 1.5rem auto;
-      padding: 0 1.5rem;
+    /* Main */
+    .container {
+      max-width: 1400px;
+      margin: 1.25rem auto;
+      padding: 0 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1.25rem;
     }
 
-    /* Time Filter & Segment Controls */
-    .controls-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 1.25rem 1.5rem;
+    /* Filters Bar */
+    .filters-bar {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      gap: 0.75rem;
     }
 
-    .date-filter-group {
+    .time-group {
       display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 0.3rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
+      gap: 0.25rem;
+      background: #f1f5f9;
+      padding: 0.25rem;
+      border-radius: 8px;
     }
 
     .time-pill {
       background: transparent;
       border: none;
-      color: var(--text-muted);
-      padding: 0.45rem 0.9rem;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      color: var(--text-sub);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s ease;
     }
 
     .time-pill.active {
-      background: var(--accent-blue);
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+      background: #ffffff;
+      color: var(--text-main);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    .time-pill:hover:not(.active) {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .segment-filter-group {
+    .seg-group {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
     }
 
-    .segment-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 0.5rem 1rem;
-      border-radius: 10px;
-      font-size: 0.8rem;
+    .seg-btn {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      color: var(--text-sub);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s ease;
+      transition: all 0.15s;
     }
 
-    .segment-btn.active-all {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.3);
+    .seg-btn.active-all {
+      background: #0f172a;
+      border-color: #0f172a;
       color: #ffffff;
     }
 
-    .segment-btn.active-top {
-      background: rgba(16, 185, 129, 0.2);
-      border-color: rgba(16, 185, 129, 0.5);
-      color: #34d399;
-      box-shadow: var(--glow-green);
+    .seg-btn.active-top {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #047857;
     }
 
-    .segment-btn.active-need {
-      background: rgba(244, 63, 94, 0.2);
-      border-color: rgba(244, 63, 94, 0.5);
-      color: #fb7185;
-      box-shadow: 0 0 15px rgba(244, 63, 94, 0.25);
+    .seg-btn.active-need {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #be123c;
     }
 
-    .segment-btn.active-gold {
-      background: rgba(245, 158, 11, 0.2);
-      border-color: rgba(245, 158, 11, 0.5);
-      color: #fbbf24;
-      box-shadow: var(--glow-gold);
+    .seg-btn.active-achieve {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1d4ed8;
     }
 
-    /* KPI Cards Grid */
+    /* KPI Grid */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.75rem;
     }
 
     .kpi-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 1.25rem 1.5rem;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .kpi-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
     }
 
     .kpi-label {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      color: var(--text-muted);
+      color: var(--text-sub);
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .kpi-value {
-      font-family: 'Outfit', sans-serif;
-      font-size: 2rem;
-      font-weight: 800;
-      color: #ffffff;
-      line-height: 1.1;
+      letter-spacing: 0.5px;
       margin-bottom: 0.35rem;
     }
 
+    .kpi-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.1;
+    }
+
     .kpi-sub {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      margin-top: 0.25rem;
     }
 
-    .kpi-card.gold-glow {
-      border-color: rgba(245, 158, 11, 0.3);
-      background: linear-gradient(145deg, rgba(245, 158, 11, 0.08) 0%, rgba(17, 24, 39, 0.9) 100%);
+    /* Table Section */
+    .table-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      overflow: hidden;
     }
 
-    .kpi-card.green-glow {
-      border-color: rgba(16, 185, 129, 0.3);
-      background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, rgba(17, 24, 39, 0.9) 100%);
-    }
-
-    /* Writers Executive Table */
-    .table-section {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 18px;
-      padding: 1.5rem;
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
-    }
-
-    .table-header-bar {
+    .table-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
     }
 
-    .section-heading {
-      font-family: 'Outfit', sans-serif;
-      font-size: 1.25rem;
+    .table-title {
+      font-size: 1rem;
       font-weight: 800;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      color: var(--text-main);
     }
 
     .search-input {
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 0.55rem 1rem;
-      font-size: 0.85rem;
-      color: #ffffff;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.45rem 0.8rem;
+      font-size: 0.82rem;
+      color: var(--text-main);
       outline: none;
-      width: 240px;
-      transition: all 0.2s ease;
+      width: 220px;
     }
 
     .search-input:focus {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+      border-color: var(--primary);
+      background: #ffffff;
     }
 
     .table-wrapper {
       overflow-x: auto;
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
     }
 
-    table.executive-table {
+    table.admin-table {
       width: 100%;
       border-collapse: collapse;
+      font-size: 0.84rem;
       text-align: left;
-      font-size: 0.88rem;
     }
 
-    .executive-table th {
-      background: rgba(15, 23, 42, 0.95);
-      color: var(--text-muted);
-      font-size: 0.72rem;
-      font-weight: 800;
+    .admin-table th {
+      background: #f8fafc;
+      color: var(--text-sub);
+      font-size: 0.7rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      padding: 0.9rem 1.1rem;
-      border-bottom: 1px solid var(--border-color);
+      letter-spacing: 0.6px;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
 
-    .executive-table td {
-      padding: 1rem 1.1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      color: #e5e7eb;
+    .admin-table td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-main);
       vertical-align: middle;
     }
 
-    .executive-table tbody tr {
-      transition: background 0.15s ease;
-      cursor: pointer;
+    .admin-table tbody tr:hover {
+      background: #f8fafc;
     }
 
-    .executive-table tbody tr:hover {
-      background: var(--bg-card-hover);
-    }
-
-    .writer-cell {
+    .writer-row {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.6rem;
     }
 
-    .writer-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: #ffffff;
+    .rank-badge {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: #f1f5f9;
+      color: var(--text-main);
+      font-size: 0.75rem;
       font-weight: 800;
-      font-size: 0.95rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
     }
 
-    .writer-avatar.rank-1 {
-      background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
-      box-shadow: var(--glow-gold);
-    }
-    .writer-avatar.rank-2 {
-      background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-    }
-    .writer-avatar.rank-3 {
-      background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
-    }
+    .rank-1 { background: #fef3c7; color: #b45309; }
+    .rank-2 { background: #f1f5f9; color: #475569; }
+    .rank-3 { background: #ffedd5; color: #c2410c; }
 
-    .writer-name {
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: #ffffff;
-    }
-
-    .writer-role {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .pill-pts {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.35);
-      color: #fbbf24;
+    .pts-pill {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      color: #b45309;
       font-weight: 800;
-      font-size: 0.88rem;
-      padding: 0.25rem 0.65rem;
-      border-radius: 8px;
-    }
-
-    .pill-approved {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #34d399;
-      font-weight: 700;
-      font-size: 0.82rem;
-      padding: 0.2rem 0.55rem;
+      padding: 2px 7px;
       border-radius: 6px;
+      font-size: 0.82rem;
+      white-space: nowrap;
     }
 
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      padding: 0.3rem 0.7rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .app-pill {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.8rem;
     }
 
-    .status-badge.top {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.35);
+    .status-pill {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-block;
+      white-space: nowrap;
     }
 
-    .status-badge.track {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(59, 130, 246, 0.35);
-    }
+    .status-top { background: #ecfdf5; color: #047857; }
+    .status-track { background: #eff6ff; color: #1d4ed8; }
+    .status-need { background: #fff1f2; color: #be123c; }
 
-    .status-badge.need {
-      background: rgba(244, 63, 94, 0.15);
-      color: #fb7185;
-      border: 1px solid rgba(244, 63, 94, 0.35);
-    }
-
-    /* Drilldown Modal */
+    /* Modal */
     #writerModal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
       z-index: 1000;
       display: none;
       align-items: center;
@@ -607,179 +439,143 @@
       padding: 1.5rem;
     }
 
-    .modal-content {
-      background: #111827;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
+    .modal-box {
+      background: #ffffff;
+      border-radius: 16px;
       width: 100%;
-      max-width: 850px;
+      max-width: 800px;
       max-height: 85vh;
       overflow-y: auto;
-      padding: 2rem;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1rem;
-    }
-
-    .btn-close-modal {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 1.5rem;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .btn-close-modal:hover {
-      color: #ffffff;
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
 <body>
 
-  <!-- SVP Password Auth Lock Screen -->
+  <!-- Auth Screen -->
   <div id="authOverlay">
     <div class="auth-card">
-      <div class="auth-badge">👑 Executive Access Only</div>
-      <h1 class="auth-title">SVP Intelligence Portal</h1>
-      <p class="auth-sub">Content Team Performance &amp; Operational Analytics</p>
+      <h1 class="auth-title">Admin Portal</h1>
+      <p class="auth-sub">Enter password to view performance summary</p>
       
       <form id="authForm" onsubmit="handleSvpLogin(event)">
-        <div class="auth-input-group">
-          <input type="password" id="svpPasswordInput" class="auth-input" placeholder="Enter SVP Access Password" autofocus required autocomplete="current-password">
-        </div>
-        <button type="submit" class="auth-btn">Unlock Executive Portal ➔</button>
+        <input type="password" id="svpPasswordInput" class="auth-input" placeholder="Password" autofocus required autocomplete="current-password">
+        <button type="submit" class="auth-btn">Enter Portal ➔</button>
         <div id="authError" class="auth-error"></div>
       </form>
     </div>
   </div>
 
   <!-- Header -->
-  <header class="svp-header">
-    <div class="svp-header-inner">
-      <div class="brand-group">
-        <div class="svp-badge">👑 SVP Operations</div>
-        <div>
-          <div class="brand-title">Executive Performance Portal</div>
-          <div class="brand-subtitle">Real-time Writer Output, Point Breakdown &amp; Approval Tracking</div>
-        </div>
-      </div>
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="brand-title">Admin Operations Portal</div>
 
       <div class="header-actions">
-        <a href="index.html" class="btn-portal-action">📊 Open Full Workflow Portal</a>
-        <button class="btn-portal-action" onclick="exportExecutiveCSV()">📥 Export Executive CSV</button>
-        <button class="btn-portal-action" onclick="refreshExecutiveData()">🔄 Live Sync</button>
-        <button class="btn-portal-action btn-logout" onclick="logoutSvp()">🔒 Lock</button>
+        <a href="index.html" class="btn-action-sm">Main Dashboard</a>
+        <button class="btn-action-sm" onclick="exportExecutiveCSV()">Export CSV</button>
+        <button class="btn-action-sm" onclick="refreshExecutiveData()">Sync</button>
+        <button class="btn-action-sm" onclick="logoutSvp()">Lock</button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="main-container">
+  <!-- Main -->
+  <main class="container">
 
-    <!-- 1-Click Controls & Filters -->
-    <section class="controls-panel">
-      <!-- Time Filter -->
-      <div class="date-filter-group">
-        <button class="time-pill active" data-range="all" onclick="setTimeRange('all', this)">All Time (OND)</button>
-        <button class="time-pill" data-range="month" onclick="setTimeRange('month', this)">This Month (Oct)</button>
+    <!-- Filters -->
+    <section class="filters-bar">
+      <!-- Time -->
+      <div class="time-group">
+        <button class="time-pill active" data-range="all" onclick="setTimeRange('all', this)">All Time</button>
+        <button class="time-pill" data-range="month" onclick="setTimeRange('month', this)">Oct 2026</button>
         <button class="time-pill" data-range="week" onclick="setTimeRange('week', this)">Last 7 Days</button>
         <button class="time-pill" data-range="yesterday" onclick="setTimeRange('yesterday', this)">Yesterday</button>
         <button class="time-pill" data-range="today" onclick="setTimeRange('today', this)">Today</button>
       </div>
 
-      <!-- 1-Click Performance Segment Filters -->
-      <div class="segment-filter-group">
-        <button class="segment-btn active-all" id="segBtnAll" onclick="setPerformanceSegment('all')">
-          ⚡ All Writers (<span id="countAll">0</span>)
+      <!-- Segment -->
+      <div class="seg-group">
+        <button class="seg-btn active-all" id="segBtnAll" onclick="setPerformanceSegment('all')">
+          All (<span id="countAll">0</span>)
         </button>
-        <button class="segment-btn" id="segBtnTop" onclick="setPerformanceSegment('top')">
+        <button class="seg-btn" id="segBtnTop" onclick="setPerformanceSegment('top')">
           🔥 Top Performers (<span id="countTop">0</span>)
         </button>
-        <button class="segment-btn" id="segBtnNeed" onclick="setPerformanceSegment('need')">
+        <button class="seg-btn" id="segBtnNeed" onclick="setPerformanceSegment('need')">
           ⚠️ Needs Attention (<span id="countNeed">0</span>)
         </button>
-        <button class="segment-btn" id="segBtnAchieve" onclick="setPerformanceSegment('achieve')">
+        <button class="seg-btn" id="segBtnAchieve" onclick="setPerformanceSegment('achieve')">
           🎯 Target Achievers (<span id="countAchieve">0</span>)
         </button>
       </div>
     </section>
 
-    <!-- Executive KPI Summary Cards -->
+    <!-- KPI Cards -->
     <section class="kpi-grid">
-      <div class="kpi-card gold-glow">
-        <div class="kpi-label">🏆 Top Performer <span style="font-size:1.1rem;">👑</span></div>
-        <div class="kpi-value" id="kpiTopPerformer" style="font-size:1.5rem; color:#fbbf24;">Loading...</div>
-        <div class="kpi-sub" id="kpiTopPerformerPts">Calculating points...</div>
+      <div class="kpi-card" style="border-left:4px solid #f59e0b;">
+        <div class="kpi-label">Top Performer</div>
+        <div class="kpi-val" id="kpiTopPerformer" style="font-size:1.35rem; color:#b45309;">-</div>
+        <div class="kpi-sub" id="kpiTopPerformerPts">-</div>
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-label">👥 Active Writers <span>📊</span></div>
-        <div class="kpi-value" id="kpiActiveWriters">0</div>
-        <div class="kpi-sub">Total team members active</div>
+        <div class="kpi-label">Active Writers</div>
+        <div class="kpi-val" id="kpiActiveWriters">0</div>
+        <div class="kpi-sub">Total active</div>
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-label">📝 Articles Worked <span>⚡</span></div>
-        <div class="kpi-value" id="kpiTotalWorked">0</div>
-        <div class="kpi-sub" id="kpiAvgPerWriter">0 avg / writer</div>
+        <div class="kpi-label">Articles Worked</div>
+        <div class="kpi-val" id="kpiTotalWorked">0</div>
+        <div class="kpi-sub" id="kpiAvgPerWriter">0 / writer</div>
       </div>
 
-      <div class="kpi-card green-glow">
-        <div class="kpi-label">✅ Articles Approved <span>🎯</span></div>
-        <div class="kpi-value" id="kpiTotalApproved" style="color:#34d399;">0</div>
-        <div class="kpi-sub" id="kpiApprovalRate">0% approval rate</div>
+      <div class="kpi-card" style="border-left:4px solid #10b981;">
+        <div class="kpi-label">Articles Approved</div>
+        <div class="kpi-val" id="kpiTotalApproved" style="color:#047857;">0</div>
+        <div class="kpi-sub" id="kpiApprovalRate">0% rate</div>
       </div>
 
-      <div class="kpi-card gold-glow">
-        <div class="kpi-label">⭐ Total OND Points <span>📈</span></div>
-        <div class="kpi-value" id="kpiTotalPoints" style="color:#fbbf24;">0</div>
-        <div class="kpi-sub" id="kpiAvgPointsPerWriter">0 avg pts / writer</div>
+      <div class="kpi-card" style="border-left:4px solid #3b82f6;">
+        <div class="kpi-label">Total Points</div>
+        <div class="kpi-val" id="kpiTotalPoints" style="color:#1d4ed8;">0</div>
+        <div class="kpi-sub" id="kpiAvgPointsPerWriter">0 avg</div>
       </div>
 
       <div class="kpi-card">
-        <div class="kpi-label">📚 Total Word Count <span>✍️</span></div>
-        <div class="kpi-value" id="kpiTotalWords">0</div>
-        <div class="kpi-sub" id="kpiAvgWordsPerArticle">0 avg words/doc</div>
+        <div class="kpi-label">Total Word Count</div>
+        <div class="kpi-val" id="kpiTotalWords">0</div>
+        <div class="kpi-sub" id="kpiAvgWordsPerArticle">0 avg/doc</div>
       </div>
     </section>
 
-    <!-- Executive Performance Table -->
-    <section class="table-section">
-      <div class="table-header-bar">
-        <div class="section-heading">
-          <span>📊 Writer Performance Breakdown</span>
-          <span id="activeFilterBadge" style="font-size:0.75rem; background:rgba(59,130,246,0.2); color:#60a5fa; padding:2px 8px; border-radius:12px; font-weight:700;">All Writers</span>
-        </div>
-
-        <input type="text" id="writerSearchInput" class="search-input" placeholder="🔍 Search writer name..." oninput="filterTable()">
+    <!-- Table -->
+    <section class="table-card">
+      <div class="table-top">
+        <div class="table-title">Performance Summary</div>
+        <input type="text" id="writerSearchInput" class="search-input" placeholder="Search writer..." oninput="filterTable()">
       </div>
 
       <div class="table-wrapper">
-        <table class="executive-table">
+        <table class="admin-table">
           <thead>
             <tr>
-              <th>Rank &amp; Writer</th>
-              <th>Articles Worked</th>
-              <th>Articles Approved</th>
-              <th>Approval Rate</th>
-              <th>Total Points</th>
-              <th>Total Word Count</th>
-              <th>Avg Words/Doc</th>
-              <th>Executive Verdict</th>
-              <th>Action</th>
+              <th>Writer</th>
+              <th>Worked</th>
+              <th>Approved</th>
+              <th>Approval %</th>
+              <th>Points</th>
+              <th>Total Words</th>
+              <th>Avg Words</th>
+              <th>Status</th>
+              <th>Details</th>
             </tr>
           </thead>
           <tbody id="executiveTableBody">
             <tr>
-              <td colspan="9" style="text-align:center; padding:3rem; color:#9ca3af;">Loading executive metrics...</td>
+              <td colspan="9" style="text-align:center; padding:2rem; color:#94a3b8;">Loading data...</td>
             </tr>
           </tbody>
         </table>
@@ -788,22 +584,21 @@
 
   </main>
 
-  <!-- Drilldown Modal for Single Writer -->
+  <!-- Drilldown Modal -->
   <div id="writerModal">
-    <div class="modal-content">
-      <div class="modal-header">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid #e2e8f0;">
         <div>
-          <h2 id="modalWriterName" style="font-family:'Outfit', sans-serif; font-size:1.5rem; color:#ffffff;">Writer Breakdown</h2>
-          <p id="modalWriterStats" style="font-size:0.85rem; color:#9ca3af; margin-top:0.25rem;">Detailed list of submissions and audit statuses</p>
+          <h2 id="modalWriterName" style="font-size:1.2rem; font-weight:800; color:#0f172a;">Writer Articles</h2>
+          <p id="modalWriterStats" style="font-size:0.78rem; color:#64748b; margin-top:2px;"></p>
         </div>
-        <button class="btn-close-modal" onclick="closeWriterModal()">✕</button>
+        <button onclick="closeWriterModal()" style="border:none; background:transparent; font-size:1.3rem; cursor:pointer; color:#64748b;">✕</button>
       </div>
 
-      <div id="modalArticlesList" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+      <div id="modalArticlesList" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
     </div>
   </div>
 
-  <!-- Include Core Data & Logic -->
   <script src="roster-data.js?v=2.8"></script>
   <script src="sheets-data.js?v=2.8"></script>
   <script src="category-data.js?v=2.8"></script>
@@ -812,6 +607,6 @@
   <script src="calendar-data.js?v=2.8"></script>
   <script src="news-data.js?v=2.8"></script>
   <script src="sheets-client.js?v=2.8"></script>
-  <script src="admin.js?v=1.0"></script>
+  <script src="admin.js?v=1.1"></script>
 </body>
 </html>

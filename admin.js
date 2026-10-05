@@ -1,6 +1,5 @@
 /**
- * admin.js - SVP Executive Intelligence Portal
- * Dedicated performance analytics for SVP Operations
+ * admin.js - Executive Intelligence Portal
  * Password: SEO@2XTraffc
  */
 
@@ -57,7 +56,7 @@
       initExecutiveDashboard();
     } else {
       if (errEl) {
-        errEl.textContent = '❌ Invalid SVP Password. Access Denied.';
+        errEl.textContent = '❌ Incorrect Password.';
         input.classList.add('shake');
         setTimeout(() => input.classList.remove('shake'), 400);
       }
@@ -69,7 +68,6 @@
     checkAuth();
   };
 
-  // Helper: Normalize Writer Name
   function cleanWriterName(name) {
     if (!name) return 'Unassigned';
     const s = String(name).trim();
@@ -77,7 +75,6 @@
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
-  // Helper: Parse Date
   function parseItemDate(dateStr) {
     if (!dateStr) return null;
     const parts = dateStr.trim().split(/[\/\-]/);
@@ -91,7 +88,6 @@
     return isNaN(d.getTime()) ? null : d;
   }
 
-  // Helper: Calculate OND Points for single item
   function getItemPoints(item) {
     const tt = (item.taskType || '').toLowerCase();
     const pt = (item.pageType || '').toLowerCase();
@@ -101,7 +97,6 @@
 
     if (!isApproved) return 0;
 
-    // Point Matrix
     if (tt.includes('news')) {
       return words < 500 ? 0.25 : 0.5;
     }
@@ -112,12 +107,11 @@
       return 1.5;
     }
     if (words >= 1500) {
-      return 3.0; // Fresh Pillar
+      return 3.0;
     }
-    return 2.0; // Standard Fresh
+    return 2.0;
   }
 
-  // Extract Workflow Data
   function getWorkflowData() {
     if (typeof sheetsClient !== 'undefined' && sheetsClient.data && sheetsClient.data.workflow_ond && sheetsClient.data.workflow_ond.length > 0) {
       return sheetsClient.data.workflow_ond;
@@ -128,12 +122,10 @@
     return [];
   }
 
-  // Process & Aggregate Writer Stats
   function calculateExecutiveMetrics() {
     const raw = getWorkflowData();
     rawWorkflowItems = raw;
 
-    // Determine Date Filter Range
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -143,7 +135,6 @@
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    // Filter Items by Date
     const filteredItems = raw.filter(item => {
       if (!item.writer || item.writer.trim() === '-' || item.writer.trim() === '') return false;
       if (selectedTimeRange === 'all') return true;
@@ -162,13 +153,11 @@
         return itemDate >= sevenDaysAgo;
       }
       if (selectedTimeRange === 'month') {
-        // October 2026 / Q4 Month
         return itemDate.getMonth() === 9 && itemDate.getFullYear() === 2026;
       }
       return true;
     });
 
-    // Aggregate by Writer
     const writerMap = {};
 
     filteredItems.forEach(item => {
@@ -215,19 +204,18 @@
       const avgWords = w.worked > 0 ? Math.round(w.totalWords / w.worked) : 0;
       w.points = Math.round(w.points * 100) / 100;
 
-      // Executive Verdict
-      let verdict = '🟢 On Track';
-      let verdictClass = 'track';
+      let verdict = 'On Track';
+      let verdictClass = 'status-track';
 
       if (w.points >= 6 || (w.approved >= 4 && rate >= 80)) {
-        verdict = '🔥 Top Performer';
-        verdictClass = 'top';
+        verdict = 'Top Performer';
+        verdictClass = 'status-top';
       } else if (w.worked >= 2 && rate < 60) {
-        verdict = '⚠️ Needs Attention';
-        verdictClass = 'need';
+        verdict = 'Needs Attention';
+        verdictClass = 'status-need';
       } else if (w.worked === 0 || w.points === 0) {
-        verdict = '⚠️ Low Output';
-        verdictClass = 'need';
+        verdict = 'Low Output';
+        verdictClass = 'status-need';
       }
 
       return {
@@ -239,7 +227,6 @@
       };
     });
 
-    // Sort by Points Descending, then Worked Descending
     list.sort((a, b) => b.points - a.points || b.approved - a.approved || b.totalWords - a.totalWords);
 
     currentWriterStats = list;
@@ -248,11 +235,10 @@
     updateSegmentCounts(list);
   }
 
-  // Update Segment Count Badges
   function updateSegmentCounts(list) {
     const cAll = list.length;
-    const cTop = list.filter(w => w.verdictClass === 'top').length;
-    const cNeed = list.filter(w => w.verdictClass === 'need').length;
+    const cTop = list.filter(w => w.verdictClass === 'status-top').length;
+    const cNeed = list.filter(w => w.verdictClass === 'status-need').length;
     const cAchieve = list.filter(w => w.points >= 4.0).length;
 
     const elAll = document.getElementById('countAll');
@@ -266,7 +252,6 @@
     if (elAchieve) elAchieve.textContent = cAchieve;
   }
 
-  // Render Top Executive KPI Cards
   function renderKPIs(list, filteredItems) {
     const totalWriters = list.length;
     let totalWorked = 0;
@@ -299,40 +284,33 @@
     const elWords = document.getElementById('kpiTotalWords');
     const elAvgWords = document.getElementById('kpiAvgWordsPerArticle');
 
-    if (elTop) {
-      elTop.textContent = topPerformer ? topPerformer.name : 'N/A';
-    }
-    if (elTopPts) {
-      elTopPts.textContent = topPerformer ? `⭐ ${topPerformer.points} pts (${topPerformer.approved} approved)` : '';
-    }
+    if (elTop) elTop.textContent = topPerformer ? topPerformer.name : '-';
+    if (elTopPts) elTopPts.textContent = topPerformer ? `${topPerformer.points} pts (${topPerformer.approved} approved)` : '-';
     if (elActive) elActive.textContent = totalWriters;
-    if (elWorked) elWorked.textContent = totalWorked.toLocaleString();
-    if (elAvgWriter) elAvgWriter.textContent = `${avgPerWriter} articles / writer`;
-    if (elApproved) elApproved.textContent = totalApproved.toLocaleString();
-    if (elAppRate) elAppRate.textContent = `${overallApprovalRate}% team approval rate`;
+    if (elWorked) elWorked.textContent = totalWorked;
+    if (elAvgWriter) elAvgWriter.textContent = `${avgPerWriter} / writer`;
+    if (elApproved) elApproved.textContent = totalApproved;
+    if (elAppRate) elAppRate.textContent = `${overallApprovalRate}% rate`;
     if (elPts) elPts.textContent = (Math.round(totalPoints * 10) / 10).toLocaleString();
-    if (elAvgPts) elAvgPts.textContent = `${avgPtsPerWriter} avg pts / writer`;
+    if (elAvgPts) elAvgPts.textContent = `${avgPtsPerWriter} avg`;
     if (elWords) elWords.textContent = totalWords.toLocaleString() + 'w';
-    if (elAvgWords) elAvgWords.textContent = `${avgWordsDoc.toLocaleString()} avg words/doc`;
+    if (elAvgWords) elAvgWords.textContent = `${avgWordsDoc.toLocaleString()} avg/doc`;
   }
 
-  // Render Table
   function renderTable(list) {
     const tbody = document.getElementById('executiveTableBody');
     if (!tbody) return;
 
     let displayList = list;
 
-    // Apply Segment Filter
     if (selectedSegment === 'top') {
-      displayList = list.filter(w => w.verdictClass === 'top');
+      displayList = list.filter(w => w.verdictClass === 'status-top');
     } else if (selectedSegment === 'need') {
-      displayList = list.filter(w => w.verdictClass === 'need');
+      displayList = list.filter(w => w.verdictClass === 'status-need');
     } else if (selectedSegment === 'achieve') {
       displayList = list.filter(w => w.points >= 4.0);
     }
 
-    // Apply Search Filter
     const searchVal = (document.getElementById('writerSearchInput')?.value || '').toLowerCase().trim();
     if (searchVal) {
       displayList = displayList.filter(w => w.name.toLowerCase().includes(searchVal) || w.category.toLowerCase().includes(searchVal));
@@ -341,9 +319,8 @@
     if (displayList.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="text-align:center; padding:3rem; color:#9ca3af;">
-            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔍</div>
-            No writers match the selected criteria for this time period.
+          <td colspan="9" style="text-align:center; padding:2rem; color:#94a3b8;">
+            No records match selected filter.
           </td>
         </tr>
       `;
@@ -354,47 +331,41 @@
     displayList.forEach((w, idx) => {
       const rankNum = idx + 1;
       const rankClass = rankNum === 1 ? 'rank-1' : (rankNum === 2 ? 'rank-2' : (rankNum === 3 ? 'rank-3' : ''));
-      const trophy = rankNum === 1 ? '🥇' : (rankNum === 2 ? '🥈' : (rankNum === 3 ? '🥉' : `#${rankNum}`));
 
       html += `
         <tr onclick="openWriterDrilldown('${escapeQuotes(w.name)}')">
           <td>
-            <div class="writer-cell">
-              <div class="writer-avatar ${rankClass}">${trophy}</div>
+            <div class="writer-row">
+              <div class="rank-badge ${rankClass}">#${rankNum}</div>
               <div>
-                <div class="writer-name">${escapeHtml(w.name)}</div>
-                <div class="writer-role">${escapeHtml(w.category)} Team</div>
+                <div style="font-weight:700; color:#0f172a;">${escapeHtml(w.name)}</div>
+                <div style="font-size:0.72rem; color:#64748b;">${escapeHtml(w.category)}</div>
               </div>
             </div>
           </td>
-          <td style="font-weight:700; font-size:0.95rem;">${w.worked}</td>
+          <td style="font-weight:700;">${w.worked}</td>
           <td>
-            <span class="pill-approved">✅ ${w.approved}</span>
-            ${w.needsRevision > 0 ? `<span style="font-size:0.75rem; color:#fb7185; margin-left:4px;">(${w.needsRevision} rev)</span>` : ''}
+            <span class="app-pill">✅ ${w.approved}</span>
+            ${w.needsRevision > 0 ? `<span style="font-size:0.72rem; color:#be123c; margin-left:3px;">(${w.needsRevision} rev)</span>` : ''}
           </td>
-          <td>
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              <div style="width:65px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-                <div style="width:${w.approvalRate}%; height:100%; background:${w.approvalRate >= 80 ? '#10b981' : (w.approvalRate >= 60 ? '#f59e0b' : '#ef4444')};"></div>
-              </div>
-              <span style="font-size:0.8rem; font-weight:700; color:#e5e7eb;">${w.approvalRate}%</span>
-            </div>
+          <td style="font-weight:600;">
+            ${w.approvalRate}%
           </td>
           <td>
-            <span class="pill-pts">⭐ ${w.points} pts</span>
+            <span class="pts-pill">⭐ ${w.points}</span>
           </td>
-          <td style="font-weight:700; font-family:monospace; font-size:0.9rem; color:#e2e8f0;">
-            ${w.totalWords.toLocaleString()} w
+          <td style="font-weight:600; font-family:monospace; color:#334155;">
+            ${w.totalWords.toLocaleString()}w
           </td>
-          <td style="font-size:0.8rem; color:#9ca3af;">
-            ${w.avgWordsPerArticle.toLocaleString()} w/doc
-          </td>
-          <td>
-            <span class="status-badge ${w.verdictClass}">${w.verdict}</span>
+          <td style="font-size:0.78rem; color:#64748b;">
+            ${w.avgWordsPerArticle.toLocaleString()}
           </td>
           <td>
-            <button class="btn-portal-action" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="event.stopPropagation(); openWriterDrilldown('${escapeQuotes(w.name)}')">
-              🔍 Drilldown
+            <span class="status-pill ${w.verdictClass}">${w.verdict}</span>
+          </td>
+          <td>
+            <button class="btn-action-sm" style="padding:0.25rem 0.5rem; font-size:0.72rem;" onclick="event.stopPropagation(); openWriterDrilldown('${escapeQuotes(w.name)}')">
+              View
             </button>
           </td>
         </tr>
@@ -404,7 +375,6 @@
     tbody.innerHTML = html;
   }
 
-  // 1-Click Time Range Handler
   window.setTimeRange = function(range, btn) {
     selectedTimeRange = range;
     document.querySelectorAll('.time-pill').forEach(el => el.classList.remove('active'));
@@ -412,34 +382,21 @@
     calculateExecutiveMetrics();
   };
 
-  // 1-Click Performance Segment Handler
   window.setPerformanceSegment = function(seg) {
     selectedSegment = seg;
     const btnAll = document.getElementById('segBtnAll');
     const btnTop = document.getElementById('segBtnTop');
     const btnNeed = document.getElementById('segBtnNeed');
     const btnAchieve = document.getElementById('segBtnAchieve');
-    const badge = document.getElementById('activeFilterBadge');
 
     [btnAll, btnTop, btnNeed, btnAchieve].forEach(b => {
-      if (b) {
-        b.className = 'segment-btn';
-      }
+      if (b) b.className = 'seg-btn';
     });
 
-    if (seg === 'all') {
-      btnAll.className = 'segment-btn active-all';
-      if (badge) badge.textContent = 'All Writers';
-    } else if (seg === 'top') {
-      btnTop.className = 'segment-btn active-top';
-      if (badge) badge.textContent = '🔥 Top Performers Only';
-    } else if (seg === 'need') {
-      btnNeed.className = 'segment-btn active-need';
-      if (badge) badge.textContent = '⚠️ Needs Attention / Underperforming';
-    } else if (seg === 'achieve') {
-      btnAchieve.className = 'segment-btn active-gold';
-      if (badge) badge.textContent = '🎯 Target Achievers';
-    }
+    if (seg === 'all' && btnAll) btnAll.className = 'seg-btn active-all';
+    if (seg === 'top' && btnTop) btnTop.className = 'seg-btn active-top';
+    if (seg === 'need' && btnNeed) btnNeed.className = 'seg-btn active-need';
+    if (seg === 'achieve' && btnAchieve) btnAchieve.className = 'seg-btn active-achieve';
 
     renderTable(currentWriterStats);
   };
@@ -448,7 +405,6 @@
     renderTable(currentWriterStats);
   };
 
-  // Writer Drilldown Modal
   window.openWriterDrilldown = function(writerName) {
     const writer = currentWriterStats.find(w => w.name === writerName);
     if (!writer) return;
@@ -460,8 +416,8 @@
 
     if (!modal || !listEl) return;
 
-    title.textContent = `${writer.name} — Full Submissions Audit`;
-    stats.innerHTML = `Worked: <strong>${writer.worked}</strong> articles | Approved: <strong style="color:#34d399;">${writer.approved}</strong> | Points: <strong style="color:#fbbf24;">${writer.points} pts</strong> | Total Words: <strong>${writer.totalWords.toLocaleString()} words</strong>`;
+    title.textContent = `${writer.name} — Submissions`;
+    stats.innerHTML = `Worked: <strong>${writer.worked}</strong> | Approved: <strong style="color:#047857;">${writer.approved}</strong> | Points: <strong style="color:#b45309;">${writer.points}</strong> | Words: <strong>${writer.totalWords.toLocaleString()}</strong>`;
 
     let html = '';
     writer.articles.forEach((item, idx) => {
@@ -470,27 +426,28 @@
       const pts = getItemPoints(item);
 
       html += `
-        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
-          <div style="max-width:70%;">
-            <div style="font-weight:700; font-size:0.95rem; color:#ffffff; margin-bottom:0.25rem;">
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <div>
+            <div style="font-weight:700; font-size:0.85rem; color:#0f172a;">
               ${idx + 1}. ${escapeHtml(item.topic)}
             </div>
-            <div style="font-size:0.78rem; color:#9ca3af; display:flex; gap:0.75rem; flex-wrap:wrap;">
-              <span>📁 ${escapeHtml(item.category || 'General')}</span>
-              <span>🏷️ ${escapeHtml(item.taskType || 'Article')}</span>
-              <span>📅 ${escapeHtml(item.date || 'N/A')}</span>
-              <span>✍️ ${parseInt(item.wordCount, 10) || 0} words</span>
+            <div style="font-size:0.72rem; color:#64748b; display:flex; gap:0.5rem; margin-top:2px;">
+              <span>${escapeHtml(item.category || 'General')}</span>
+              <span>•</span>
+              <span>${escapeHtml(item.taskType || 'Article')}</span>
+              <span>•</span>
+              <span>${parseInt(item.wordCount, 10) || 0}w</span>
             </div>
           </div>
 
-          <div style="display:flex; align-items:center; gap:0.75rem;">
-            <span style="font-size:0.8rem; font-weight:800; color:#fbbf24; background:rgba(245,158,11,0.15); padding:3px 8px; border-radius:6px;">
-              ⭐ ${pts} pts
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span style="font-size:0.75rem; font-weight:800; color:#b45309; background:#fef3c7; padding:2px 6px; border-radius:4px;">
+              ${pts} pts
             </span>
-            <span style="font-size:0.78rem; font-weight:700; padding:3px 8px; border-radius:6px; background:${isApp ? 'rgba(16,185,129,0.2)' : 'rgba(244,63,94,0.2)'}; color:${isApp ? '#34d399' : '#fb7185'};">
-              ${isApp ? '✅ Approved' : '⚠️ Pending / Revision'}
+            <span style="font-size:0.72rem; font-weight:700; padding:2px 6px; border-radius:4px; background:${isApp ? '#ecfdf5' : '#fff1f2'}; color:${isApp ? '#047857' : '#be123c'};">
+              ${isApp ? 'Approved' : 'Pending/Rev'}
             </span>
-            ${item.newDoc ? `<a href="${escapeHtml(item.newDoc)}" target="_blank" class="btn-portal-action" style="padding:0.3rem 0.6rem; font-size:0.75rem;">📄 Doc ↗</a>` : ''}
+            ${item.newDoc ? `<a href="${escapeHtml(item.newDoc)}" target="_blank" class="btn-action-sm" style="padding:0.2rem 0.4rem; font-size:0.7rem;">Doc ↗</a>` : ''}
           </div>
         </div>
       `;
@@ -505,11 +462,10 @@
     if (modal) modal.style.display = 'none';
   };
 
-  // Export Executive CSV
   window.exportExecutiveCSV = function() {
     if (!currentWriterStats || currentWriterStats.length === 0) return;
 
-    const headers = ['Rank', 'Writer Name', 'Team Category', 'Articles Worked', 'Articles Approved', 'Needs Revision', 'Approval Rate (%)', 'Total Points', 'Total Word Count', 'Avg Words Per Doc', 'Executive Verdict'];
+    const headers = ['Rank', 'Writer Name', 'Category', 'Articles Worked', 'Articles Approved', 'Needs Revision', 'Approval Rate (%)', 'Total Points', 'Total Word Count', 'Avg Words Per Doc', 'Status'];
     const rows = currentWriterStats.map((w, idx) => [
       idx + 1,
       `"${w.name}"`,
@@ -528,7 +484,7 @@
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `SVP_Executive_Content_Report_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute('download', `Content_Executive_Report_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -564,7 +520,6 @@
     }
   }
 
-  // On DOM Load
   document.addEventListener('DOMContentLoaded', async () => {
     await loadConfig();
     if (checkAuth()) {
