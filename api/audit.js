@@ -161,11 +161,11 @@ Evaluate this content submission under the official OND Point-Based Framework:
 
 🎯 THE STANDARDIZED POINT MATRIX:
 1. Micro News Brief (350–450 words): 0.25 Points (Fast breaking alerts, result/admit card drops).
-2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context; strict anti-cheat rejects artificially padded notices).
-3. High-Intent Child Page / PYP / Mock Test Landing Page (700–800 words): 1.5 Points (Structured Q&A, exam patterns, direct resources).
-4. Data-Backed Content Optimization / Complete Rewrite (Net +300 to +800 words OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
-5. Standard Fresh Prep Article (800–1,200 words): 2.0 Points (Deep domain research, original conceptual notes).
-6. Fresh Pillar / Target Page / Comprehensive Guide (1,500+ words OR Page Type is 'Target Page'/'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar page).
+2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context).
+3. Standard New Content / Child Page (Fresh writing): 1.0 Point (Standard fresh article, syllabus notes, child pages, 700+ words).
+4. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
+5. Data-Backed Content Optimization / Complete Rewrite (Net +300w OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
+6. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
 
 🛡️ ANTI-MANIPULATION & REWRITE EVALUATION RULES:
 - Inspect extracted text and word counts provided.
@@ -179,16 +179,16 @@ Evaluate this content submission under the official OND Point-Based Framework:
   - If Net Diff is < +300 words BUT writer overhauled/rewrote sentences, pruned fluff, and updated tables with fresh research (>= 35% overhaul or >= 400 rewritten words): APPROVE (1.5 pts) with note acknowledging the complete rewrite.
   - If ONLY minor changes were made (e.g. changing 2 dates or fix typos < 15% overhaul): Mark Needs Revision.
 - For Fresh Pieces:
-  - If Page Type is 'Target Page' or 'Pillar' and Type is 'New', OR words >= 1,500w: Classify as "Fresh Pillar" and award 3.0 pts.
-  - 800-1,400w Standard Fresh = 2.0 pts. If <700 words, mark Needs Revision.
+  - If Page Type is 'Target Page' or 'Pillar' and Type is 'New': Classify as "Target Page / Pillar" and award 3.0 pts.
+  - Standard New Content / Child Page (700+ words): Classify as "New Content" and award 1.0 pt. If <600 words and not a news brief, mark Needs Revision.
 
 Return a strict JSON evaluation object:
 {
   "isApproved": boolean,
   "qualityVerdict": "Approved" | "Needs Revision",
   "editorialScore": number (1 to 10),
-  "suggestedClassification": "Fresh Pillar" | "Standard Fresh" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
-  "pointsAwarded": 3.0 | 2.0 | 1.5 | 0.5 | 0.25 | 0,
+  "suggestedClassification": "Target Page / Pillar" | "New Content" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
+  "pointsAwarded": 3.0 | 1.5 | 1.0 | 0.5 | 0.25 | 0,
   "docWordCountText": "string",
   "oldDocWordCount": number,
   "newDocWordCount": number,

@@ -667,9 +667,9 @@
           <span id="reviewLiveBadge" style="background:rgba(34, 197, 94, 0.2); color:#4ade80; border:1px solid rgba(34, 197, 94, 0.4); font-size:0.68rem; font-weight:700; padding:2px 6px; border-radius:8px;">🟢 Live</span>
         </div>
         <div style="display:flex; gap:0.35rem; flex-wrap:wrap; font-size:0.7rem;">
-          <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px;">🌟 Pillar: <strong>3.0 Pts</strong></span>
-          <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px;">📚 Prep: <strong>2.0 Pts</strong></span>
+          <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px;">🌟 Target/Pillar: <strong>3.0 Pts</strong></span>
           <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px;">🔄 Opt / High-Intent: <strong>1.5 Pts</strong></span>
+          <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px;">📝 New Content: <strong>1.0 Pt</strong></span>
           <span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:6px;">🚨 News: <strong>0.25–0.5 Pts</strong></span>
         </div>
       </div>
@@ -711,10 +711,18 @@
       <div class="sub-bar" style="flex-wrap:wrap; gap:0.5rem; margin-bottom:0.75rem;">
         <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
           
+          <!-- Date Filter (Run Audit for Specific Date) -->
+          <div style="display:flex; align-items:center; gap:0.25rem;">
+            <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">📅 Date:</label>
+            <select class="select-simple" id="reviewDateFilter" style="font-weight:700; color:#1e3a8a; min-width:130px; background:#f0f9ff; border-color:#bae6fd;">
+              <option value="all">📅 All Dates</option>
+            </select>
+          </div>
+
           <!-- Writer Filter (Primary for Writers) -->
           <div style="display:flex; align-items:center; gap:0.25rem;">
             <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">👤 Writer:</label>
-            <select class="select-simple" id="reviewWriterFilter" style="font-weight:700; color:#0f172a; min-width:140px;">
+            <select class="select-simple" id="reviewWriterFilter" style="font-weight:700; color:#0f172a; min-width:135px;">
               <option value="all">All Writers</option>
             </select>
           </div>
@@ -735,11 +743,11 @@
             <label style="font-size:0.8rem; font-weight:600;">🏷️ Task:</label>
             <select class="select-simple" id="reviewTaskTypeFilter">
               <option value="all">All Tasks</option>
+              <option value="pillar">🌟 Target / Pillar (3.0 Pts)</option>
               <option value="optimization">🔄 SEO Optimization (1.5 Pts)</option>
               <option value="high_intent">🎯 High Intent (1.5 Pts)</option>
+              <option value="new_content">📝 New Content (1.0 Pt)</option>
               <option value="news">🚨 News &amp; Updates (0.25/0.5 Pts)</option>
-              <option value="prep">📚 Exam Prep (2.0 Pts)</option>
-              <option value="pillar">🌟 Pillar (3.0 Pts)</option>
             </select>
           </div>
 

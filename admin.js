@@ -98,33 +98,33 @@
 
     if (!isApproved) return 0;
 
-    // 1. Target Page + New Type = Pillar Page (3.0 Points)
+    // 1. Target Page / Pillar with New Type = Pillar Page (3.0 Points)
     if ((pt.includes('target') || pt.includes('pillar')) && type === 'new') {
       return 3.0;
     }
 
-    // 2. Fresh Pillar / Comprehensive Guide (1500+ words)
-    if (words >= 1500 || item.classification === 'Fresh Pillar') {
-      return 3.0;
-    }
-
-    // 3. News & Updates
+    // 2. News & Updates
     if (tt.includes('news')) {
       return words < 500 ? 0.25 : 0.5;
     }
 
-    // 4. High Intent / PYP / Mock Tests
+    // 3. High Intent / PYP / Mock Tests
     if (tt.includes('high intent') || pt.includes('pyp') || pt.includes('ts')) {
       return 1.5;
     }
 
-    // 5. Data-Backed Optimization / Refresh
+    // 4. Data-Backed Optimization / Refresh
     if (tt.includes('optimization') || (item.oldDoc && item.oldDoc.startsWith('http')) || item.classification === 'Deep Optimization') {
       return 1.5;
     }
 
-    // 6. Standard Fresh Prep Article
-    return 2.0; // Standard Fresh Prep
+    // 5. Standard New Content (Child Page / Fresh) = 1.0 Point
+    if (type === 'new' || tt.includes('new content')) {
+      return 1.0;
+    }
+
+    // 6. Default standard piece
+    return 1.0;
   }
 
   function getWorkflowData() {

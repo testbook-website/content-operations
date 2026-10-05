@@ -101,7 +101,8 @@
     writerStatuses: loadWriterStatuses(),
     newsCustomAlerts: [],
     newsOverrides: {},
-    reviewTaskTypeFilter: 'all', // 'all' (default) | 'optimization' | 'high_intent' | 'news' | 'prep' | 'pillar'
+    reviewDateFilter: 'all', // 'all' (default) | specific date (e.g. '10/05/2026')
+    reviewTaskTypeFilter: 'all', // 'all' (default) | 'pillar' | 'optimization' | 'high_intent' | 'new_content' | 'news'
     reviewStatusFilter: 'all', // 'all' (default) | 'pending' | 'approved' | 'needs_revision'
     reviewWriterFilter: 'all',
     reviewCategoryFilter: 'all',
@@ -143,6 +144,7 @@
     aiAuditedCountPill: document.getElementById('aiAuditedCountPill'),
     aiApprovedCountPill: document.getElementById('aiApprovedCountPill'),
     aiRevisionCountPill: document.getElementById('aiRevisionCountPill'),
+    reviewDateFilter: document.getElementById('reviewDateFilter'),
     reviewTaskTypeFilter: document.getElementById('reviewTaskTypeFilter'),
     reviewStatusFilter: document.getElementById('reviewStatusFilter'),
     reviewWriterFilter: document.getElementById('reviewWriterFilter'),
@@ -653,6 +655,13 @@
     }
 
     // Review Hub Controls
+    if (els.reviewDateFilter) {
+      els.reviewDateFilter.addEventListener('change', (e) => {
+        state.reviewDateFilter = e.target.value;
+        renderReviewHub(false);
+      });
+    }
+
     if (els.reviewTaskTypeFilter) {
       els.reviewTaskTypeFilter.addEventListener('change', (e) => {
         state.reviewTaskTypeFilter = e.target.value;
@@ -3133,6 +3142,31 @@
     }
     if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && BASELINE_WORKFLOW_DATA.length > 0) {
       return BASELINE_WORKFLOW_DATA;
+  // =========================================================================
+  // TAB 8: Editorial Review & Value-Impact Points Hub (Live Workflow <OND>)
+  // =========================================================================
+  function normalizeReviewDate(dStr) {
+    if (!dStr) return '';
+    const clean = dStr.trim();
+    const parts = clean.split(/[\/\-]/);
+    if (parts.length === 3) {
+      let m = parseInt(parts[0], 10);
+      let d = parseInt(parts[1], 10);
+      let y = parseInt(parts[2], 10);
+      if (y < 100) y += 2000;
+      if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
+        return `${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')}/${y}`;
+      }
+    }
+    return clean;
+  }
+
+  function getReviewList() {
+    if (state.sheetsData && state.sheetsData.workflow_ond && state.sheetsData.workflow_ond.length > 0) {
+      return state.sheetsData.workflow_ond;
+    }
+    if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && BASELINE_WORKFLOW_DATA.length > 0) {
+      return BASELINE_WORKFLOW_DATA;
     }
     return [];
   }
@@ -3143,6 +3177,7 @@
 
     const writersSet = new Set();
     const categoriesSet = new Set();
+    const datesSet = new Set();
 
     items.forEach(item => {
       if (item.writer && item.writer !== '-' && item.writer !== 'Unassigned') {
@@ -3151,7 +3186,30 @@
       if (item.category && item.category !== '-') {
         categoriesSet.add(item.category);
       }
+      if (item.date && item.date.trim() && item.date.trim() !== '-') {
+        datesSet.add(normalizeReviewDate(item.date));
+      }
     });
+
+    // Populate Dates (Descending: Latest First)
+    if (els.reviewDateFilter) {
+      const sortedDates = Array.from(datesSet).sort((a, b) => {
+        const pa = a.split('/').map(n => parseInt(n, 10));
+        const pb = b.split('/').map(n => parseInt(n, 10));
+        const da = new Date(pa[2], pa[0] - 1, pa[1]).getTime() || 0;
+        const db = new Date(pb[2], pb[0] - 1, pb[1]).getTime() || 0;
+        return db - da;
+      });
+
+      els.reviewDateFilter.innerHTML = `<option value="all">📅 All Dates (${items.length} total)</option>`;
+      sortedDates.forEach(d => {
+        const count = items.filter(it => normalizeReviewDate(it.date) === d).length;
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = `📅 ${d} (${count} items)`;
+        els.reviewDateFilter.appendChild(opt);
+      });
+    }
 
     // Populate Writers
     Array.from(writersSet).sort().forEach(w => {
@@ -3185,6 +3243,55 @@
     if (raw.toLowerCase().includes('approv')) return 'Approved';
     if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) return 'Needs Revision';
     return 'Pending Review';
+  }
+
+  function getFilteredReviewItems() {
+    const allItems = getReviewList();
+    return allItems.filter(item => {
+      const status = getEffectiveReviewStatus(item);
+      const tt = (item.taskType || '').toLowerCase();
+      const type = (item.type || '').toLowerCase();
+      const pt = (item.pageType || '').toLowerCase();
+      const cl = (item.classification || '').toLowerCase();
+
+      // Date Filter
+      if (state.reviewDateFilter && state.reviewDateFilter !== 'all') {
+        const itemDate = normalizeReviewDate(item.date);
+        if (itemDate !== state.reviewDateFilter) return false;
+      }
+
+      // Task Type Filter (Pillar, Optimization, High Intent, New Content, News)
+      if (state.reviewTaskTypeFilter !== 'all') {
+        const tf = state.reviewTaskTypeFilter;
+        if (tf === 'pillar' && !((pt.includes('target') || pt.includes('pillar')) && type === 'new')) return false;
+        if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh') && !(item.oldDoc && item.oldDoc.startsWith('http'))) return false;
+        if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('ts') && !cl.includes('high intent')) return false;
+        if (tf === 'new_content' && (type !== 'new' && !tt.includes('new content'))) return false;
+        if (tf === 'news' && !tt.includes('news') && !cl.includes('news')) return false;
+      }
+
+      // Review Status Filter
+      if (state.reviewStatusFilter === 'pending' && status !== 'Pending Review') return false;
+      if (state.reviewStatusFilter === 'approved' && status !== 'Approved') return false;
+      if (state.reviewStatusFilter === 'needs_revision' && status !== 'Needs Revision') return false;
+
+      // Writer Filter
+      if (state.reviewWriterFilter !== 'all' && item.writer !== state.reviewWriterFilter) return false;
+      // Category Filter
+      if (state.reviewCategoryFilter !== 'all' && item.category !== state.reviewCategoryFilter) return false;
+
+      // Search
+      if (state.reviewSearch) {
+        const q = state.reviewSearch.toLowerCase();
+        const match = (item.topic && item.topic.toLowerCase().includes(q)) ||
+                      (item.fk && item.fk.toLowerCase().includes(q)) ||
+                      (item.writer && item.writer.toLowerCase().includes(q)) ||
+                      (item.category && item.category.toLowerCase().includes(q)) ||
+                      (item.taskType && item.taskType.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
   }
 
   function updateAiRunnerUI(customStatus) {
@@ -3222,31 +3329,38 @@
       }
     } else {
       els.btnStartAiRunner.style.display = 'inline-flex';
+      const btnSpan = els.btnStartAiRunner.querySelector('span');
+      if (btnSpan) {
+        if (state.reviewDateFilter && state.reviewDateFilter !== 'all') {
+          btnSpan.textContent = `⚡ Run AI Audit for ${state.reviewDateFilter}`;
+        } else {
+          btnSpan.textContent = `⚡ Start AI Auto-Review`;
+        }
+      }
       if (els.btnStopAiRunner) els.btnStopAiRunner.style.display = 'none';
       if (els.aiRunnerDot) {
         els.aiRunnerDot.style.background = auditedKeys.length > 0 ? '#10b981' : '#94a3b8';
         els.aiRunnerDot.style.boxShadow = 'none';
       }
       if (els.aiRunnerStatusText) {
+        const dateNote = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` (Date: ${state.reviewDateFilter})` : '';
         els.aiRunnerStatusText.innerHTML = customStatus || (auditedKeys.length > 0 
-          ? `<strong>AI Runner Ready:</strong> ${auditedKeys.length} articles already audited. Click button to audit any remaining pending articles.`
-          : `<strong>Autonomous AI Review Runner:</strong> Ready (Click to auto-review pending articles autonomously)`);
+          ? `<strong>AI Runner Ready${dateNote}:</strong> ${auditedKeys.length} articles already audited. Click button to audit pending articles.`
+          : `<strong>Autonomous AI Review Runner${dateNote}:</strong> Ready (Click button to auto-review articles)`);
       }
     }
   }
 
   // =========================================================================
   // Autonomous AI Review Runner (Start Run Button)
-  // "Once article is reviewed by AI, Again it will not touch"
+  // Scoped to active filtered items (e.g. selected date)
   // =========================================================================
   async function startAiAutoReviewRunner() {
     if (state.aiRunnerActive) return;
-    state.aiRunnerActive = true;
-    updateAiRunnerUI();
 
-    const allItems = getReviewList();
+    const filteredItems = getFilteredReviewItems();
     // Filter queue: Skip anything already reviewed by AI or marked approved
-    const pendingQueue = allItems.filter(item => {
+    const pendingQueue = filteredItems.filter(item => {
       // 1. If already in AI cache, DO NOT touch again!
       if (state.aiReviewCache && state.aiReviewCache[item.topic]) {
         return false;
@@ -3258,12 +3372,16 @@
     });
 
     if (pendingQueue.length === 0) {
-      state.aiRunnerActive = false;
-      updateAiRunnerUI(`🎉 All ${allItems.length} articles are already reviewed by AI! Nothing left to process.`);
+      const dateContext = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` for date ${state.reviewDateFilter}` : '';
+      updateAiRunnerUI(`🎉 All ${filteredItems.length} articles${dateContext} are already reviewed by AI! Nothing left to process.`);
       return;
     }
 
+    state.aiRunnerActive = true;
+    updateAiRunnerUI();
+
     let processed = 0;
+    const dateScopeLabel = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` [${state.reviewDateFilter}]` : '';
     for (let i = 0; i < pendingQueue.length; i++) {
       if (!state.aiRunnerActive) {
         updateAiRunnerUI(`⏸️ Auto-Review paused by user. (${processed} articles reviewed this run)`);
@@ -3273,7 +3391,7 @@
       const item = pendingQueue[i];
       const currentNum = i + 1;
       const randomTip = SEO_AUDIT_INSIGHTS[i % SEO_AUDIT_INSIGHTS.length];
-      updateAiRunnerUI(`⚡ AI Reviewing [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
+      updateAiRunnerUI(`⚡ AI Reviewing${dateScopeLabel} [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
 
       try {
         const res = await sheetsClient.auditContentWithAI(item);
@@ -3281,7 +3399,10 @@
         const isApproved = audit.isApproved !== false && (audit.qualityVerdict || '').toLowerCase().includes('approv');
         const verdict = isApproved ? 'Approved' : 'Needs Revision';
         const score = audit.editorialScore || (isApproved ? 8 : 5);
-        const pts = audit.pointsAwarded || (item.classification === 'Fresh Pillar' ? 3.0 : (item.classification === 'Standard Fresh' ? 2.0 : 1.5));
+        const pt = (item.pageType || '').toLowerCase();
+        const type = (item.type || '').toLowerCase();
+        const defaultPts = ((pt.includes('target') || pt.includes('pillar')) && type === 'new') ? 3.0 : 1.0;
+        const pts = audit.pointsAwarded || defaultPts;
 
         // Save to cache permanently so it is NEVER touched again
         state.aiReviewCache[item.topic] = {
@@ -3289,7 +3410,7 @@
           verdict: verdict,
           score: score,
           points: pts,
-          classification: audit.suggestedClassification || item.classification || 'Standard Fresh',
+          classification: audit.suggestedClassification || item.classification || 'New Content',
           netWordDiff: (audit.netWordDiff !== undefined && audit.netWordDiff !== null) ? audit.netWordDiff : (parseInt(item.wordCount, 10) || 0),
           newDocWordCount: audit.newDocWordCount || parseInt(item.wordCount, 10) || 0,
           oldDocWordCount: audit.oldDocWordCount || 0,
@@ -3324,7 +3445,7 @@
     }
 
     state.aiRunnerActive = false;
-    updateAiRunnerUI(`✅ Complete! Auto-reviewed ${processed} articles with Classplus Gemini Flash.`);
+    updateAiRunnerUI(`✅ Complete! Auto-reviewed ${processed} articles${dateScopeLabel} with Classplus Gemini Flash.`);
     renderReviewHub(false);
   }
 
@@ -3356,12 +3477,23 @@
       const writer = item.writer || 'Unassigned';
       const status = getEffectiveReviewStatus(item);
       const tt = (item.taskType || '').toLowerCase();
-      const isFresh = item.classification === 'Fresh Pillar' || item.classification === 'Standard Fresh';
-      const isOpt = tt.includes('optimi') || item.classification === 'Deep Optimization' || item.classification === 'Light Optimization';
-      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP';
-      const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
+      const type = (item.type || '').toLowerCase();
+      const pt = (item.pageType || '').toLowerCase();
 
-      const points = item.points || (isOpt ? 1.5 : (isHighIntent ? 1.5 : (isNews ? (item.wordCount >= 500 ? 0.5 : 0.25) : (item.wordCount >= 1500 ? 3.0 : 2.0))));
+      const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
+      const isOpt = tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'));
+      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || item.classification === 'High Intent / PYP';
+      const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
+      const isFresh = isTargetPillar || type === 'new' || tt.includes('new content');
+
+      let points = item.points;
+      if (!points) {
+        if (isTargetPillar) points = 3.0;
+        else if (isOpt) points = 1.5;
+        else if (isHighIntent) points = 1.5;
+        else if (isNews) points = (item.wordCount >= 500 ? 0.5 : 0.25);
+        else points = 1.0; // Standard New Content
+      }
 
       if (!writerScorecard[writer]) {
         writerScorecard[writer] = {
@@ -3436,7 +3568,7 @@
         <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
           <div class="kpi-label">🌟 Fresh Prep &amp; Pillars</div>
           <div class="kpi-value" style="color:#0284c7;">${freshPointsTotal.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts (${freshPct}%)</span></div>
-          <div class="kpi-subtext">3.0pt Pillars &amp; 2.0pt Notes</div>
+          <div class="kpi-subtext">3.0pt Target/Pillars &amp; 1.0pt Fresh Articles</div>
         </div>
 
         <div class="kpi-card" style="border-top:3px solid #f59e0b;">
@@ -3460,44 +3592,7 @@
     }
 
     // 2. Filter Review Queue Table
-    const filtered = allItems.filter(item => {
-      const status = getEffectiveReviewStatus(item);
-      const tt = (item.taskType || '').toLowerCase();
-      const pt = (item.pageType || '').toLowerCase();
-      const cl = (item.classification || '').toLowerCase();
-
-      // Task Type Filter (Optimization, High Intent, News, Prep, Pillar)
-      if (state.reviewTaskTypeFilter !== 'all') {
-        const tf = state.reviewTaskTypeFilter;
-        if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh')) return false;
-        if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('child') && !cl.includes('high intent')) return false;
-        if (tf === 'news' && !tt.includes('news') && !cl.includes('news')) return false;
-        if (tf === 'prep' && !tt.includes('prep') && !tt.includes('new content') && !cl.includes('standard fresh')) return false;
-        if (tf === 'pillar' && item.classification !== 'Fresh Pillar') return false;
-      }
-
-      // Review Status Filter
-      if (state.reviewStatusFilter === 'pending' && status !== 'Pending Review') return false;
-      if (state.reviewStatusFilter === 'approved' && status !== 'Approved') return false;
-      if (state.reviewStatusFilter === 'needs_revision' && status !== 'Needs Revision') return false;
-
-      // Writer Filter
-      if (state.reviewWriterFilter !== 'all' && item.writer !== state.reviewWriterFilter) return false;
-      // Category Filter
-      if (state.reviewCategoryFilter !== 'all' && item.category !== state.reviewCategoryFilter) return false;
-
-      // Search
-      if (state.reviewSearch) {
-        const q = state.reviewSearch;
-        const match = (item.topic && item.topic.toLowerCase().includes(q)) ||
-                      (item.fk && item.fk.toLowerCase().includes(q)) ||
-                      (item.writer && item.writer.toLowerCase().includes(q)) ||
-                      (item.category && item.category.toLowerCase().includes(q)) ||
-                      (item.taskType && item.taskType.toLowerCase().includes(q));
-        if (!match) return false;
-      }
-      return true;
-    });
+    const filtered = getFilteredReviewItems();
 
     // Writer-specific alert banner when filtered by writer
     if (els.writerReviewAlertBar) {
@@ -3535,7 +3630,8 @@
     }
 
     if (els.reviewCountLabel) {
-      els.reviewCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} submissions`;
+      const dateContext = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` on ${state.reviewDateFilter}` : '';
+      els.reviewCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} submissions${dateContext}`;
     }
 
     // 3. Render Review Queue Table Rows
@@ -3560,9 +3656,7 @@
           let tierBadge = '';
           if ((pt.includes('target') || pt.includes('pillar')) && type === 'new') {
             tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Target/Pillar (3.0p)</span>`;
-          } else if (item.classification === 'Fresh Pillar' || item.wordCount >= 1500) {
-            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Pillar (3.0p)</span>`;
-          } else if (tt.includes('optimi') || item.classification === 'Deep Optimization') {
+          } else if (tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'))) {
             tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
           } else if (tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP') {
             tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 High-Intent (1.5p)</span>`;
@@ -3570,8 +3664,10 @@
             tierBadge = item.wordCount >= 500
               ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 News (0.5p)</span>`
               : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ Micro (0.25p)</span>`;
+          } else if (type === 'new' || tt.includes('new content')) {
+            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 New (1.0p)</span>`;
           } else {
-            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Prep (2.0p)</span>`;
+            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 New (1.0p)</span>`;
           }
 
           let statusBadge = '';
