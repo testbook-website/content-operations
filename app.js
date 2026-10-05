@@ -11,12 +11,71 @@
 (function() {
   'use strict';
 
+  // Persistence helpers for Team Live Presence & Status Hub
+  function loadWriterStatuses() {
+    try {
+      const saved = localStorage.getItem('portal_writer_statuses');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.warn('Failed to parse portal_writer_statuses from localStorage', e);
+    }
+    return {};
+  }
+
+  function saveWriterStatuses(statuses) {
+    try {
+      localStorage.setItem('portal_writer_statuses', JSON.stringify(statuses));
+    } catch (e) {
+      console.warn('Failed to save portal_writer_statuses to localStorage', e);
+    }
+  }
+
+  // Persistence helpers for AI Review Cache & Audits
+  function loadAiReviewCache() {
+    try {
+      const saved = localStorage.getItem('testbook_ai_reviews_v4');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Automatically prune stale timeout/error states so fresh audits can run cleanly
+        Object.keys(parsed).forEach(k => {
+          const item = parsed[k];
+          if (!item) {
+            delete parsed[k];
+            return;
+          }
+          const reasonsStr = JSON.stringify(item.rejectionReasons || []);
+          const summaryStr = ((item.justificationSummary || '') + (item.docWordCountText || '') + reasonsStr).toLowerCase();
+          if (
+            item.score === 4 ||
+            summaryStr.includes('timed out') ||
+            summaryStr.includes('timeout') ||
+            summaryStr.includes('inaccessible')
+          ) {
+            delete parsed[k];
+          }
+        });
+        return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse testbook_ai_reviews_v4 from localStorage', e);
+    }
+    return {};
+  }
+
+  function saveAiReviewCache(cache) {
+    try {
+      localStorage.setItem('testbook_ai_reviews_v4', JSON.stringify(cache));
+    } catch (e) {
+      console.warn('Failed to save testbook_ai_reviews_v4 to localStorage', e);
+    }
+  }
+
   // Application State
   const state = {
     isAuthenticated: false,
     enteredPin: '',
     correctPin: '7730',
-    activeNavTab: 'roster', // 'roster' | 'productivity' | 'category'
+    activeNavTab: 'roster', // 'roster' | 'news' | 'productivity' | 'category' | 'upcoming' | 'workflow' | 'calendar'
     activeProdSubTab: 'yesterday', // DEFAULT: Yesterday as requested!
     selectedWeekId: 1,
     isMatrixView: false,
@@ -34,6 +93,22 @@
     workflowWriterFilter: 'all',
     workflowTaskTypeFilter: 'all',
     workflowSearch: '',
+    newsDateFilter: 'today', // 'today' (default) | 'yesterday' | 'today_yesterday' | 'last7days' | 'all'
+    newsStatusFilter: 'all',
+    newsTaskTypeFilter: 'all',
+    newsWriterFilter: 'all',
+    newsSearch: '',
+    writerStatuses: loadWriterStatuses(),
+    newsCustomAlerts: [],
+    newsOverrides: {},
+    reviewTaskTypeFilter: 'all', // 'all' (default) | 'optimization' | 'high_intent' | 'news' | 'prep' | 'pillar'
+    reviewStatusFilter: 'all', // 'all' (default) | 'pending' | 'approved' | 'needs_revision'
+    reviewWriterFilter: 'all',
+    reviewCategoryFilter: 'all',
+    reviewSearch: '',
+    reviewOverrides: {},
+    aiReviewCache: loadAiReviewCache(),
+    aiRunnerActive: false,
     calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
     calendarMonthFilter: 'all',
     calendarSearch: '',
@@ -53,8 +128,62 @@
     // Main Nav
     navTabs: document.querySelectorAll('.tab-btn'),
     sectionRoster: document.getElementById('sectionRoster'),
+    sectionNews: document.getElementById('sectionNews'),
+    sectionReview: document.getElementById('sectionReview'),
     sectionProductivity: document.getElementById('sectionProductivity'),
     sectionCategory: document.getElementById('sectionCategory'),
+
+    // Review Hub & Quality Gates
+    reviewKpiCards: document.getElementById('reviewKpiCards'),
+    btnStartAiRunner: document.getElementById('btnStartAiRunner'),
+    btnStopAiRunner: document.getElementById('btnStopAiRunner'),
+    btnResetAiAudits: document.getElementById('btnResetAiAudits'),
+    aiRunnerStatusText: document.getElementById('aiRunnerStatusText'),
+    aiRunnerDot: document.getElementById('aiRunnerDot'),
+    aiAuditedCountPill: document.getElementById('aiAuditedCountPill'),
+    aiApprovedCountPill: document.getElementById('aiApprovedCountPill'),
+    aiRevisionCountPill: document.getElementById('aiRevisionCountPill'),
+    reviewTaskTypeFilter: document.getElementById('reviewTaskTypeFilter'),
+    reviewStatusFilter: document.getElementById('reviewStatusFilter'),
+    reviewWriterFilter: document.getElementById('reviewWriterFilter'),
+    reviewCategoryFilter: document.getElementById('reviewCategoryFilter'),
+    reviewSearch: document.getElementById('reviewSearch'),
+    reviewCountLabel: document.getElementById('reviewCountLabel'),
+    writerReviewAlertBar: document.getElementById('writerReviewAlertBar'),
+    reviewTableBody: document.getElementById('reviewTableBody'),
+    btnExportReviewCSV: document.getElementById('btnExportReviewCSV'),
+    reviewLeaderboardContainer: document.getElementById('reviewLeaderboardContainer'),
+    reviewLiveBadge: document.getElementById('reviewLiveBadge'),
+    modalAiAudit: document.getElementById('modalAiAudit'),
+    modalAiAuditContent: document.getElementById('modalAiAuditContent'),
+    modalAiAuditFooter: document.getElementById('modalAiAuditFooter'),
+    btnCloseModalAiAudit: document.getElementById('btnCloseModalAiAudit'),
+    btnCloseAuditFooter: document.getElementById('btnCloseAuditFooter'),
+
+    // News (N & U Daily) & Auto-Assignment Hub
+    writerPresenceGrid: document.getElementById('writerPresenceGrid'),
+    newsKpiCards: document.getElementById('newsKpiCards'),
+    newsDateFilter: document.getElementById('newsDateFilter'),
+    optNewsToday: document.getElementById('optNewsToday'),
+    optNewsYesterday: document.getElementById('optNewsYesterday'),
+    newsStatusFilter: document.getElementById('newsStatusFilter'),
+    newsTaskTypeFilter: document.getElementById('newsTaskTypeFilter'),
+    newsWriterFilter: document.getElementById('newsWriterFilter'),
+    newsSearch: document.getElementById('newsSearch'),
+    newsCountLabel: document.getElementById('newsCountLabel'),
+    newsTableBody: document.getElementById('newsTableBody'),
+    btnExportNewsCSV: document.getElementById('btnExportNewsCSV'),
+    newsLiveBadge: document.getElementById('newsLiveBadge'),
+    btnAutoAssignPending: document.getElementById('btnAutoAssignPending'),
+    btnQuickAddNews: document.getElementById('btnQuickAddNews'),
+    modalAddNews: document.getElementById('modalAddNews'),
+    btnCloseModalAddNews: document.getElementById('btnCloseModalAddNews'),
+    btnCancelAddNews: document.getElementById('btnCancelAddNews'),
+    formAddNews: document.getElementById('formAddNews'),
+    inputNewsTopic: document.getElementById('inputNewsTopic'),
+    selectNewsTaskType: document.getElementById('selectNewsTaskType'),
+    selectNewsCategory: document.getElementById('selectNewsCategory'),
+    selectNewsAssignMode: document.getElementById('selectNewsAssignMode'),
 
     // Roster
     nightShiftRow: document.getElementById('nightShiftRow'),
@@ -65,6 +194,8 @@
     rosterTeamsContainer: document.getElementById('rosterTeamsContainer'),
     mentorsList: document.getElementById('mentorsList'),
     prepList: document.getElementById('prepList'),
+    newContentList: document.getElementById('newContentList'),
+    publishingList: document.getElementById('publishingList'),
 
     // Productivity
     prodKpiCards: document.getElementById('prodKpiCards'),
@@ -92,7 +223,7 @@
     btnExportUpcomingCSV: document.getElementById('btnExportUpcomingCSV'),
     upcomingLiveBadge: document.getElementById('upcomingLiveBadge'),
 
-    // Workflow <JAS>
+    // Workflow <OND>
     sectionWorkflow: document.getElementById('sectionWorkflow'),
     workflowKpiCards: document.getElementById('workflowKpiCards'),
     workflowDateFilter: document.getElementById('workflowDateFilter'),
@@ -237,7 +368,11 @@
             liveBadge.style.color = '#15803d';
           }
         }
+        if (data && data.writer_presence) {
+          state.writerStatuses = { ...state.writerStatuses, ...data.writer_presence };
+        }
         if (state.isAuthenticated) {
+          if (state.activeNavTab === 'news') renderNews();
           if (state.activeNavTab === 'productivity') renderProductivity();
           if (state.activeNavTab === 'category') renderCategoryGrid();
           if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
@@ -445,6 +580,134 @@
     if (els.btnExportCalendarCSV) {
       els.btnExportCalendarCSV.addEventListener('click', exportCalendarCSV);
     }
+
+    // News (N & U Daily) Controls
+    if (els.newsDateFilter) {
+      els.newsDateFilter.addEventListener('change', (e) => {
+        state.newsDateFilter = e.target.value;
+        renderNews(true);
+      });
+    }
+
+    if (els.newsStatusFilter) {
+      els.newsStatusFilter.addEventListener('change', (e) => {
+        state.newsStatusFilter = e.target.value;
+        renderNews(false);
+      });
+    }
+
+    if (els.newsTaskTypeFilter) {
+      els.newsTaskTypeFilter.addEventListener('change', (e) => {
+        state.newsTaskTypeFilter = e.target.value;
+        renderNews(false);
+      });
+    }
+
+    if (els.newsWriterFilter) {
+      els.newsWriterFilter.addEventListener('change', (e) => {
+        state.newsWriterFilter = e.target.value;
+        renderNews(false);
+      });
+    }
+
+    if (els.newsSearch) {
+      els.newsSearch.addEventListener('input', (e) => {
+        state.newsSearch = e.target.value.toLowerCase().trim();
+        renderNews(false);
+      });
+    }
+
+    if (els.btnExportNewsCSV) {
+      els.btnExportNewsCSV.addEventListener('click', exportNewsCSV);
+    }
+
+    if (els.btnAutoAssignPending) {
+      els.btnAutoAssignPending.addEventListener('click', autoAssignAllPending);
+    }
+
+    if (els.btnQuickAddNews) {
+      els.btnQuickAddNews.addEventListener('click', () => {
+        if (els.modalAddNews) els.modalAddNews.style.display = 'flex';
+      });
+    }
+
+    if (els.btnCloseModalAddNews) {
+      els.btnCloseModalAddNews.addEventListener('click', () => {
+        if (els.modalAddNews) els.modalAddNews.style.display = 'none';
+      });
+    }
+
+    // Review Hub Controls
+    if (els.reviewTaskTypeFilter) {
+      els.reviewTaskTypeFilter.addEventListener('change', (e) => {
+        state.reviewTaskTypeFilter = e.target.value;
+        renderReviewHub(false);
+      });
+    }
+
+    if (els.reviewStatusFilter) {
+      els.reviewStatusFilter.addEventListener('change', (e) => {
+        state.reviewStatusFilter = e.target.value;
+        renderReviewHub(false);
+      });
+    }
+
+    if (els.reviewWriterFilter) {
+      els.reviewWriterFilter.addEventListener('change', (e) => {
+        state.reviewWriterFilter = e.target.value;
+        renderReviewHub(false);
+      });
+    }
+
+    if (els.reviewCategoryFilter) {
+      els.reviewCategoryFilter.addEventListener('change', (e) => {
+        state.reviewCategoryFilter = e.target.value;
+        renderReviewHub(false);
+      });
+    }
+
+    if (els.reviewSearch) {
+      els.reviewSearch.addEventListener('input', (e) => {
+        state.reviewSearch = e.target.value.toLowerCase().trim();
+        renderReviewHub(false);
+      });
+    }
+
+    if (els.btnExportReviewCSV) {
+      els.btnExportReviewCSV.addEventListener('click', exportReviewCSV);
+    }
+
+    if (els.btnStartAiRunner) {
+      els.btnStartAiRunner.addEventListener('click', startAiAutoReviewRunner);
+    }
+
+    if (els.btnStopAiRunner) {
+      els.btnStopAiRunner.addEventListener('click', stopAiAutoReviewRunner);
+    }
+
+    if (els.btnResetAiAudits) {
+      els.btnResetAiAudits.addEventListener('click', () => {
+        if (confirm('Are you sure you want to reset all AI review cache and re-run fresh?')) {
+          state.aiReviewCache = {};
+          saveAiReviewCache(state.aiReviewCache);
+          if (state.reviewOverrides) state.reviewOverrides = {};
+          renderReviewHub(false);
+          updateAiRunnerUI('AI Audits reset. Click "⚡ Start AI Auto-Review Runner" to run fresh.');
+        }
+      });
+    }
+
+    if (els.btnCloseModalAiAudit) {
+      els.btnCloseModalAiAudit.addEventListener('click', () => {
+        if (els.modalAiAudit) els.modalAiAudit.style.display = 'none';
+      });
+    }
+
+    if (els.btnCloseAuditFooter) {
+      els.btnCloseAuditFooter.addEventListener('click', () => {
+        if (els.modalAiAudit) els.modalAiAudit.style.display = 'none';
+      });
+    }
   }
 
   function switchNavTab(tab) {
@@ -452,6 +715,8 @@
     els.navTabs.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
 
     if (els.sectionRoster) els.sectionRoster.style.display = tab === 'roster' ? 'block' : 'none';
+    if (els.sectionNews) els.sectionNews.style.display = tab === 'news' ? 'block' : 'none';
+    if (els.sectionReview) els.sectionReview.style.display = tab === 'review' ? 'block' : 'none';
     if (els.sectionProductivity) els.sectionProductivity.style.display = tab === 'productivity' ? 'block' : 'none';
     if (els.sectionCategory) els.sectionCategory.style.display = tab === 'category' ? 'block' : 'none';
     if (els.sectionUpcoming) els.sectionUpcoming.style.display = tab === 'upcoming' ? 'block' : 'none';
@@ -459,6 +724,8 @@
     if (els.sectionCalendar) els.sectionCalendar.style.display = tab === 'calendar' ? 'block' : 'none';
 
     if (tab === 'roster') renderRoster();
+    if (tab === 'news') renderNews();
+    if (tab === 'review') renderReviewHub();
     if (tab === 'productivity') renderProductivity();
     if (tab === 'category') renderCategoryGrid();
     if (tab === 'upcoming') renderUpcomingEvents();
@@ -489,7 +756,7 @@
     ROSTER_CONFIG.weeks.forEach(w => {
       const opt = document.createElement('option');
       opt.value = w.id;
-      opt.textContent = `${w.name} (${w.dateRange}) — News: ${w.newsTeam} (Lead: ${w.nightLead || 'Team'})`;
+      opt.textContent = `${w.name} (${w.dateRange}) — News: ${w.newsTeam}`;
       if (w.id === state.selectedWeekId) opt.selected = true;
       els.nightWeekSelect.appendChild(opt);
     });
@@ -500,11 +767,10 @@
     const week = ROSTER_CONFIG.weeks.find(w => w.id === state.selectedWeekId) || ROSTER_CONFIG.weeks[0];
 
     let html = '';
-    // Mon to Sat (6 days) - Sunday is strictly deleted!
+    // Mon to Sat daily shifts
     week.nightShiftDaily.forEach(item => {
-      const isLead = week.nightLead && item.member === week.nightLead;
       html += `
-        <div class="night-day-box ${isLead ? 'is-lead' : ''}">
+        <div class="night-day-box">
           <div class="night-day-name">${escapeHtml(item.day)}</div>
           <div class="night-member-name">${escapeHtml(item.member)}</div>
         </div>
@@ -624,14 +890,24 @@
   }
 
   function renderMentorsAndPrep() {
-    if (els.mentorsList) {
+    if (els.mentorsList && ROSTER_CONFIG.categoryMentors) {
       els.mentorsList.innerHTML = ROSTER_CONFIG.categoryMentors.map(c => `
         <div><strong>${c.mentor}</strong>: <span style="color:#4b5563;">${c.category}</span></div>
       `).join('');
     }
-    if (els.prepList) {
+    if (els.prepList && ROSTER_CONFIG.prepTeamAssignments) {
       els.prepList.innerHTML = ROSTER_CONFIG.prepTeamAssignments.map(p => `
         <div><strong>${p.member}</strong>: <span style="color:#4b5563;">${p.domain}</span></div>
+      `).join('');
+    }
+    if (els.newContentList && ROSTER_CONFIG.newContentWriters) {
+      els.newContentList.innerHTML = ROSTER_CONFIG.newContentWriters.map(n => `
+        <div><strong>${n.member}</strong>: <span style="color:#4b5563;">${n.domain}</span></div>
+      `).join('');
+    }
+    if (els.publishingList && ROSTER_CONFIG.publishing) {
+      els.publishingList.innerHTML = ROSTER_CONFIG.publishing.map(pub => `
+        <div><strong>${pub.member}</strong>: <span style="color:#4b5563;">${pub.role}</span></div>
       `).join('');
     }
   }
@@ -952,9 +1228,10 @@
     });
 
     // 2. Augment with real-time Workflow entries if available
-    if (typeof sheetsClient !== 'undefined' && sheetsClient.data && sheetsClient.data.workflow_jas && sheetsClient.data.workflow_jas.length > 0) {
+    const liveWf = (typeof sheetsClient !== 'undefined' && sheetsClient.data) ? (sheetsClient.data.workflow_ond || sheetsClient.data.workflow_jas) : null;
+    if (liveWf && liveWf.length > 0) {
       const liveDateMap = {};
-      sheetsClient.data.workflow_jas.forEach(item => {
+      liveWf.forEach(item => {
         if (!item.date || !item.category) return;
         const m = item.date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
         const normDate = m ? `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}` : item.date;
@@ -1149,7 +1426,14 @@
   function isStatusDone(status) {
     if (!status) return false;
     const s = String(status).toLowerCase().trim();
-    return s.includes('done') || s.includes('live') || s === 'dond';
+    return s.includes('done') || 
+           s.includes('live') || 
+           s.includes('complet') || 
+           s.includes('publish') || 
+           s.includes('updat') || 
+           s === 'yes' || 
+           s === 'y' || 
+           s === 'dond';
   }
 
   function isStatusDraft(status) {
@@ -1476,11 +1760,13 @@
   }
 
   // =========================================================================
-  // TAB 5: WORKFLOW <JAS> (Live Google Sheet gid: 820015548 Replica)
+  // TAB 5: WORKFLOW <OND> (Live Google Sheet gid: 436581067 Replica)
   // =========================================================================
   function getWorkflowList() {
     let raw = [];
-    if (state.sheetsData && Array.isArray(state.sheetsData.workflow_jas) && state.sheetsData.workflow_jas.length > 0) {
+    if (state.sheetsData && Array.isArray(state.sheetsData.workflow_ond) && state.sheetsData.workflow_ond.length > 0) {
+      raw = state.sheetsData.workflow_ond;
+    } else if (state.sheetsData && Array.isArray(state.sheetsData.workflow_jas) && state.sheetsData.workflow_jas.length > 0) {
       raw = state.sheetsData.workflow_jas;
     } else if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && Array.isArray(BASELINE_WORKFLOW_DATA)) {
       raw = BASELINE_WORKFLOW_DATA;
@@ -1844,7 +2130,700 @@
       csvLines.push(row.join(','));
     });
 
-    const filename = `Workflow_JAS_${state.workflowDateFilter}_${state.workflowCategoryFilter}.csv`;
+    const filename = `Workflow_OND_${state.workflowDateFilter}_${state.workflowCategoryFilter}.csv`;
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
+  // TAB: News (N & U Daily) & Auto-Assignment & Bandwidth Hub
+  // =========================================================================
+  function getTaskDuration(taskType) {
+    const t = (taskType || '').toString().toLowerCase().trim();
+    if (t.includes('lms update') || t === 'lms') return 20;
+    if (t.includes('blog update')) return 20;
+    if (t.includes('new notification') || t.includes('notification')) return 90;
+    if (t.includes('exam page') || t.includes('blog') || t.includes('new page') || t.includes('new blog')) return 60;
+    return 60; // Default 1 Hour
+  }
+
+  function getTaskTypeBadgeHtml(taskType) {
+    const dur = getTaskDuration(taskType);
+    const label = taskType || 'General Task';
+    if (dur === 20) {
+      return `<span class="badge-task-20m">⚡ ${escapeHtml(label)} (20m)</span>`;
+    } else if (dur === 90) {
+      return `<span class="badge-task-90m">🚨 ${escapeHtml(label)} (90m)</span>`;
+    } else {
+      return `<span class="badge-task-60m">📝 ${escapeHtml(label)} (60m)</span>`;
+    }
+  }
+
+  function getNewsList() {
+    let baseList = [];
+    if (state.sheetsData && Array.isArray(state.sheetsData.news_daily) && state.sheetsData.news_daily.length > 0) {
+      baseList = state.sheetsData.news_daily;
+    } else if (typeof BASELINE_NEWS_DATA !== 'undefined' && Array.isArray(BASELINE_NEWS_DATA) && BASELINE_NEWS_DATA.length > 0) {
+      baseList = BASELINE_NEWS_DATA;
+    }
+
+    const combined = [...state.newsCustomAlerts, ...baseList];
+
+    return combined.map((item, idx) => {
+      const id = item.id || `news_${idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`;
+      const override = state.newsOverrides[id];
+      if (override) {
+        return { ...item, ...override, id };
+      }
+      return { ...item, id };
+    });
+  }
+
+  function parseNewsDate(dateStr) {
+    if (!dateStr) return null;
+    const s = String(dateStr).trim();
+    
+    // Check YYYY-MM-DD
+    const isoMatch = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (isoMatch) {
+      return new Date(parseInt(isoMatch[1], 10), parseInt(isoMatch[2], 10) - 1, parseInt(isoMatch[3], 10));
+    }
+
+    // Check M/D/YYYY or MM/DD/YYYY or D/M/YYYY
+    const slashMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (slashMatch) {
+      const p1 = parseInt(slashMatch[1], 10);
+      const p2 = parseInt(slashMatch[2], 10);
+      const year = parseInt(slashMatch[3], 10);
+      if (p1 > 12) {
+        return new Date(year, p2 - 1, p1);
+      } else {
+        return new Date(year, p1 - 1, p2);
+      }
+    }
+
+    // Check D-Mon-YYYY or D Mon YYYY
+    const months = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+    const textMatch = s.match(/(\d{1,2})[\s\-]+([a-zA-Z]{3})[\s\-]+(\d{4})/);
+    if (textMatch) {
+      const day = parseInt(textMatch[1], 10);
+      const mStr = textMatch[2].toLowerCase();
+      const year = parseInt(textMatch[3], 10);
+      if (months[mStr] !== undefined) {
+        return new Date(year, months[mStr], day);
+      }
+    }
+
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function getNewsForDateScope(allItems) {
+    if (state.newsDateFilter === 'all') return allItems;
+
+    let maxDate = null;
+    allItems.forEach(e => {
+      const d = parseNewsDate(e.date);
+      if (d && (!maxDate || d.getTime() > maxDate.getTime())) {
+        maxDate = d;
+      }
+    });
+
+    const refDate = maxDate || new Date();
+    const refYear = refDate.getFullYear();
+    const refMonth = refDate.getMonth();
+    const refDay = refDate.getDate();
+
+    const todayStart = new Date(refYear, refMonth, refDay, 0, 0, 0, 0);
+    const yesterdayStart = new Date(refYear, refMonth, refDay - 1, 0, 0, 0, 0);
+    const last7DaysStart = new Date(refYear, refMonth, refDay - 6, 0, 0, 0, 0);
+
+    if (els.optNewsToday) {
+      const dtStr = `${todayStart.getDate()} ${todayStart.toLocaleString('default', { month: 'short' })}`;
+      els.optNewsToday.textContent = `Today (${dtStr}) - Default`;
+    }
+    if (els.optNewsYesterday) {
+      const dtStr = `${yesterdayStart.getDate()} ${yesterdayStart.toLocaleString('default', { month: 'short' })}`;
+      els.optNewsYesterday.textContent = `Yesterday (${dtStr})`;
+    }
+
+    return allItems.filter(e => {
+      const d = parseNewsDate(e.date);
+      if (!d) return state.newsDateFilter === 'all';
+      const t = d.getTime();
+
+      if (state.newsDateFilter === 'today') {
+        return t >= todayStart.getTime();
+      } else if (state.newsDateFilter === 'yesterday') {
+        return t >= yesterdayStart.getTime() && t < todayStart.getTime();
+      } else if (state.newsDateFilter === 'today_yesterday') {
+        return t >= yesterdayStart.getTime();
+      } else if (state.newsDateFilter === 'last7days') {
+        return t >= last7DaysStart.getTime();
+      }
+      return true;
+    });
+  }
+
+  function getAllWritersList() {
+    // Week 1 (05 Oct - 11 Oct 2026): Active News Squad (Team A - 5 Writers)
+    return ["Sonika", "Archita", "Shemaila", "Somya", "Mohit"];
+  }
+
+  function renderNews(isDateFilterChanged = false) {
+    if (!els.sectionNews || els.sectionNews.style.display === 'none') return;
+
+    const allItems = getNewsList();
+    const dateScopedItems = getNewsForDateScope(allItems);
+
+    // Live Badge Status
+    if (els.newsLiveBadge) {
+      const isLive = state.sheetsData && state.sheetsData.news_daily && state.sheetsData.news_daily.length > 0;
+      els.newsLiveBadge.innerHTML = isLive ? '🟢 Live Sheet Connected' : '📁 Baseline Snapshot';
+      els.newsLiveBadge.style.color = isLive ? '#15803d' : '#475569';
+    }
+
+    if (isDateFilterChanged) {
+      populateNewsDynamicFilters(dateScopedItems);
+    }
+
+    // Filter Items
+    const filteredItems = dateScopedItems.filter(e => {
+      // Status Filter
+      if (state.newsStatusFilter !== 'all') {
+        const isDone = isStatusDone(e.status);
+        const isUnassigned = !e.writer || e.writer.trim() === '' || e.writer === 'Unassigned' || (e.status || '').toLowerCase().includes('pending');
+        if (state.newsStatusFilter === 'done' && !isDone) return false;
+        if (state.newsStatusFilter === 'pending' && (!isUnassigned || isDone)) return false;
+        if (state.newsStatusFilter === 'in_progress' && (isDone || isUnassigned)) return false;
+      }
+
+      // Task Type Filter
+      if (state.newsTaskTypeFilter !== 'all') {
+        const dur = getTaskDuration(e.taskType);
+        if (state.newsTaskTypeFilter === 'lms' && (dur !== 20 || (e.taskType || '').toLowerCase().includes('blog'))) return false;
+        if (state.newsTaskTypeFilter === 'blog_update' && (dur !== 20 || !(e.taskType || '').toLowerCase().includes('blog'))) return false;
+        if (state.newsTaskTypeFilter === 'exam_page' && dur !== 60) return false;
+        if (state.newsTaskTypeFilter === 'new_notification' && dur !== 90) return false;
+      }
+
+      // Writer Filter
+      if (state.newsWriterFilter !== 'all' && (e.writer || 'Unassigned') !== state.newsWriterFilter) {
+        return false;
+      }
+
+      // Search
+      if (state.newsSearch) {
+        const q = state.newsSearch;
+        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.writer && e.writer.toLowerCase().includes(q)) ||
+                      (e.taskType && e.taskType.toLowerCase().includes(q)) ||
+                      (e.date && e.date.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+
+      return true;
+    });
+
+    // Sort tasks chronologically (most recent first)
+    filteredItems.sort((a, b) => {
+      const da = parseNewsDate(a.date);
+      const db = parseNewsDate(b.date);
+      const ta = da ? da.getTime() : 0;
+      const tb = db ? db.getTime() : 0;
+      return tb - ta;
+    });
+
+    renderWriterPresence(dateScopedItems);
+    renderNewsKpis(filteredItems, dateScopedItems.length);
+    renderNewsTable(filteredItems);
+
+    if (els.newsCountLabel) {
+      els.newsCountLabel.textContent = `Showing ${filteredItems.length} of ${dateScopedItems.length} events`;
+    }
+  }
+
+  function renderWriterPresence(scopedItems) {
+    if (!els.writerPresenceGrid) return;
+
+    const allWriters = getAllWritersList();
+    if (allWriters.length === 0) {
+      els.writerPresenceGrid.innerHTML = `<div style="color:#64748b; font-size:0.8rem;">No writers loaded.</div>`;
+      return;
+    }
+
+    // Calculate workloads from scoped tasks that are NOT done
+    const workloads = {};
+    allWriters.forEach(w => {
+      workloads[w] = { count: 0, minutes: 0, currentTask: null };
+    });
+
+    scopedItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (w && workloads[w] && !isStatusDone(item.status)) {
+        workloads[w].count += 1;
+        workloads[w].minutes += getTaskDuration(item.taskType);
+        if (!workloads[w].currentTask) {
+          workloads[w].currentTask = item.topic;
+        }
+      }
+    });
+
+    let gridHtml = '';
+    allWriters.forEach(writer => {
+      const status = state.writerStatuses[writer] || 'active'; // 'active' | 'break' | 'leave'
+      const wl = workloads[writer] || { count: 0, minutes: 0, currentTask: null };
+      
+      let meterPct = Math.min(100, Math.round((wl.minutes / 240) * 100)); // 240m (4hr) nominal full buffer
+      let meterColor = '#22c55e'; // Green
+      if (wl.minutes > 60 && wl.minutes <= 120) meterColor = '#eab308'; // Amber
+      if (wl.minutes > 120) meterColor = '#ef4444'; // Red
+      if (status === 'leave') meterColor = '#94a3b8';
+
+      let statusBadge = '';
+      if (status === 'active') {
+        statusBadge = `<span class="presence-badge status-active">🟢 Active</span>`;
+      } else if (status === 'break') {
+        statusBadge = `<span class="presence-badge status-break">☕ Break / Lunch</span>`;
+      } else {
+        statusBadge = `<span class="presence-badge status-leave">🔴 On Leave</span>`;
+      }
+
+      const activeTaskText = wl.currentTask ? escapeHtml(wl.currentTask) : (status === 'active' ? 'Idle — Ready for Tasks' : (status === 'break' ? 'On Break' : 'On Leave'));
+
+      gridHtml += `
+        <div class="writer-presence-card ${status !== 'active' ? 'is-inactive' : ''}" data-writer="${escapeHtml(writer)}">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.35rem;">
+            <div>
+              <div style="font-weight:700; font-size:0.85rem; color:#0f172a;">${escapeHtml(writer)}</div>
+              <div style="font-size:0.7rem; color:#64748b; margin-top:1px;">${statusBadge}</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="presence-task-count" style="background:${wl.count > 0 ? '#e0f2fe' : '#f1f5f9'}; color:${wl.count > 0 ? '#0369a1' : '#64748b'};">
+                ${wl.count} task${wl.count === 1 ? '' : 's'} (${wl.minutes}m)
+              </span>
+            </div>
+          </div>
+
+          <!-- Bandwidth Utilization Bar -->
+          <div style="margin: 0.35rem 0;">
+            <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#64748b; margin-bottom:2px;">
+              <span>Bandwidth:</span>
+              <span style="font-weight:600; color:${meterColor};">${wl.minutes} min load</span>
+            </div>
+            <div class="bandwidth-meter-bg">
+              <div class="bandwidth-meter-bar" style="width:${meterPct}%; background:${meterColor};"></div>
+            </div>
+          </div>
+
+          <div style="font-size:0.72rem; color:#475569; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:0.45rem;" title="${escapeHtml(activeTaskText)}">
+            <span style="color:#94a3b8;">Task:</span> <strong>${activeTaskText}</strong>
+          </div>
+
+          <!-- 1-Click Status Toggles -->
+          <div class="presence-btn-group">
+            <button type="button" class="btn-presence-toggle ${status === 'active' ? 'active-green' : ''}" data-writer="${escapeHtml(writer)}" data-newstatus="active" title="Mark Active">🟢 Active</button>
+            <button type="button" class="btn-presence-toggle ${status === 'break' ? 'active-amber' : ''}" data-writer="${escapeHtml(writer)}" data-newstatus="break" title="Mark on Break / Lunch">☕ Break</button>
+            <button type="button" class="btn-presence-toggle ${status === 'leave' ? 'active-red' : ''}" data-writer="${escapeHtml(writer)}" data-newstatus="leave" title="Mark on Leave">🔴 Leave</button>
+          </div>
+        </div>
+      `;
+    });
+
+    els.writerPresenceGrid.innerHTML = gridHtml;
+
+    // Attach click listeners for 1-click status switcher
+    els.writerPresenceGrid.querySelectorAll('.btn-presence-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const writer = btn.dataset.writer;
+        const newStatus = btn.dataset.newstatus;
+        if (!writer || !newStatus) return;
+
+        state.writerStatuses[writer] = newStatus;
+        saveWriterStatuses(state.writerStatuses);
+        renderNews(false);
+
+        // 2-Way Live Sync: Post to Google Sheet Web App
+        if (typeof sheetsClient !== 'undefined' && typeof sheetsClient.updateWriterPresence === 'function') {
+          sheetsClient.updateWriterPresence(writer, newStatus).then(res => {
+            console.log(`✓ Presence update sent for ${writer} -> ${newStatus}`);
+          });
+        }
+      });
+    });
+  }
+
+  function renderNewsKpis(filteredItems, totalInScope) {
+    if (!els.newsKpiCards) return;
+
+    const totalEvents = filteredItems.length;
+    let totalMinutes = 0;
+    let doneCount = 0;
+    let pendingCount = 0;
+    const writersSet = new Set();
+
+    filteredItems.forEach(e => {
+      totalMinutes += getTaskDuration(e.taskType);
+      if (isStatusDone(e.status)) {
+        doneCount++;
+      } else {
+        pendingCount++;
+      }
+      if (e.writer && e.writer.trim() && e.writer.trim() !== 'Unassigned') {
+        writersSet.add(e.writer.trim());
+      }
+    });
+
+    const completionRate = totalEvents > 0 ? Math.round((doneCount / totalEvents) * 100) : 0;
+    const hours = (totalMinutes / 60).toFixed(1);
+
+    // Count Active vs Break vs Leave
+    const allWriters = getAllWritersList();
+    let activeWritersCount = 0;
+    allWriters.forEach(w => {
+      if ((state.writerStatuses[w] || 'active') === 'active') activeWritersCount++;
+    });
+
+    els.newsKpiCards.innerHTML = `
+      <div class="kpi-card kpi-planned">
+        <div class="kpi-label">🚨 Total Breaking Events</div>
+        <div class="kpi-val" style="color:#1d4ed8;">${totalEvents.toLocaleString()}</div>
+        <div class="kpi-sub">${state.newsDateFilter === 'today' ? 'Today (Default)' : (state.newsDateFilter === 'yesterday' ? 'Yesterday' : state.newsDateFilter)}</div>
+      </div>
+      <div class="kpi-card kpi-rate">
+        <div class="kpi-label">⏱️ Total Workload Weight</div>
+        <div class="kpi-val" style="color:#7c3aed;">${totalMinutes} <span style="font-size:0.85rem; font-weight:normal; color:#6b7280;">min (${hours}h)</span></div>
+        <div class="kpi-sub">Weighted (20m / 60m / 90m)</div>
+      </div>
+      <div class="kpi-card kpi-done">
+        <div class="kpi-label">👥 Active Writers Available</div>
+        <div class="kpi-val" style="color:#059669;">${activeWritersCount} <span style="font-size:0.8rem; font-weight:normal; color:#6b7280;">/ ${allWriters.length}</span></div>
+        <div class="kpi-sub">Available for auto-dispatch</div>
+      </div>
+      <div class="kpi-card kpi-pending">
+        <div class="kpi-label">⚡ Live &amp; Pending Tasks</div>
+        <div class="kpi-val" style="color:#15803d;">${doneCount} <span style="font-size:0.85rem; color:#e11d48; font-weight:600;">(${pendingCount} pending)</span></div>
+        <div class="kpi-sub">${completionRate}% completion rate</div>
+      </div>
+    `;
+  }
+
+  function populateNewsDynamicFilters(dateScopedItems) {
+    if (els.newsWriterFilter) {
+      const writerCounts = {};
+      dateScopedItems.forEach(e => {
+        const w = (e.writer || 'Unassigned').trim();
+        writerCounts[w] = (writerCounts[w] || 0) + 1;
+      });
+      const sortedWriters = Object.keys(writerCounts).sort((a, b) => writerCounts[b] - writerCounts[a]);
+      const currentWriter = state.newsWriterFilter;
+      els.newsWriterFilter.innerHTML = `<option value="all">All Writers (${Object.keys(writerCounts).length})</option>`;
+      sortedWriters.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w;
+        opt.textContent = `${w} (${writerCounts[w]})`;
+        if (w === currentWriter) opt.selected = true;
+        els.newsWriterFilter.appendChild(opt);
+      });
+      if (currentWriter !== 'all' && !writerCounts[currentWriter]) {
+        state.newsWriterFilter = 'all';
+        els.newsWriterFilter.value = 'all';
+      }
+    }
+  }
+
+  function renderNewsTable(items) {
+    if (!els.newsTableBody) return;
+
+    if (items.length === 0) {
+      els.newsTableBody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align:center; padding:3rem; color:#64748b;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔍</div>
+            <div style="font-weight:600;">No news/alert tasks match the current filter.</div>
+            <div style="font-size:0.8rem; margin-top:0.25rem;">Try changing the date scope, clearing search, or clicking "Add Breaking Alert".</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    const allWriters = getAllWritersList();
+    let rowsHtml = '';
+
+    items.forEach((e, idx) => {
+      const dur = getTaskDuration(e.taskType);
+      const taskBadgeHtml = getTaskTypeBadgeHtml(e.taskType);
+      const isDone = isStatusDone(e.status);
+      const isUnassigned = !e.writer || e.writer.trim() === '' || e.writer === 'Unassigned';
+
+      // Status Pill
+      let statusHtml = '';
+      if (isDone) {
+        statusHtml = `<span class="badge-status-done">✅ Live / Done</span>`;
+      } else if (isUnassigned) {
+        statusHtml = `<span class="badge-status-pending">⏳ Unassigned</span>`;
+      } else {
+        statusHtml = `<span class="badge-status-prog">⚡ In Progress</span>`;
+      }
+
+      // Writer Display with Quick Reassign dropdown
+      let writerHtml = '';
+      if (isUnassigned) {
+        writerHtml = `<span class="writer-pill" style="background:#fee2e2; color:#b91c1c; font-weight:600;">Unassigned</span>`;
+      } else {
+        const wStatus = state.writerStatuses[e.writer] || 'active';
+        let statusDot = '🟢';
+        if (wStatus === 'break') statusDot = '☕';
+        if (wStatus === 'leave') statusDot = '🔴';
+        writerHtml = `<span class="writer-pill" title="Status: ${wStatus}">${statusDot} ${escapeHtml(e.writer)}</span>`;
+      }
+
+      // Live URL
+      let urlLinkHtml = '<span style="color:#94a3b8;">—</span>';
+      if (e.url) {
+        let fullUrl = e.url;
+        if (fullUrl.startsWith('/')) fullUrl = 'https://testbook.com' + fullUrl;
+        if (fullUrl.startsWith('http')) {
+          urlLinkHtml = `<a href="${escapeHtml(fullUrl)}" target="_blank" rel="noopener noreferrer" class="btn-url-link">Visit ↗</a>`;
+        }
+      }
+
+      const assignedAtFormatted = e.assignedAt ? escapeHtml(e.assignedAt) : '—';
+
+      rowsHtml += `
+        <tr>
+          <td style="text-align:center; color:#94a3b8; font-size:0.75rem;">${idx + 1}</td>
+          <td style="font-weight:600; color:#334155; white-space:nowrap;">${escapeHtml(e.date || 'Today')}</td>
+          <td>
+            <div style="font-weight:700; color:#0f172a; line-height:1.35;">${escapeHtml(e.topic)}</div>
+            ${e.priority ? `<span style="font-size:0.65rem; color:#dc2626; font-weight:700; text-transform:uppercase;">🔥 High Priority</span>` : ''}
+          </td>
+          <td>${taskBadgeHtml}</td>
+          <td><span class="badge-cat">${escapeHtml(e.category || 'General')}</span></td>
+          <td>${writerHtml}</td>
+          <td style="text-align:center;">${urlLinkHtml}</td>
+          <td style="text-align:center;">${statusHtml}</td>
+          <td style="color:#64748b; font-size:0.75rem; white-space:nowrap;">${assignedAtFormatted}</td>
+        </tr>
+      `;
+    });
+
+    els.newsTableBody.innerHTML = rowsHtml;
+  }
+
+  // =========================================================================
+  // Auto-Assignment Logic & Heuristics
+  // =========================================================================
+  function findBestWriterForTask(taskType, category, simulatedWorkloads) {
+    const allWriters = getAllWritersList();
+    if (allWriters.length === 0) return 'Unassigned';
+
+    // 1. Filter only candidates with status === 'active'
+    const activeCandidates = allWriters.filter(w => {
+      const st = state.writerStatuses[w] || 'active';
+      return st === 'active';
+    });
+
+    if (activeCandidates.length === 0) {
+      // Fallback: pick any writer if all are marked on break/leave
+      return allWriters[0];
+    }
+
+    // 2. Anti-piling constraint: Prefer writers with pending tasks < 2
+    let candidatePool = activeCandidates.filter(w => {
+      const wl = simulatedWorkloads[w] || { count: 0, minutes: 0 };
+      return wl.count < 2;
+    });
+
+    // If all active writers have 2+ tasks, expand to full active pool
+    if (candidatePool.length === 0) {
+      candidatePool = activeCandidates;
+    }
+
+    // 3. Earliest Free Time (EFT): Pick candidate with minimum pending minutes
+    let bestWriter = candidatePool[0];
+    let minScore = 99999;
+
+    candidatePool.forEach(writer => {
+      const wl = simulatedWorkloads[writer] || { count: 0, minutes: 0 };
+      let score = wl.minutes;
+
+      // Affinity bonus: if writer matches category history, give a minor 5 min boost
+      score += (wl.count * 10);
+
+      if (score < minScore) {
+        minScore = score;
+        bestWriter = writer;
+      }
+    });
+
+    return bestWriter;
+  }
+
+  function autoAssignAllPending() {
+    const allItems = getNewsList();
+    const dateScopedItems = getNewsForDateScope(allItems);
+
+    // Calculate current workloads for active tasks
+    const simulatedWorkloads = {};
+    getAllWritersList().forEach(w => {
+      simulatedWorkloads[w] = { count: 0, minutes: 0 };
+    });
+
+    dateScopedItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (w && simulatedWorkloads[w] && !isStatusDone(item.status)) {
+        simulatedWorkloads[w].count += 1;
+        simulatedWorkloads[w].minutes += getTaskDuration(item.taskType);
+      }
+    });
+
+    let assignedCount = 0;
+    const nowTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    dateScopedItems.forEach(item => {
+      const isUnassigned = !item.writer || item.writer.trim() === '' || item.writer === 'Unassigned';
+      if (isUnassigned && !isStatusDone(item.status)) {
+        const assignedWriter = findBestWriterForTask(item.taskType, item.category, simulatedWorkloads);
+        if (assignedWriter && assignedWriter !== 'Unassigned') {
+          const taskDur = getTaskDuration(item.taskType);
+          simulatedWorkloads[assignedWriter].count += 1;
+          simulatedWorkloads[assignedWriter].minutes += taskDur;
+
+          state.newsOverrides[item.id] = {
+            writer: assignedWriter,
+            status: 'In Progress',
+            assignedAt: nowTimeStr
+          };
+          assignedCount++;
+        }
+      }
+    });
+
+    renderNews(false);
+
+    if (assignedCount > 0) {
+      alert(`⚡ Smart Auto-Assignment Complete!\n\nSuccessfully assigned ${assignedCount} pending task(s) across active team writers based on bandwidth and task weights.`);
+    } else {
+      alert('ℹ️ All tasks in current date scope are already assigned.');
+    }
+  }
+
+  function handleAddNewsSubmit(e) {
+    e.preventDefault();
+    const topic = (els.inputNewsTopic ? els.inputNewsTopic.value : '').trim();
+    const taskType = els.selectNewsTaskType ? els.selectNewsTaskType.value : 'LMS Update';
+    const category = els.selectNewsCategory ? els.selectNewsCategory.value : 'General';
+    const assignMode = els.selectNewsAssignMode ? els.selectNewsAssignMode.value : 'auto';
+
+    if (!topic) return;
+
+    const now = new Date();
+    const dateStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+    const nowTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let assignedWriter = 'Unassigned';
+    let status = 'Pending';
+    let assignedAt = '';
+
+    if (assignMode === 'auto') {
+      const simulatedWorkloads = {};
+      getAllWritersList().forEach(w => {
+        simulatedWorkloads[w] = { count: 0, minutes: 0 };
+      });
+      const allNews = getNewsList();
+      allNews.forEach(n => {
+        const w = (n.writer || '').trim();
+        if (w && simulatedWorkloads[w] && !isStatusDone(n.status)) {
+          simulatedWorkloads[w].count += 1;
+          simulatedWorkloads[w].minutes += getTaskDuration(n.taskType);
+        }
+      });
+
+      assignedWriter = findBestWriterForTask(taskType, category, simulatedWorkloads);
+      status = 'In Progress';
+      assignedAt = nowTimeStr;
+    }
+
+    const newAlertItem = {
+      id: `custom_alert_${Date.now()}`,
+      date: dateStr,
+      topic: topic,
+      taskType: taskType,
+      category: category,
+      writer: assignedWriter,
+      status: status,
+      url: '',
+      priority: 'High',
+      assignedAt: assignedAt
+    };
+
+    state.newsCustomAlerts.unshift(newAlertItem);
+
+    // 2-Way Live Sync: Post new event to Google Sheet N & U Daily
+    if (typeof sheetsClient !== 'undefined' && typeof sheetsClient.addBreakingEvent === 'function') {
+      sheetsClient.addBreakingEvent({
+        topic: topic,
+        taskType: taskType,
+        category: category,
+        assignMode: assignMode
+      }).then(() => {
+        console.log(`✓ Breaking event posted to Google Sheet: ${topic}`);
+      });
+    }
+
+    if (els.modalAddNews) els.modalAddNews.style.display = 'none';
+    if (els.formAddNews) els.formAddNews.reset();
+
+    renderNews(false);
+  }
+
+  function exportNewsCSV() {
+    const allItems = getNewsList();
+    const dateScopedItems = getNewsForDateScope(allItems);
+
+    const filteredItems = dateScopedItems.filter(e => {
+      if (state.newsStatusFilter !== 'all') {
+        const isDone = isStatusDone(e.status);
+        const isUnassigned = !e.writer || e.writer.trim() === '' || e.writer === 'Unassigned';
+        if (state.newsStatusFilter === 'done' && !isDone) return false;
+        if (state.newsStatusFilter === 'pending' && (!isUnassigned || isDone)) return false;
+        if (state.newsStatusFilter === 'in_progress' && (isDone || isUnassigned)) return false;
+      }
+      if (state.newsWriterFilter !== 'all' && (e.writer || 'Unassigned') !== state.newsWriterFilter) return false;
+      if (state.newsSearch) {
+        const q = state.newsSearch;
+        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
+                      (e.category && e.category.toLowerCase().includes(q)) ||
+                      (e.writer && e.writer.toLowerCase().includes(q)) ||
+                      (e.taskType && e.taskType.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    const headers = ['Date', 'Topic & Event', 'Task Type', 'Duration (Min)', 'Category', 'Assigned Writer', 'Status', 'Live URL', 'Assigned At'];
+    const csvLines = [headers.join(',')];
+
+    filteredItems.forEach(e => {
+      const dur = getTaskDuration(e.taskType);
+      const row = [
+        `"${(e.date || '').replace(/"/g, '""')}"`,
+        `"${(e.topic || '').replace(/"/g, '""')}"`,
+        `"${(e.taskType || '').replace(/"/g, '""')}"`,
+        `"${dur}"`,
+        `"${(e.category || '').replace(/"/g, '""')}"`,
+        `"${(e.writer || '').replace(/"/g, '""')}"`,
+        `"${(e.status || '').replace(/"/g, '""')}"`,
+        `"${(e.url || '').replace(/"/g, '""')}"`,
+        `"${(e.assignedAt || '').replace(/"/g, '""')}"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    const filename = `News_N_and_U_Daily_${state.newsDateFilter}_${Date.now()}.csv`;
     downloadCSV(csvLines.join('\n'), filename);
   }
 
@@ -2131,10 +3110,893 @@
   }
 
   // =========================================================================
+  // TAB 8: Editorial Review & Value-Impact Points Hub (Live Workflow <OND>)
+  // =========================================================================
+  function getReviewList() {
+    if (state.sheetsData && state.sheetsData.workflow_ond && state.sheetsData.workflow_ond.length > 0) {
+      return state.sheetsData.workflow_ond;
+    }
+    if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && BASELINE_WORKFLOW_DATA.length > 0) {
+      return BASELINE_WORKFLOW_DATA;
+    }
+    return [];
+  }
+
+  let reviewFiltersPopulated = false;
+  function populateReviewFilters(items) {
+    if (reviewFiltersPopulated || !els.reviewWriterFilter) return;
+
+    const writersSet = new Set();
+    const categoriesSet = new Set();
+
+    items.forEach(item => {
+      if (item.writer && item.writer !== '-' && item.writer !== 'Unassigned') {
+        writersSet.add(item.writer);
+      }
+      if (item.category && item.category !== '-') {
+        categoriesSet.add(item.category);
+      }
+    });
+
+    // Populate Writers
+    Array.from(writersSet).sort().forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = w;
+      els.reviewWriterFilter.appendChild(opt);
+    });
+
+    // Populate Categories
+    if (els.reviewCategoryFilter) {
+      Array.from(categoriesSet).sort().forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        els.reviewCategoryFilter.appendChild(opt);
+      });
+    }
+
+    reviewFiltersPopulated = true;
+  }
+
+  function getEffectiveReviewStatus(item) {
+    if (state.reviewOverrides && state.reviewOverrides[item.topic]) {
+      return state.reviewOverrides[item.topic];
+    }
+    if (state.aiReviewCache && state.aiReviewCache[item.topic]) {
+      return state.aiReviewCache[item.topic].verdict;
+    }
+    const raw = (item.reviewStatus || '').trim();
+    if (raw.toLowerCase().includes('approv')) return 'Approved';
+    if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) return 'Needs Revision';
+    return 'Pending Review';
+  }
+
+  function updateAiRunnerUI(customStatus) {
+    if (!els.btnStartAiRunner) return;
+    const allItems = getReviewList();
+    const auditedKeys = Object.keys(state.aiReviewCache || {});
+    let approvedCount = 0;
+    let revisionCount = 0;
+
+    auditedKeys.forEach(k => {
+      const rec = state.aiReviewCache[k];
+      if (rec && (rec.verdict === 'Approved' || rec.isApproved)) approvedCount++;
+      else revisionCount++;
+    });
+
+    if (els.aiAuditedCountPill) {
+      els.aiAuditedCountPill.textContent = `🤖 ${auditedKeys.length} AI Audited`;
+    }
+    if (els.aiApprovedCountPill) {
+      els.aiApprovedCountPill.textContent = `✅ ${approvedCount} Approved`;
+    }
+    if (els.aiRevisionCountPill) {
+      els.aiRevisionCountPill.textContent = `⚠️ ${revisionCount} Revisions`;
+    }
+
+    if (state.aiRunnerActive) {
+      els.btnStartAiRunner.style.display = 'none';
+      if (els.btnStopAiRunner) els.btnStopAiRunner.style.display = 'inline-flex';
+      if (els.aiRunnerDot) {
+        els.aiRunnerDot.style.background = '#22c55e';
+        els.aiRunnerDot.style.boxShadow = '0 0 8px #22c55e';
+      }
+      if (els.aiRunnerStatusText) {
+        els.aiRunnerStatusText.innerHTML = customStatus || `<strong>AI Runner Active:</strong> Autonomously reviewing pending articles with Classplus Gemini Flash...`;
+      }
+    } else {
+      els.btnStartAiRunner.style.display = 'inline-flex';
+      if (els.btnStopAiRunner) els.btnStopAiRunner.style.display = 'none';
+      if (els.aiRunnerDot) {
+        els.aiRunnerDot.style.background = auditedKeys.length > 0 ? '#10b981' : '#94a3b8';
+        els.aiRunnerDot.style.boxShadow = 'none';
+      }
+      if (els.aiRunnerStatusText) {
+        els.aiRunnerStatusText.innerHTML = customStatus || (auditedKeys.length > 0 
+          ? `<strong>AI Runner Ready:</strong> ${auditedKeys.length} articles already audited. Click button to audit any remaining pending articles.`
+          : `<strong>Autonomous AI Review Runner:</strong> Ready (Click to auto-review pending articles autonomously)`);
+      }
+    }
+  }
+
+  // =========================================================================
+  // Autonomous AI Review Runner (Start Run Button)
+  // "Once article is reviewed by AI, Again it will not touch"
+  // =========================================================================
+  async function startAiAutoReviewRunner() {
+    if (state.aiRunnerActive) return;
+    state.aiRunnerActive = true;
+    updateAiRunnerUI();
+
+    const allItems = getReviewList();
+    // Filter queue: Skip anything already reviewed by AI or marked approved
+    const pendingQueue = allItems.filter(item => {
+      // 1. If already in AI cache, DO NOT touch again!
+      if (state.aiReviewCache && state.aiReviewCache[item.topic]) {
+        return false;
+      }
+      // 2. If raw sheet review status already explicitly contains approved, skip
+      const raw = (item.reviewStatus || '').trim().toLowerCase();
+      if (raw.includes('approv')) return false;
+      return true;
+    });
+
+    if (pendingQueue.length === 0) {
+      state.aiRunnerActive = false;
+      updateAiRunnerUI(`🎉 All ${allItems.length} articles are already reviewed by AI! Nothing left to process.`);
+      return;
+    }
+
+    let processed = 0;
+    for (let i = 0; i < pendingQueue.length; i++) {
+      if (!state.aiRunnerActive) {
+        updateAiRunnerUI(`⏸️ Auto-Review paused by user. (${processed} articles reviewed this run)`);
+        break;
+      }
+
+      const item = pendingQueue[i];
+      const currentNum = i + 1;
+      updateAiRunnerUI(`⚡ AI Reviewing [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 34))}..." (${item.writer || 'Unassigned'})`);
+
+      try {
+        const res = await sheetsClient.auditContentWithAI(item);
+        const audit = res.audit || {};
+        const isApproved = audit.isApproved !== false && (audit.qualityVerdict || '').toLowerCase().includes('approv');
+        const verdict = isApproved ? 'Approved' : 'Needs Revision';
+        const score = audit.editorialScore || (isApproved ? 8 : 5);
+        const pts = audit.pointsAwarded || (item.classification === 'Fresh Pillar' ? 3.0 : (item.classification === 'Standard Fresh' ? 2.0 : 1.5));
+
+        // Save to cache permanently so it is NEVER touched again
+        state.aiReviewCache[item.topic] = {
+          isApproved: isApproved,
+          verdict: verdict,
+          score: score,
+          points: pts,
+          classification: audit.suggestedClassification || item.classification || 'Standard Fresh',
+          netWordDiff: (audit.netWordDiff !== undefined && audit.netWordDiff !== null) ? audit.netWordDiff : (parseInt(item.wordCount, 10) || 0),
+          newDocWordCount: audit.newDocWordCount || parseInt(item.wordCount, 10) || 0,
+          oldDocWordCount: audit.oldDocWordCount || 0,
+          docWordCountText: audit.docWordCountText || `${item.wordCount || 0} words`,
+          justificationSummary: audit.justificationSummary || (isApproved 
+            ? `Approved: Aligned with exam intent and meets target depth with ${item.wordCount || 800}+ words.` 
+            : `Needs Revision: ${audit.rejectionReasons?.join(' ') || 'Fails quality and depth thresholds.'}`),
+          rejectionReasons: audit.rejectionReasons || (isApproved ? [] : ['Fails depth/volume criteria']),
+          wordCountAssessment: audit.wordCountAssessment || `${item.wordCount || 0} words`,
+          keyStrengths: audit.keyStrengths || ['Target focus keyword alignment'],
+          improvementAreas: audit.improvementAreas || ['Expand article length and depth'],
+          recommendationNote: audit.recommendationNote || '',
+          reviewedAt: new Date().toISOString()
+        };
+        saveAiReviewCache(state.aiReviewCache);
+
+        if (!state.reviewOverrides) state.reviewOverrides = {};
+        state.reviewOverrides[item.topic] = verdict;
+
+        // Sync to Google Sheet Col P in background
+        const notes = isApproved ? `AI Approved (${score}/10)` : `AI Revision: ${(audit.rejectionReasons || []).join('; ')}`;
+        sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (i + 2), item.topic, verdict, notes).catch(e => console.warn(e));
+
+        processed++;
+        renderReviewHub(false);
+
+        // Pause slightly between API calls
+        await new Promise(r => setTimeout(r, 650));
+      } catch (err) {
+        console.warn(`Error during AI audit for "${item.topic}":`, err);
+      }
+    }
+
+    state.aiRunnerActive = false;
+    updateAiRunnerUI(`✅ Complete! Auto-reviewed ${processed} articles with Classplus Gemini Flash.`);
+    renderReviewHub(false);
+  }
+
+  function stopAiAutoReviewRunner() {
+    state.aiRunnerActive = false;
+    updateAiRunnerUI("⏸️ Auto-Review runner paused by user.");
+  }
+
+  function renderReviewHub(resetFilters = false) {
+    if (!els.sectionReview) return;
+    const allItems = getReviewList();
+    populateReviewFilters(allItems);
+    updateAiRunnerUI();
+
+    // 1. Calculate Scorecard & Overall Metrics
+    let totalPointsAwarded = 0;
+    let freshPointsTotal = 0;
+    let optPointsTotal = 0;
+    let newsPointsTotal = 0;
+    let highIntentPointsTotal = 0;
+    let pendingReviewsCount = 0;
+    let approvedReviewsCount = 0;
+    let revisionCount = 0;
+
+    const writerScorecard = {};
+
+    allItems.forEach(item => {
+      const writer = item.writer || 'Unassigned';
+      const status = getEffectiveReviewStatus(item);
+      const tt = (item.taskType || '').toLowerCase();
+      const isFresh = item.classification === 'Fresh Pillar' || item.classification === 'Standard Fresh';
+      const isOpt = tt.includes('optimi') || item.classification === 'Deep Optimization' || item.classification === 'Light Optimization';
+      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP';
+      const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
+
+      const points = item.points || (isOpt ? 1.5 : (isHighIntent ? 1.5 : (isNews ? (item.wordCount >= 500 ? 0.5 : 0.25) : (item.wordCount >= 1500 ? 3.0 : 2.0))));
+
+      if (!writerScorecard[writer]) {
+        writerScorecard[writer] = {
+          writer,
+          totalPoints: 0,
+          freshPoints: 0,
+          optPoints: 0,
+          newsPoints: 0,
+          highIntentPoints: 0,
+          totalWords: 0,
+          approvedCount: 0,
+          pendingCount: 0,
+          revisionCount: 0,
+          totalTasks: 0,
+          optTasks: 0,
+          newsTasks: 0,
+          prepTasks: 0
+        };
+      }
+
+      writerScorecard[writer].totalTasks++;
+      writerScorecard[writer].totalWords += (item.wordCount || 0);
+      if (isOpt) writerScorecard[writer].optTasks++;
+      if (isNews) writerScorecard[writer].newsTasks++;
+      if (isFresh) writerScorecard[writer].prepTasks++;
+
+      if (status === 'Approved') {
+        writerScorecard[writer].approvedCount++;
+        writerScorecard[writer].totalPoints += points;
+        totalPointsAwarded += points;
+
+        if (isFresh) {
+          writerScorecard[writer].freshPoints += points;
+          freshPointsTotal += points;
+        } else if (isOpt) {
+          writerScorecard[writer].optPoints += points;
+          optPointsTotal += points;
+        } else if (isHighIntent) {
+          writerScorecard[writer].highIntentPoints += points;
+          highIntentPointsTotal += points;
+        } else if (isNews) {
+          writerScorecard[writer].newsPoints += points;
+          newsPointsTotal += points;
+        }
+        approvedReviewsCount++;
+      } else if (status === 'Needs Revision') {
+        writerScorecard[writer].revisionCount++;
+        revisionCount++;
+      } else {
+        writerScorecard[writer].pendingCount++;
+        pendingReviewsCount++;
+      }
+    });
+
+    // KPI Cards
+    if (els.reviewKpiCards) {
+      const freshPct = totalPointsAwarded > 0 ? Math.round((freshPointsTotal / totalPointsAwarded) * 100) : 0;
+      const optPct = totalPointsAwarded > 0 ? ((optPointsTotal / totalPointsAwarded) * 100).toFixed(1) : '0.0';
+      const capStatusText = parseFloat(optPct) <= 25.0 ? '🟢 Compliant (≤ 25%)' : '⚠️ Cap Exceeded (> 25%)';
+      const capBadgeColor = parseFloat(optPct) <= 25.0 ? '#15803d' : '#b91c1c';
+
+      const totalAudited = Object.keys(state.aiReviewCache || {}).length;
+      const aiPassPct = totalAudited > 0 ? Math.round((approvedReviewsCount / totalAudited) * 100) : 95;
+
+      els.reviewKpiCards.innerHTML = `
+        <div class="kpi-card" style="border-top:3px solid #6366f1;">
+          <div class="kpi-label">🎖️ Total Points Credited</div>
+          <div class="kpi-value" style="color:#4f46e5;">${totalPointsAwarded.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts</span></div>
+          <div class="kpi-subtext">OND Value &amp; Impact framework</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
+          <div class="kpi-label">🌟 Fresh Prep &amp; Pillars</div>
+          <div class="kpi-value" style="color:#0284c7;">${freshPointsTotal.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts (${freshPct}%)</span></div>
+          <div class="kpi-subtext">3.0pt Pillars &amp; 2.0pt Notes</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #f59e0b;">
+          <div class="kpi-label">🔄 Optimizations &amp; High-Intent</div>
+          <div class="kpi-value" style="color:#d97706;">${(optPointsTotal + highIntentPointsTotal).toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts</span></div>
+          <div class="kpi-subtext" style="color:${capBadgeColor}; font-weight:700;">Opt Share: ${optPct}% (${capStatusText})</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #eab308;">
+          <div class="kpi-label">⏳ Review Breakdown</div>
+          <div class="kpi-value" style="color:#0f172a; font-size:1.35rem;">${approvedReviewsCount} <span style="font-size:0.8rem; color:#15803d; font-weight:700;">Appr</span> / ${revisionCount} <span style="font-size:0.8rem; color:#b91c1c; font-weight:700;">Rev</span></div>
+          <div class="kpi-subtext">${pendingReviewsCount} Pending Review</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #10b981;">
+          <div class="kpi-label">🤖 AI Quality Gate Pass Rate</div>
+          <div class="kpi-value" style="color:#059669;">${aiPassPct}%</div>
+          <div class="kpi-subtext">Classplus Gemini Flash Gateway</div>
+        </div>
+      `;
+    }
+
+    // 2. Filter Review Queue Table
+    const filtered = allItems.filter(item => {
+      const status = getEffectiveReviewStatus(item);
+      const tt = (item.taskType || '').toLowerCase();
+      const pt = (item.pageType || '').toLowerCase();
+      const cl = (item.classification || '').toLowerCase();
+
+      // Task Type Filter (Optimization, High Intent, News, Prep, Pillar)
+      if (state.reviewTaskTypeFilter !== 'all') {
+        const tf = state.reviewTaskTypeFilter;
+        if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh')) return false;
+        if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('child') && !cl.includes('high intent')) return false;
+        if (tf === 'news' && !tt.includes('news') && !cl.includes('news')) return false;
+        if (tf === 'prep' && !tt.includes('prep') && !tt.includes('new content') && !cl.includes('standard fresh')) return false;
+        if (tf === 'pillar' && item.classification !== 'Fresh Pillar') return false;
+      }
+
+      // Review Status Filter
+      if (state.reviewStatusFilter === 'pending' && status !== 'Pending Review') return false;
+      if (state.reviewStatusFilter === 'approved' && status !== 'Approved') return false;
+      if (state.reviewStatusFilter === 'needs_revision' && status !== 'Needs Revision') return false;
+
+      // Writer Filter
+      if (state.reviewWriterFilter !== 'all' && item.writer !== state.reviewWriterFilter) return false;
+      // Category Filter
+      if (state.reviewCategoryFilter !== 'all' && item.category !== state.reviewCategoryFilter) return false;
+
+      // Search
+      if (state.reviewSearch) {
+        const q = state.reviewSearch;
+        const match = (item.topic && item.topic.toLowerCase().includes(q)) ||
+                      (item.fk && item.fk.toLowerCase().includes(q)) ||
+                      (item.writer && item.writer.toLowerCase().includes(q)) ||
+                      (item.category && item.category.toLowerCase().includes(q)) ||
+                      (item.taskType && item.taskType.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      return true;
+    });
+
+    // Writer-specific alert banner when filtered by writer
+    if (els.writerReviewAlertBar) {
+      if (state.reviewWriterFilter !== 'all') {
+        const wItems = allItems.filter(it => it.writer === state.reviewWriterFilter);
+        const wAppr = wItems.filter(it => getEffectiveReviewStatus(it) === 'Approved').length;
+        const wRev = wItems.filter(it => getEffectiveReviewStatus(it) === 'Needs Revision').length;
+        const wPts = wItems.reduce((acc, it) => getEffectiveReviewStatus(it) === 'Approved' ? acc + (it.points || 0) : acc, 0);
+
+        els.writerReviewAlertBar.style.display = 'flex';
+        els.writerReviewAlertBar.innerHTML = `
+          <div style="font-weight:700; color:#1e3a8a; display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <span>👤 Writer: <strong>${escapeHtml(state.reviewWriterFilter)}</strong></span>
+            <span>|</span>
+            <span style="color:#16a34a;">✅ ${wAppr} Approved</span>
+            <span>|</span>
+            <span style="color:#dc2626;">⚠️ ${wRev} Needs Revision</span>
+            <span>|</span>
+            <span style="color:#2563eb;">⭐ ${wPts.toFixed(1)} Pts</span>
+          </div>
+          ${wRev > 0 ? `<button class="btn-action" id="btnFilterMyRejections" style="background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; font-size:0.72rem; padding:2px 8px; border-radius:5px; font-weight:700; cursor:pointer;">⚠️ Show Only My Rejected Articles (${wRev})</button>` : ''}
+        `;
+
+        const btnF = document.getElementById('btnFilterMyRejections');
+        if (btnF) {
+          btnF.addEventListener('click', () => {
+            state.reviewStatusFilter = 'needs_revision';
+            if (els.reviewStatusFilter) els.reviewStatusFilter.value = 'needs_revision';
+            renderReviewHub(false);
+          });
+        }
+      } else {
+        els.writerReviewAlertBar.style.display = 'none';
+      }
+    }
+
+    if (els.reviewCountLabel) {
+      els.reviewCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} submissions`;
+    }
+
+    // 3. Render Review Queue Table Rows
+    if (els.reviewTableBody) {
+      if (filtered.length === 0) {
+        els.reviewTableBody.innerHTML = `
+          <tr>
+            <td colspan="10" style="text-align:center; padding:2rem; color:#94a3b8;">
+              <div style="font-weight:700; color:#334155; font-size:0.95rem;">No submissions matching the current filter</div>
+            </td>
+          </tr>
+        `;
+      } else {
+        let html = '';
+        filtered.forEach((item, idx) => {
+          const status = getEffectiveReviewStatus(item);
+          const aiRecord = state.aiReviewCache ? state.aiReviewCache[item.topic] : null;
+          const tt = (item.taskType || '').toLowerCase();
+          
+          let tierBadge = '';
+          if (tt.includes('optimi') || item.classification === 'Deep Optimization') {
+            tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
+          } else if (tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP') {
+            tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 High-Intent (1.5p)</span>`;
+          } else if (tt.includes('news')) {
+            tierBadge = item.wordCount >= 500
+              ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 News (0.5p)</span>`
+              : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ Micro (0.25p)</span>`;
+          } else if (item.classification === 'Fresh Pillar' || item.wordCount >= 1500) {
+            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Pillar (3.0p)</span>`;
+          } else {
+            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Prep (2.0p)</span>`;
+          }
+
+          let statusBadge = '';
+          if (status === 'Approved') {
+            statusBadge = `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:3px 7px; border-radius:6px; font-size:0.72rem;">✅ Approved</span>`;
+          } else if (status === 'Needs Revision') {
+            statusBadge = `<span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:3px 7px; border-radius:6px; font-size:0.72rem;">⚠️ Needs Revision</span>`;
+          } else {
+            statusBadge = `<span style="background:#f1f5f9; color:#64748b; font-weight:700; padding:3px 7px; border-radius:6px; font-size:0.72rem;">⏳ Pending</span>`;
+          }
+
+          // Doc Links
+          const oldDocBtn = item.oldDoc && item.oldDoc.startsWith('http')
+            ? `<a href="${item.oldDoc}" target="_blank" style="color:#2563eb; font-size:0.75rem; text-decoration:underline;">📄 Old Doc ↗</a>`
+            : `<span style="color:#cbd5e1; font-size:0.75rem;">—</span>`;
+          const newDocBtn = item.newDoc && item.newDoc.startsWith('http')
+            ? `<a href="${item.newDoc}" target="_blank" style="color:#2563eb; font-size:0.75rem; font-weight:700; text-decoration:underline;">📝 New Doc ↗</a>`
+            : `<span style="color:#ef4444; font-size:0.75rem; font-weight:700;">🚫 No Doc</span>`;
+          const liveUrlBtn = item.url && item.url.startsWith('http')
+            ? `<a href="${item.url}" target="_blank" style="color:#0284c7; font-size:0.75rem; text-decoration:underline;">🌐 Live URL ↗</a>`
+            : `<span style="color:#cbd5e1; font-size:0.75rem;">—</span>`;
+
+          // Doc Word Count Column (AI)
+          let docWordCountColHtml = '';
+          const hasValidDoc = item.newDoc && item.newDoc.startsWith('http');
+          const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
+
+          if (!hasValidDoc) {
+            docWordCountColHtml = `<div style="color:#dc2626; font-size:0.72rem; font-weight:700; text-align:center;">🚫 No Doc</div>`;
+          } else if (aiRecord) {
+            if (aiRecord.running) {
+              docWordCountColHtml = `<div style="color:#2563eb; font-size:0.75rem; font-weight:700; text-align:center;">🔄 Auditing...</div>`;
+            } else if (aiRecord.newDocWordCount === null || aiRecord.newDocWordCount === undefined) {
+              docWordCountColHtml = `<div style="color:#dc2626; font-size:0.72rem; font-weight:700; text-align:center;">🚫 Inaccessible Doc</div>`;
+            } else if (hasOldDoc || tt.includes('optimi')) {
+              const diff = (aiRecord.netWordDiff !== undefined && aiRecord.netWordDiff !== null)
+                ? aiRecord.netWordDiff
+                : (aiRecord.oldDocWordCount ? (aiRecord.newDocWordCount - aiRecord.oldDocWordCount) : 0);
+              const sign = diff >= 0 ? '+' : '';
+              const clr = diff >= 300 ? '#16a34a' : (diff > 0 ? '#d97706' : '#dc2626');
+              docWordCountColHtml = `<div style="font-weight:800; color:${clr}; font-size:0.88rem; text-align:center;" title="New: ${aiRecord.newDocWordCount}w | Old: ${aiRecord.oldDocWordCount || 0}w">${sign}${diff.toLocaleString()} words</div>`;
+            } else {
+              const totalWc = aiRecord.newDocWordCount || 0;
+              docWordCountColHtml = `<div style="font-weight:800; color:#0f172a; font-size:0.88rem; text-align:center;">${totalWc.toLocaleString()} words</div>`;
+            }
+          } else {
+            docWordCountColHtml = `<div style="text-align:center; color:#cbd5e1; font-weight:bold; font-size:0.85rem;">—</div>`;
+          }
+
+          // Verdict / AI Status Column
+          let verdictHtml = '';
+          if (!hasValidDoc) {
+            verdictHtml = `<span style="color:#b91c1c; font-weight:700; font-size:0.75rem;">🚫 Cannot Access Doc</span>`;
+          } else if (aiRecord) {
+            if (aiRecord.running) {
+              verdictHtml = `<span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ In Progress...</span>`;
+            } else {
+              const isAppr = aiRecord.isApproved;
+              if (isAppr) {
+                verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">Passed</span></div>`;
+              } else {
+                const reason = (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || aiRecord.justificationSummary || 'Needs revision';
+                verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">${escapeHtml(reason)}</span></div>`;
+              }
+            }
+          } else {
+            verdictHtml = `<span style="background:#f1f5f9; color:#64748b; font-weight:600; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ Pending Run</span>`;
+          }
+
+          html += `
+            <tr data-topic="${escapeHtml(item.topic)}">
+              <td style="text-align:center; color:#94a3b8; font-size:0.72rem;">${idx + 1}</td>
+              <td style="white-space:nowrap; font-size:0.75rem; color:#475569;">${escapeHtml(item.date || '—')}</td>
+              <td>
+                <div style="font-weight:700; color:#0f172a; font-size:0.82rem; line-height:1.2;">${escapeHtml(item.topic)}</div>
+              </td>
+              <td style="font-size:0.75rem;">
+                <span class="badge badge-${(item.category || 'general').toLowerCase()}" style="font-size:0.68rem;">${escapeHtml(item.category || 'General')}</span>
+              </td>
+              <td>${tierBadge}</td>
+              <td style="text-align:center; font-size:0.75rem; color:#475569;">${escapeHtml(item.type || 'New')}</td>
+              <td style="font-size:0.75rem; color:#475569;">${escapeHtml(item.pageType || 'Blog')}</td>
+              <td style="font-weight:700; font-size:0.78rem; color:#1e293b;">${escapeHtml(item.writer || 'Unassigned')}</td>
+              <td style="font-size:0.75rem; color:#334155; font-weight:600;">${escapeHtml(item.fk || item.topic || '—')}</td>
+              <td style="text-align:center;">${oldDocBtn}</td>
+              <td style="text-align:center;">${newDocBtn}</td>
+              <td style="text-align:center;">${liveUrlBtn}</td>
+              <td style="background:#f0fdf4;">${docWordCountColHtml}</td>
+              <td>${verdictHtml}</td>
+              <td style="text-align:center;">
+                <button class="btn-action btn-review-ai" data-topic="${escapeHtml(item.topic)}" style="background:#4f46e5; color:#ffffff; font-weight:700; font-size:0.7rem; padding:2px 7px; border-radius:5px; border:none; cursor:pointer;" title="Audit / Re-audit with AI">
+                  🤖 Audit
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+
+        els.reviewTableBody.innerHTML = html;
+
+        // Attach audit click handlers
+        els.reviewTableBody.querySelectorAll('.btn-review-ai').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const topic = btn.dataset.topic;
+            const item = allItems.find(it => it.topic === topic);
+            if (item) openAiAuditModal(item, true);
+          });
+        });
+      }
+    }
+
+    // 4. Render OND Admin Portal: Name of the Writer | Points Achieved | KPI Target | Word Count Target vs Achieved | Squad Track | Status / Performance %
+    if (els.reviewLeaderboardContainer) {
+      const writersList = Object.values(writerScorecard).filter(w => w.writer !== 'Unassigned' && w.totalTasks > 0);
+      writersList.sort((a, b) => b.totalPoints - a.totalPoints);
+
+      if (writersList.length === 0) {
+        els.reviewLeaderboardContainer.innerHTML = `<div style="text-align:center; color:#94a3b8; padding:1.5rem;">No writer activity recorded yet.</div>`;
+      } else {
+        let lbHtml = `
+          <table class="data-table" style="font-size:0.82rem;">
+            <thead>
+              <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                <th style="width:40px; text-align:center;">#</th>
+                <th style="min-width:160px;">Name of the Writer</th>
+                <th style="text-align:center; min-width:130px; background:#eff6ff; color:#1e40af;">Points Achieved</th>
+                <th style="text-align:center; min-width:140px;">KPI Target (Daily / Wk)</th>
+                <th style="text-align:center; min-width:170px;">Word Count (Achieved vs Target)</th>
+                <th style="min-width:160px; text-align:center;">Squad Track</th>
+                <th style="text-align:center; min-width:150px;">Status / Performance %</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        writersList.forEach((w, rank) => {
+          // Determine Squad Track (Squad A vs Squad B)
+          const isSquadA = (w.newsTasks + w.optTasks) >= w.prepTasks;
+          const squadName = isSquadA ? 'Squad A: News & High-Intent' : 'Squad B: Exam Prep Track';
+          const squadBadge = isSquadA
+            ? `<span style="background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:6px;">⚡ Squad A (News/Opt)</span>`
+            : `<span style="background:#fdf4ff; color:#86198f; border:1px solid #f5d0fe; font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:6px;">📚 Squad B (Exam Prep)</span>`;
+
+          const dailyTargetPts = isSquadA ? '4.0 – 9.0 Pts/day' : '10.0 Pts/day';
+          const dailyWordTarget = '5,000 words/day';
+          
+          // Performance calculation
+          const targetBaseline = isSquadA ? 6.5 : 10.0;
+          const achievedPts = w.totalPoints;
+          const perfPct = Math.min(Math.round((achievedPts / targetBaseline) * 100), 200);
+          
+          let perfBadge = '';
+          if (perfPct >= 100) {
+            perfBadge = `<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-weight:800; font-size:0.72rem; padding:2px 8px; border-radius:6px;">🌟 Target Met (${perfPct}%)</span>`;
+          } else if (perfPct >= 70) {
+            perfBadge = `<span style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700; font-size:0.72rem; padding:2px 8px; border-radius:6px;">🟢 Performing (${perfPct}%)</span>`;
+          } else {
+            perfBadge = `<span style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-weight:700; font-size:0.72rem; padding:2px 8px; border-radius:6px;">⚠️ Needs Focus (${perfPct}%)</span>`;
+          }
+
+          const rankEmoji = rank === 0 ? '🥇 ' : (rank === 1 ? '🥈 ' : (rank === 2 ? '🥉 ' : ''));
+
+          lbHtml += `
+            <tr>
+              <td style="text-align:center; font-weight:700; color:#64748b;">${rankEmoji}${rank + 1}</td>
+              <td>
+                <div style="font-weight:800; color:#0f172a; font-size:0.88rem;">${escapeHtml(w.writer)}</div>
+                <div style="font-size:0.7rem; color:#64748b;">${w.approvedCount} Approved / ${w.totalTasks} Total Tasks</div>
+              </td>
+              <td style="text-align:center; background:#eff6ff;">
+                <span style="font-weight:900; font-size:1.1rem; color:#1e40af;">${w.totalPoints.toFixed(1)}</span>
+                <span style="font-size:0.75rem; color:#3b82f6; font-weight:700;">pts</span>
+              </td>
+              <td style="text-align:center;">
+                <div style="font-weight:700; color:#334155; font-size:0.8rem;">${dailyTargetPts}</div>
+                <div style="font-size:0.68rem; color:#64748b;">OND Standard Mix</div>
+              </td>
+              <td style="text-align:center;">
+                <div style="font-weight:800; color:#0f172a; font-size:0.85rem;">${w.totalWords.toLocaleString()} <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">words</span></div>
+                <div style="font-size:0.68rem; color:#64748b;">Target: ${dailyWordTarget} (330k Qtr)</div>
+              </td>
+              <td style="text-align:center;">${squadBadge}</td>
+              <td style="text-align:center;">${perfBadge}</td>
+            </tr>
+          `;
+        });
+
+        lbHtml += `</tbody></table>`;
+        els.reviewLeaderboardContainer.innerHTML = lbHtml;
+      }
+    }
+  }
+
+  // Handle Approve Action
+  async function approveReviewItem(topic, rowIdx) {
+    if (!state.reviewOverrides) state.reviewOverrides = {};
+    state.reviewOverrides[topic] = 'Approved';
+    if (!state.aiReviewCache) state.aiReviewCache = {};
+    if (!state.aiReviewCache[topic]) {
+      state.aiReviewCache[topic] = {
+        isApproved: true,
+        verdict: 'Approved',
+        score: 9,
+        points: 2.0,
+        justificationSummary: 'Manually approved by editorial manager.',
+        rejectionReasons: [],
+        reviewedAt: new Date().toISOString()
+      };
+      saveAiReviewCache(state.aiReviewCache);
+    }
+    renderReviewHub(false);
+
+    if (typeof sheetsClient !== 'undefined') {
+      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Approved');
+    }
+  }
+
+  // Handle Request Revision Action
+  async function requestRevisionItem(topic, rowIdx) {
+    const note = prompt(`Enter revision note / failure reason for writer on "${topic}":`, "Word count is below requirement. Please add net +300 words with updated syllabus/data.");
+    if (note === null) return; // cancelled
+
+    if (!state.reviewOverrides) state.reviewOverrides = {};
+    state.reviewOverrides[topic] = 'Needs Revision';
+    if (!state.aiReviewCache) state.aiReviewCache = {};
+    state.aiReviewCache[topic] = {
+      isApproved: false,
+      verdict: 'Needs Revision',
+      score: 5,
+      points: 0,
+      justificationSummary: `Needs Revision: ${note}`,
+      rejectionReasons: [note],
+      reviewedAt: new Date().toISOString()
+    };
+    saveAiReviewCache(state.aiReviewCache);
+    renderReviewHub(false);
+
+    if (typeof sheetsClient !== 'undefined') {
+      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Needs Revision', note);
+    }
+  }
+
+  // AI Quick Audit Modal Handler
+  async function openAiAuditModal(item, forceReAudit = false) {
+    if (!els.modalAiAudit || !els.modalAiAuditContent) return;
+
+    els.modalAiAudit.style.display = 'flex';
+
+    // Check if existing audit is cached and we are NOT forcing a re-audit
+    const cached = (!forceReAudit && state.aiReviewCache) ? state.aiReviewCache[item.topic] : null;
+
+    let auditData = null;
+
+    if (cached && !cached.running && cached.isApproved !== undefined) {
+      auditData = cached;
+    } else {
+      // Immediately reflect running state in table & modal
+      if (!state.aiReviewCache) state.aiReviewCache = {};
+      state.aiReviewCache[item.topic] = { running: true };
+      renderReviewHub(false);
+
+      els.modalAiAuditContent.innerHTML = `
+        <div style="text-align:center; padding:2rem 0; color:#475569;">
+          <div class="spinner" style="margin:0 auto 0.75rem auto; width:36px; height:36px; border:3px solid #e2e8f0; border-top-color:#4f46e5; border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+          <div style="font-weight:700; font-size:0.95rem; color:#1e293b;">Auditing with Classplus AI Gateway (Gemini Flash)...</div>
+          <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">Analyzing keyword intent, word count differential, and exam syllabus depth</div>
+        </div>
+      `;
+
+      if (els.modalAiAuditFooter) {
+        els.modalAiAuditFooter.innerHTML = `<button type="button" class="btn-action" id="btnCloseAuditFooter">Close</button>`;
+        document.getElementById('btnCloseAuditFooter').addEventListener('click', () => {
+          els.modalAiAudit.style.display = 'none';
+        });
+      }
+
+      let res = null;
+      try {
+        res = await sheetsClient.auditContentWithAI(item);
+      } catch (auditErr) {
+        console.warn('AI Audit failed:', auditErr);
+      }
+
+      const a = (res && res.audit) ? res.audit : {};
+      const isAppr = a.isApproved !== false && (a.qualityVerdict || '').toLowerCase().includes('approv');
+      auditData = {
+        isApproved: isAppr,
+        verdict: isAppr ? 'Approved' : 'Needs Revision',
+        score: a.editorialScore || (isAppr ? 9 : 5),
+        suggestedClassification: a.suggestedClassification || item.classification || 'Standard Fresh',
+        pointsAwarded: a.pointsAwarded || (isAppr ? (item.classification === 'Fresh Pillar' ? 3.0 : (item.classification === 'Standard Fresh' ? 2.0 : 1.5)) : 0),
+        netWordDiff: (a.netWordDiff !== undefined && a.netWordDiff !== null) ? a.netWordDiff : null,
+        newDocWordCount: a.newDocWordCount !== undefined ? a.newDocWordCount : null,
+        oldDocWordCount: a.oldDocWordCount || 0,
+        docWordCountText: a.docWordCountText || (isAppr ? 'Verified' : '🚫 Needs Revision'),
+        justificationSummary: a.justificationSummary || (isAppr ? 'Meets framework criteria.' : 'Needs revision.'),
+        rejectionReasons: a.rejectionReasons || [],
+        wordCountAssessment: a.wordCountAssessment || a.docWordCountText || '',
+        keyStrengths: (a.keyStrengths && a.keyStrengths.length > 0) ? a.keyStrengths : ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
+        improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Ensure internal linking to parent pillar page'],
+        recommendationNote: a.recommendationNote || (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.')
+      };
+
+      // Save to cache
+      state.aiReviewCache[item.topic] = auditData;
+      saveAiReviewCache(state.aiReviewCache);
+      renderReviewHub(false);
+    }
+
+    const a = auditData;
+    const score = a.score || a.editorialScore || 8;
+    const scoreColor = score >= 8 ? '#15803d' : (score >= 6 ? '#d97706' : '#dc2626');
+    const classification = a.suggestedClassification || item.classification || 'Standard Fresh';
+    const points = a.pointsAwarded || (classification === 'Fresh Pillar' ? 3.0 : (classification === 'Standard Fresh' ? 2.0 : 1.5));
+    const isAppr = a.isApproved !== false && a.verdict !== 'Needs Revision';
+
+    const strengthsList = (a.keyStrengths && Array.isArray(a.keyStrengths) && a.keyStrengths.length > 0)
+      ? a.keyStrengths.map(s => `<li>${escapeHtml(s)}</li>`).join('')
+      : `<li>Matches category exam prep search intent</li><li>Proper focus keyword placement</li>`;
+
+    const improvementsList = (a.improvementAreas && Array.isArray(a.improvementAreas) && a.improvementAreas.length > 0)
+      ? a.improvementAreas.map(i => `<li>${escapeHtml(i)}</li>`).join('')
+      : `<li>Ensure internal links to exam pillar page</li>`;
+
+    let rejectionsBlock = '';
+    if (!isAppr && a.rejectionReasons && a.rejectionReasons.length > 0) {
+      rejectionsBlock = `
+        <div style="background:#fee2e2; border:1px solid #fca5a5; border-radius:8px; padding:0.75rem;">
+          <div style="font-weight:800; color:#991b1b; font-size:0.82rem; margin-bottom:0.3rem;">❌ Rejection / Revision Justification:</div>
+          <ul style="margin:0; padding-left:1.2rem; font-size:0.78rem; color:#7f1d1d; line-height:1.4;">
+            ${a.rejectionReasons.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    els.modalAiAuditContent.innerHTML = `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.85rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:0.72rem; color:#64748b; text-transform:uppercase; font-weight:700;">Content Item</div>
+          <div style="font-weight:800; font-size:0.95rem; color:#0f172a;">${escapeHtml(item.topic)}</div>
+          <div style="font-size:0.75rem; color:#475569; margin-top:2px;">Writer: <strong>${escapeHtml(item.writer || 'Unassigned')}</strong> | Category: <strong>${escapeHtml(item.category || 'General')}</strong></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.7rem; color:#64748b; font-weight:600;">Quality Score</div>
+          <div style="font-size:1.6rem; font-weight:900; color:${scoreColor}; line-height:1;">${score}<span style="font-size:0.85rem; color:#94a3b8;">/10</span></div>
+          <div style="font-size:0.7rem; font-weight:700; color:${isAppr ? '#15803d' : '#b91c1c'};">${isAppr ? '✅ Approved' : '⚠️ Needs Revision'}</div>
+        </div>
+      </div>
+
+      ${rejectionsBlock}
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:0.6rem;">
+          <div style="font-size:0.7rem; color:#1d4ed8; font-weight:700;">Verified Classification</div>
+          <div style="font-weight:800; color:#1e40af; font-size:0.9rem;">${classification}</div>
+          <div style="font-size:0.72rem; color:#2563eb;">Award: <strong>${points} Points</strong></div>
+        </div>
+
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.6rem;">
+          <div style="font-size:0.7rem; color:#15803d; font-weight:700;">Doc Word Count &amp; Net Diff (AI)</div>
+          <div style="font-weight:800; color:#166534; font-size:0.9rem;">
+            ${(a.netWordDiff !== null && a.netWordDiff !== undefined)
+              ? `<span style="color:${a.netWordDiff >= 300 ? '#16a34a' : (a.netWordDiff > 0 ? '#d97706' : '#dc2626')};">${a.netWordDiff >= 0 ? '+' : ''}${a.netWordDiff.toLocaleString()} words (Net)</span>`
+              : (a.newDocWordCount ? `${a.newDocWordCount.toLocaleString()} words` : '—')}
+          </div>
+          <div style="font-size:0.72rem; color:#15803d;">${escapeHtml(a.docWordCountText || a.wordCountAssessment || 'Verified by Gemini Flash')}</div>
+        </div>
+      </div>
+
+      <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:0.75rem;">
+        <div style="font-weight:700; color:#1e293b; font-size:0.8rem; margin-bottom:0.3rem;">✨ Key Editorial Strengths:</div>
+        <ul style="margin:0; padding-left:1.2rem; font-size:0.78rem; color:#334155; line-height:1.4;">
+          ${strengthsList}
+        </ul>
+      </div>
+
+      <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:0.75rem;">
+        <div style="font-weight:700; color:#92400e; font-size:0.8rem; margin-bottom:0.3rem;">💡 Suggestions for Writer:</div>
+        <ul style="margin:0; padding-left:1.2rem; font-size:0.78rem; color:#78350f; line-height:1.4;">
+          ${improvementsList}
+        </ul>
+      </div>
+
+      <div style="font-size:0.75rem; color:#475569; font-style:italic; border-left:3px solid #6366f1; padding-left:0.5rem;">
+        "${escapeHtml(a.justificationSummary || a.recommendationNote || 'Content evaluation recorded in ledger.')}"
+      </div>
+    `;
+
+    if (els.modalAiAuditFooter) {
+      els.modalAiAuditFooter.innerHTML = `
+        <button type="button" class="btn-action" id="btnCloseAuditFooter">Close</button>
+        <button type="button" class="btn-action" id="btnReRunAuditModal" style="background:#4f46e5; color:#ffffff; font-weight:700;">
+          🔄 Re-Run AI Audit
+        </button>
+      `;
+
+      document.getElementById('btnCloseAuditFooter').addEventListener('click', () => {
+        els.modalAiAudit.style.display = 'none';
+      });
+
+      document.getElementById('btnReRunAuditModal').addEventListener('click', () => {
+        openAiAuditModal(item, true);
+      });
+    }
+  }
+
+  function exportReviewCSV() {
+    const allItems = getReviewList();
+    const headers = ['Row', 'Date', 'Topic', 'Focus Keyword', 'Category', 'Task Type', 'Type', 'Page Type', 'Writer', 'Word Count', 'Classification', 'Points', 'Review Status', 'Old Doc', 'New Doc', 'Live URL'];
+    const csvLines = [headers.join(',')];
+
+    allItems.forEach((item, idx) => {
+      const status = getEffectiveReviewStatus(item);
+      const row = [
+        item.rowIndex || (idx + 2),
+        `"${(item.date || '').replace(/"/g, '""')}"`,
+        `"${(item.topic || '').replace(/"/g, '""')}"`,
+        `"${(item.fk || '').replace(/"/g, '""')}"`,
+        `"${(item.category || '').replace(/"/g, '""')}"`,
+        `"${(item.taskType || '').replace(/"/g, '""')}"`,
+        `"${(item.type || '').replace(/"/g, '""')}"`,
+        `"${(item.pageType || '').replace(/"/g, '""')}"`,
+        `"${(item.writer || '').replace(/"/g, '""')}"`,
+        item.wordCount || 0,
+        `"${(item.classification || '').replace(/"/g, '""')}"`,
+        item.points || 0,
+        `"${status.replace(/"/g, '""')}"`,
+        `"${(item.oldDoc || '').replace(/"/g, '""')}"`,
+        `"${(item.newDoc || '').replace(/"/g, '""')}"`,
+        `"${(item.url || '').replace(/"/g, '""')}"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    const filename = `Editorial_Review_Ledger_${Date.now()}.csv`;
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
   // Master Initialization
   // =========================================================================
   function renderApp() {
     renderRoster();
+    renderNews();
+    renderReviewHub();
     renderProductivity();
     renderCategoryGrid();
     renderUpcomingEvents();

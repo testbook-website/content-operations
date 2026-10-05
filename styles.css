@@ -1010,5 +1010,232 @@ body {
   color: #475569;
 }
 
+/* ==========================================================================
+   News (N & U Daily) & Auto-Assignment Engine Styles
+   ========================================================================== */
+.writer-presence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.writer-presence-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.writer-presence-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.writer-presence-card.status-active {
+  border-left: 4px solid #10b981;
+}
+
+.writer-presence-card.status-break {
+  border-left: 4px solid #f59e0b;
+  background: #fffdfa;
+}
+
+.writer-presence-card.status-leave {
+  border-left: 4px solid #ef4444;
+  background: #fafafa;
+  opacity: 0.75;
+}
+
+.writer-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.writer-card-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.status-pill-group {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.status-pill-btn {
+  border: none;
+  background: transparent;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.status-pill-btn:hover {
+  color: #0f172a;
+  background: rgba(255,255,255,0.7);
+}
+
+.status-pill-btn.active.btn-active {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.status-pill-btn.active.btn-break {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.status-pill-btn.active.btn-leave {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.writer-current-task {
+  font-size: 0.8rem;
+  color: #334155;
+  margin-bottom: 0.45rem;
+  line-height: 1.3;
+  min-height: 2.2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.writer-bandwidth-bar {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.writer-bandwidth-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.fill-light { background: #10b981; }
+.fill-medium { background: #f59e0b; }
+.fill-heavy { background: #ef4444; }
+
+.writer-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+/* Task Type Badges */
+.badge-task-20m {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-task-60m {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #fefce8;
+  color: #a16207;
+  border: 1px solid #fef08a;
+}
+
+.badge-task-90m {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #fdf2f8;
+  color: #be185d;
+  border: 1px solid #fbcfe8;
+}
+
+.badge-status-done {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.badge-status-progress {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.badge-status-pending {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Quick Modal for Adding Alerts */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  max-width: 500px;
+  width: 100%;
+  padding: 1.5rem;
+}
+
+
 
 
