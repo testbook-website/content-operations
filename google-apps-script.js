@@ -91,11 +91,38 @@ function handleFetchDocsText(newDocUrl, oldDocUrl) {
     ? (newDocInfo.wordCount - oldDocInfo.wordCount)
     : (newDocInfo.accessible ? newDocInfo.wordCount : 0);
 
+  let overhaulPercent = 100;
+  let rewrittenWords = newDocInfo.wordCount;
+
+  if (newDocInfo.accessible && oldDocInfo.accessible && oldDocInfo.text) {
+    const normalize = function(t) {
+      return (t || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    };
+    const oldTokens = normalize(oldDocInfo.text).split(' ');
+    const newTokens = normalize(newDocInfo.text).split(' ');
+    const oldShingles = {};
+    for (var i = 0; i < oldTokens.length - 2; i++) {
+      oldShingles[oldTokens[i] + ' ' + oldTokens[i + 1] + ' ' + oldTokens[i + 2]] = true;
+    }
+    var reused = 0;
+    var totalShingles = Math.max(1, newTokens.length - 2);
+    for (var j = 0; j < newTokens.length - 2; j++) {
+      if (oldShingles[newTokens[j] + ' ' + newTokens[j + 1] + ' ' + newTokens[j + 2]]) {
+        reused++;
+      }
+    }
+    var sim = Math.min(1, reused / totalShingles);
+    overhaulPercent = Math.max(0, Math.min(100, Math.round((1 - sim) * 100)));
+    rewrittenWords = Math.round(newDocInfo.wordCount * (overhaulPercent / 100));
+  }
+
   return ContentService.createTextOutput(JSON.stringify({
     success: true,
     newDoc: newDocInfo,
     oldDoc: oldDocInfo,
-    netWordDiff: netDiff
+    netWordDiff: netDiff,
+    rewrittenWords: rewrittenWords,
+    overhaulPercent: overhaulPercent
   })).setMimeType(ContentService.MimeType.JSON);
 }
 

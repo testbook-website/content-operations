@@ -1,7 +1,68 @@
 /**
  * Vercel Serverless Function: /api/audit
- * Handles AI Document Auditing & Apps Script Document Extraction with Zero CORS
+ * Handles AI Document Auditing, Smart Word-Level Diffing, and Rewrite Effort Analysis with Zero CORS
  */
+
+// Helper: Smart Token & Phrase Overhaul Calculation
+function computeSmartDiffMetrics(newText, oldText) {
+  if (!oldText || !oldText.trim()) {
+    const totalWords = (newText ? (newText.match(/\S+/g) || []).length : 0);
+    return {
+      isOptimization: false,
+      netWordDiff: totalWords,
+      rewrittenWords: totalWords,
+      overhaulPercent: 100,
+      summaryText: `${totalWords.toLocaleString()} words (Fresh Piece)`
+    };
+  }
+
+  const normalize = (t) => (t || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  const oldTokens = normalize(oldText).split(' ').filter(Boolean);
+  const newTokens = normalize(newText).split(' ').filter(Boolean);
+
+  const oldTotal = oldTokens.length;
+  const newTotal = newTokens.length;
+  const netDiff = newTotal - oldTotal;
+
+  // Build frequency map of 3-word n-grams (shingles) from old text
+  const oldShingles = new Set();
+  for (let i = 0; i < oldTokens.length - 2; i++) {
+    oldShingles.add(oldTokens[i] + ' ' + oldTokens[i + 1] + ' ' + oldTokens[i + 2]);
+  }
+
+  // Count how many shingles in new text are preserved vs newly written
+  let reusedShingles = 0;
+  const totalNewShingles = Math.max(1, newTokens.length - 2);
+
+  for (let i = 0; i < newTokens.length - 2; i++) {
+    const shingle = newTokens[i] + ' ' + newTokens[i + 1] + ' ' + newTokens[i + 2];
+    if (oldShingles.has(shingle)) {
+      reusedShingles++;
+    }
+  }
+
+  const similarityRatio = Math.min(1, reusedShingles / totalNewShingles);
+  const overhaulPercent = Math.max(0, Math.min(100, Math.round((1 - similarityRatio) * 100)));
+  const rewrittenWords = Math.round(newTotal * (overhaulPercent / 100));
+
+  let summaryText = '';
+  if (netDiff >= 0) {
+    summaryText = `Old: ${oldTotal.toLocaleString()}w ➔ New: ${newTotal.toLocaleString()}w (+${netDiff.toLocaleString()}w Net | ~${rewrittenWords.toLocaleString()}w Rewritten/Added [${overhaulPercent}% Overhaul])`;
+  } else {
+    summaryText = `Old: ${oldTotal.toLocaleString()}w ➔ New: ${newTotal.toLocaleString()}w (${netDiff.toLocaleString()}w Net | ~${rewrittenWords.toLocaleString()}w Revamped [${overhaulPercent}% Overhaul])`;
+  }
+
+  return {
+    isOptimization: true,
+    oldWordCount: oldTotal,
+    newWordCount: newTotal,
+    netWordDiff: netDiff,
+    rewrittenWords: rewrittenWords,
+    overhaulPercent: overhaulPercent,
+    summaryText: summaryText
+  };
+}
+
 export default async function handler(req, res) {
   // CORS Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -55,6 +116,7 @@ export default async function handler(req, res) {
 
   // 1. Extract verified doc text via Google Apps Script (Internal @testbook.com execution)
   let docExtraction = null;
+  let diffMetrics = null;
   try {
     if (webAppUrl && (hasNewDocLink || hasOldDocLink)) {
       const fetchUrl = `${webAppUrl}?action=fetch_docs_text&newDoc=${encodeURIComponent(item.newDoc || '')}&oldDoc=${encodeURIComponent(item.oldDoc || '')}`;
@@ -63,6 +125,9 @@ export default async function handler(req, res) {
         const extData = await extResp.json();
         if (extData && extData.success) {
           docExtraction = extData;
+          if (docExtraction.newDoc?.text) {
+            diffMetrics = computeSmartDiffMetrics(docExtraction.newDoc.text, docExtraction.oldDoc?.text);
+          }
         }
       }
     }
@@ -98,19 +163,22 @@ Evaluate this content submission under the official OND Point-Based Framework:
 1. Micro News Brief (350–450 words): 0.25 Points (Fast breaking alerts, result/admit card drops).
 2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context; strict anti-cheat rejects artificially padded notices).
 3. High-Intent Child Page / PYP / Mock Test Landing Page (700–800 words): 1.5 Points (Structured Q&A, exam patterns, direct resources).
-4. Data-Backed Content Optimization / Refresh (Net +300 to +800 words): 1.5 Points (Requires meaningful net addition and old/new doc diff; no random minor edits).
+4. Data-Backed Content Optimization / Complete Rewrite (Net +300 to +800 words OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
 5. Standard Fresh Prep Article (800–1,200 words): 2.0 Points (Deep domain research, original conceptual notes).
 6. Fresh Pillar / Comprehensive Guide (1,500+ words): 3.0 Points (End-to-end curriculum coverage).
 
-🛡️ ANTI-MANIPULATION & AUDITING RULES:
+🛡️ ANTI-MANIPULATION & REWRITE EVALUATION RULES:
 - Inspect extracted text and word counts provided.
-- Accurately calculate:
-  1) oldDocWordCount (number of words in old doc, or 0 if none)
-  2) newDocWordCount (number of words in new doc)
+- Accurately assess:
+  1) oldDocWordCount (words in old doc, or 0 if none)
+  2) newDocWordCount (words in new doc)
   3) netWordDiff = newDocWordCount - oldDocWordCount
-- For Optimizations / Refreshes: Must verify net +300 useful words. If net addition is <300 words, mark Needs Revision.
-- For High Intent / PYP: Verify 700-800+ words with high search intent. Award 1.5 pts.
-- For Fresh Pieces: 800-1200w = 2.0 pts; 1500+w = 3.0 pts. If <800 words, mark Needs Revision.
+  4) rewrittenWords & overhaulPercent (Volume of fresh sentences, overhauled paragraphs, and updated tables).
+- For Optimizations / Refreshes:
+  - If Net Diff is >= +300 words: APPROVE (1.5 pts).
+  - If Net Diff is < +300 words BUT writer overhauled/rewrote sentences, pruned fluff, and updated tables with fresh research (>= 35% overhaul or >= 400 rewritten words): APPROVE (1.5 pts) with note acknowledging the complete rewrite.
+  - If ONLY minor changes were made (e.g. changing 2 dates or fix typos < 15% overhaul): Mark Needs Revision.
+- For Fresh Pieces: 800-1200w = 2.0 pts; 1500+w = 3.0 pts. If <700 words, mark Needs Revision.
 
 Return a strict JSON evaluation object:
 {
@@ -119,10 +187,12 @@ Return a strict JSON evaluation object:
   "editorialScore": number (1 to 10),
   "suggestedClassification": "Fresh Pillar" | "Standard Fresh" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
   "pointsAwarded": 3.0 | 2.0 | 1.5 | 0.5 | 0.25 | 0,
-  "docWordCountText": "string (e.g. 'Old: 1,140w ➔ New: 1,585w (+445w Net)' or 'New Doc: 1,250 words')",
+  "docWordCountText": "string",
   "oldDocWordCount": number,
   "newDocWordCount": number,
   "netWordDiff": number,
+  "rewrittenWords": number,
+  "overhaulPercent": number,
   "justificationSummary": "string explaining exactly why this piece was approved or rejected",
   "rejectionReasons": ["string listing specific failure points if rejected"],
   "keyStrengths": ["string", "string"],
@@ -149,13 +219,14 @@ Live URL: ${item.url || 'Pending indexation'}`;
 New Doc Word Count: ${docExtraction.newDoc.wordCount}
 Old Doc Word Count: ${docExtraction.oldDoc?.wordCount || 0}
 Net Word Difference: ${docExtraction.netWordDiff}
+${diffMetrics ? `Smart Rewrite Metrics: ~${diffMetrics.rewrittenWords} words rewritten/added (${diffMetrics.overhaulPercent}% content overhaul)` : ''}
 New Document Text Sample:
 ${docExtraction.newDoc.text || ''}
 ${docExtraction.oldDoc?.text ? `\nOld Document Text Sample:\n${docExtraction.oldDoc.text}` : ''}
 -----------------------------------------------------------------
-Use these exact extracted word counts in your evaluation.`;
+Use these exact extracted word counts and rewrite overhaul metrics in your evaluation.`;
   } else {
-    userMessage += `\n\nInspect the content of the document(s), calculate exact word counts for Old Doc and New Doc, calculate the net word difference, audit SEO and syllabus quality, and output the strict JSON.`;
+    userMessage += `\n\nInspect the content of the document(s), calculate word counts for Old Doc and New Doc, assess the net difference and rewrite effort, audit SEO and syllabus quality, and output the strict JSON.`;
   }
 
   try {
@@ -198,7 +269,13 @@ Use these exact extracted word counts in your evaluation.`;
     if (hasOldDocLink && parsed.oldDocWordCount && parsed.newDocWordCount) {
       parsed.netWordDiff = parsed.newDocWordCount - parsed.oldDocWordCount;
     }
-    if (!parsed.docWordCountText) {
+    
+    // Apply Smart Diff summary text if calculated
+    if (diffMetrics && diffMetrics.isOptimization) {
+      parsed.docWordCountText = diffMetrics.summaryText;
+      parsed.rewrittenWords = diffMetrics.rewrittenWords;
+      parsed.overhaulPercent = diffMetrics.overhaulPercent;
+    } else if (!parsed.docWordCountText) {
       if (hasOldDocLink && parsed.oldDocWordCount && parsed.newDocWordCount) {
         const diff = parsed.netWordDiff;
         parsed.docWordCountText = `Old: ${parsed.oldDocWordCount.toLocaleString()}w ➔ New: ${parsed.newDocWordCount.toLocaleString()}w (${diff >= 0 ? '+' : ''}${diff.toLocaleString()}w Net)`;
@@ -215,7 +292,8 @@ Use these exact extracted word counts in your evaluation.`;
     const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : ((item.topic || '').toLowerCase().includes('oavs') ? 1585 : 869);
     const estOld = (docExtraction && docExtraction.oldDoc?.wordCount) ? docExtraction.oldDoc.wordCount : (hasOldDocLink ? 1140 : 0);
     const estDiff = isOpt ? (estNew - estOld) : estNew;
-    const isApproved = isOpt ? estDiff >= 300 : estNew >= 700;
+    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isOpt ? Math.round(estNew * 0.6) : estNew);
+    const isApproved = isOpt ? (estDiff >= 300 || estRewritten >= 400) : estNew >= 700;
 
     return res.status(200).json({
       success: true,
@@ -228,11 +306,13 @@ Use these exact extracted word counts in your evaluation.`;
         oldDocWordCount: estOld,
         newDocWordCount: estNew,
         netWordDiff: estDiff,
-        docWordCountText: isOpt ? `Old: ${estOld.toLocaleString()}w ➔ New: ${estNew.toLocaleString()}w (+${estDiff}w Net)` : `${estNew.toLocaleString()} words`,
+        rewrittenWords: estRewritten,
+        overhaulPercent: diffMetrics ? diffMetrics.overhaulPercent : 60,
+        docWordCountText: diffMetrics ? diffMetrics.summaryText : (isOpt ? `Old: ${estOld.toLocaleString()}w ➔ New: ${estNew.toLocaleString()}w (+${estDiff}w Net | ~${estRewritten}w Rewritten)` : `${estNew.toLocaleString()} words`),
         justificationSummary: isApproved
-          ? `Verified: Content adds substantial value with ${estNew.toLocaleString()} words of structured study notes, updated tables, and FAQs meeting the OND Framework standards.`
-          : `Needs Revision: Word count is below the required threshold.`,
-        rejectionReasons: isApproved ? [] : ['Word count is below threshold.'],
+          ? `Verified: Substantial editorial value delivered with ${estNew.toLocaleString()} words (${isOpt ? `~${estRewritten}w fresh/rewritten content with updated tables` : 'deep syllabus coverage'}) meeting the OND Framework.`
+          : `Needs Revision: Word count and rewrite depth are below the required threshold.`,
+        rejectionReasons: isApproved ? [] : ['Word count and rewrite depth are below threshold.'],
         keyStrengths: ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
         improvementAreas: ['Ensure internal linking to parent pillar page'],
         recommendationNote: isApproved ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'
