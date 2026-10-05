@@ -266,21 +266,31 @@ Use these exact extracted word counts and rewrite overhaul metrics in your evalu
     if (parsed.editorialScore > 10) {
       parsed.editorialScore = Math.round(parsed.editorialScore / 10);
     }
-    if (hasOldDocLink && parsed.oldDocWordCount && parsed.newDocWordCount) {
-      parsed.netWordDiff = parsed.newDocWordCount - parsed.oldDocWordCount;
-    }
-    
-    // Apply Smart Diff summary text if calculated
-    if (diffMetrics && diffMetrics.isOptimization) {
-      parsed.docWordCountText = diffMetrics.summaryText;
-      parsed.rewrittenWords = diffMetrics.rewrittenWords;
-      parsed.overhaulPercent = diffMetrics.overhaulPercent;
-    } else if (!parsed.docWordCountText) {
+    // ALWAYS override LLM guessed numbers with exact verified Google Workspace numbers
+    if (docExtraction && docExtraction.newDoc && docExtraction.newDoc.accessible) {
+      parsed.newDocWordCount = docExtraction.newDoc.wordCount;
+      parsed.oldDocWordCount = docExtraction.oldDoc?.accessible ? docExtraction.oldDoc.wordCount : 0;
+      parsed.netWordDiff = docExtraction.netWordDiff;
+      if (diffMetrics) {
+        parsed.rewrittenWords = diffMetrics.rewrittenWords;
+        parsed.overhaulPercent = diffMetrics.overhaulPercent;
+        parsed.docWordCountText = diffMetrics.summaryText;
+      }
+    } else {
       if (hasOldDocLink && parsed.oldDocWordCount && parsed.newDocWordCount) {
-        const diff = parsed.netWordDiff;
-        parsed.docWordCountText = `Old: ${parsed.oldDocWordCount.toLocaleString()}w ➔ New: ${parsed.newDocWordCount.toLocaleString()}w (${diff >= 0 ? '+' : ''}${diff.toLocaleString()}w Net)`;
-      } else if (parsed.newDocWordCount) {
-        parsed.docWordCountText = `${parsed.newDocWordCount.toLocaleString()} words`;
+        parsed.netWordDiff = parsed.newDocWordCount - parsed.oldDocWordCount;
+      }
+      if (diffMetrics && diffMetrics.isOptimization) {
+        parsed.docWordCountText = diffMetrics.summaryText;
+        parsed.rewrittenWords = diffMetrics.rewrittenWords;
+        parsed.overhaulPercent = diffMetrics.overhaulPercent;
+      } else if (!parsed.docWordCountText) {
+        if (hasOldDocLink && parsed.oldDocWordCount && parsed.newDocWordCount) {
+          const diff = parsed.netWordDiff;
+          parsed.docWordCountText = `Old: ${parsed.oldDocWordCount.toLocaleString()}w ➔ New: ${parsed.newDocWordCount.toLocaleString()}w (${diff >= 0 ? '+' : ''}${diff.toLocaleString()}w Net)`;
+        } else if (parsed.newDocWordCount) {
+          parsed.docWordCountText = `${parsed.newDocWordCount.toLocaleString()} words`;
+        }
       }
     }
 
