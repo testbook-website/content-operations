@@ -3270,6 +3270,8 @@
         break;
       }
 
+      const item = pendingQueue[i];
+      const currentNum = i + 1;
       const randomTip = SEO_AUDIT_INSIGHTS[i % SEO_AUDIT_INSIGHTS.length];
       updateAiRunnerUI(`⚡ AI Reviewing [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
 
