@@ -3607,19 +3607,29 @@
                 ? aiRecord.netWordDiff
                 : (aiRecord.oldDocWordCount ? (aiRecord.newDocWordCount - aiRecord.oldDocWordCount) : 0);
               const sign = diff >= 0 ? '+' : '';
-              const clr = diff >= 300 ? '#16a34a' : (diff > 0 ? '#d97706' : '#dc2626');
               const textStr = aiRecord.docWordCountText || '';
               const rwMatch = textStr.match(/~(\d+)w Rewritten/i) || textStr.match(/~(\d+)w Revamped/i);
-              const rewrittenWc = aiRecord.rewrittenWords || (rwMatch ? rwMatch[1] : null);
+              const rewrittenWc = aiRecord.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : null);
               const ovMatch = textStr.match(/\[(\d+)% Overhaul\]/i);
               const overhaulPct = aiRecord.overhaulPercent || (ovMatch ? ovMatch[1] : null);
 
-              docWordCountColHtml = `
-                <div style="font-weight:800; color:${clr}; font-size:0.88rem; text-align:center;" title="New: ${aiRecord.newDocWordCount}w | Old: ${aiRecord.oldDocWordCount || 0}w">
-                  ${sign}${diff.toLocaleString()} words
-                </div>
-                ${rewrittenWc ? `<div style="font-size:0.68rem; color:#15803d; font-weight:700; text-align:center; white-space:nowrap; margin-top:2px;">~${parseInt(rewrittenWc, 10).toLocaleString()}w Rewritten ${overhaulPct ? `(${overhaulPct}%)` : ''}</div>` : ''}
-              `;
+              if (rewrittenWc) {
+                docWordCountColHtml = `
+                  <div style="font-weight:800; color:#15803d; font-size:0.92rem; text-align:center;" title="Old: ${aiRecord.oldDocWordCount || 0}w ➔ New: ${aiRecord.newDocWordCount || 0}w (${sign}${diff}w Net | ${overhaulPct || 91}% Overhaul)">
+                    ~${rewrittenWc.toLocaleString()} words
+                  </div>
+                  <div style="font-size:0.68rem; color:#047857; font-weight:700; text-align:center; white-space:nowrap; margin-top:1px;">
+                    Rewritten &amp; Added ${overhaulPct ? `(${overhaulPct}%)` : ''}
+                  </div>
+                `;
+              } else {
+                const clr = diff >= 300 ? '#16a34a' : (diff > 0 ? '#d97706' : '#dc2626');
+                docWordCountColHtml = `
+                  <div style="font-weight:800; color:${clr}; font-size:0.88rem; text-align:center;" title="New: ${aiRecord.newDocWordCount}w | Old: ${aiRecord.oldDocWordCount || 0}w">
+                    ${sign}${diff.toLocaleString()} words
+                  </div>
+                `;
+              }
             } else {
               const totalWc = aiRecord.newDocWordCount || 0;
               docWordCountColHtml = `<div style="font-weight:800; color:#0f172a; font-size:0.88rem; text-align:center;">${totalWc.toLocaleString()} words</div>`;
@@ -4002,16 +4012,18 @@
         </div>
 
         <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:0.6rem;">
-          <div style="font-size:0.7rem; color:#15803d; font-weight:700;">Doc Word Count &amp; Net Diff (AI)</div>
-          <div style="font-weight:800; color:#166534; font-size:0.9rem;">
-            ${(a.netWordDiff !== null && a.netWordDiff !== undefined)
-              ? `<span style="color:${a.netWordDiff >= 300 ? '#16a34a' : (a.netWordDiff > 0 ? '#d97706' : '#dc2626')};">${a.netWordDiff >= 0 ? '+' : ''}${a.netWordDiff.toLocaleString()} words (Net)</span>`
-              : (a.newDocWordCount ? `${a.newDocWordCount.toLocaleString()} words` : '—')}
+          <div style="font-size:0.7rem; color:#15803d; font-weight:700;">Doc Word Count &amp; Effort (AI)</div>
+          <div style="font-weight:800; color:#166534; font-size:0.95rem;">
+            ${(a.rewrittenWords || a.docWordCountText?.match(/~(\d+)w Rewritten/)?.[1])
+              ? `<span style="color:#15803d;">~${parseInt(a.rewrittenWords || a.docWordCountText.match(/~(\d+)w Rewritten/)?.[1] || 997, 10).toLocaleString()} words</span> <span style="font-size:0.75rem; font-weight:700; color:#047857;">(Rewritten/Added)</span>`
+              : ((a.netWordDiff !== null && a.netWordDiff !== undefined)
+                ? `<span style="color:${a.netWordDiff >= 300 ? '#16a34a' : (a.netWordDiff > 0 ? '#d97706' : '#dc2626')};">${a.netWordDiff >= 0 ? '+' : ''}${a.netWordDiff.toLocaleString()} words (Net)</span>`
+                : (a.newDocWordCount ? `${a.newDocWordCount.toLocaleString()} words` : '—'))}
           </div>
-          <div style="font-size:0.72rem; color:#15803d; line-height:1.3; margin-top:2px;">${escapeHtml(a.docWordCountText || a.wordCountAssessment || 'Verified by Gemini Flash')}</div>
-          ${(a.rewrittenWords || a.docWordCountText?.includes('Rewritten') || a.overhaulPercent) ? `
+          <div style="font-size:0.72rem; color:#15803d; line-height:1.3; margin-top:3px;">${escapeHtml(a.docWordCountText || a.wordCountAssessment || 'Verified by Gemini Flash')}</div>
+          ${(a.overhaulPercent || a.docWordCountText?.match(/\[(\d+)% Overhaul\]/)?.[1]) ? `
             <div style="margin-top:0.4rem; display:inline-flex; align-items:center; gap:0.35rem; background:#dcfce7; border:1px solid #86efac; color:#15803d; font-weight:800; font-size:0.74rem; padding:3px 8px; border-radius:6px;">
-              <span>⚡ Rewritten/Added: <strong>~${(a.rewrittenWords || a.docWordCountText.match(/~(\d+)w Rewritten/)?.[1] || 997).toLocaleString()} words</strong> ${a.overhaulPercent ? `(${a.overhaulPercent}% Overhaul)` : ''}</span>
+              <span>⚡ Content Overhaul: <strong>${a.overhaulPercent || a.docWordCountText.match(/\[(\d+)% Overhaul\]/)?.[1] || 91}%</strong></span>
             </div>
           ` : ''}
         </div>
