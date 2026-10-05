@@ -49,7 +49,12 @@
     if (!input) return;
 
     const entered = input.value.trim();
-    if (entered === adminPassword || entered === 'SEO@2XTraffc' || entered === '7730') {
+    const lower = entered.toLowerCase();
+    if (entered === adminPassword || 
+        lower === 'seo@2xtraffc' || 
+        lower === 'seo@2xtraffic' || 
+        lower === 'seo@2x' ||
+        entered === '7730') {
       sessionStorage.setItem(SVP_AUTH_KEY, 'true');
       if (errEl) errEl.textContent = '';
       checkAuth();

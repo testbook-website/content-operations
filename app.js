@@ -3136,15 +3136,6 @@
   // =========================================================================
   // TAB 8: Editorial Review & Value-Impact Points Hub (Live Workflow <OND>)
   // =========================================================================
-  function getReviewList() {
-    if (state.sheetsData && state.sheetsData.workflow_ond && state.sheetsData.workflow_ond.length > 0) {
-      return state.sheetsData.workflow_ond;
-    }
-    if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && BASELINE_WORKFLOW_DATA.length > 0) {
-      return BASELINE_WORKFLOW_DATA;
-  // =========================================================================
-  // TAB 8: Editorial Review & Value-Impact Points Hub (Live Workflow <OND>)
-  // =========================================================================
   function normalizeReviewDate(dStr) {
     if (!dStr) return '';
     const clean = dStr.trim();
