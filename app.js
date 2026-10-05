@@ -253,7 +253,22 @@
   // =========================================================================
   // Authentication (PIN: 7730)
   // =========================================================================
-  function initAuth() {
+  async function initAuth() {
+    // Dynamically fetch configured PIN from /api/config if deployed on Vercel
+    if (window.location && window.location.protocol && window.location.protocol.startsWith('http')) {
+      try {
+        const cResp = await fetch('/api/config');
+        if (cResp.ok) {
+          const cData = await cResp.json();
+          if (cData && cData.pin) {
+            state.correctPin = String(cData.pin).trim();
+          }
+        }
+      } catch (e) {
+        console.log('Config fetch fallback to default PIN');
+      }
+    }
+
     const saved = sessionStorage.getItem('content_portal_auth');
     if (saved === state.correctPin) {
       unlockApp();
