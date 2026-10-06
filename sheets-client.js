@@ -160,6 +160,12 @@ class SheetsClient {
 
     const hasNewDocLink = item.newDoc && item.newDoc.startsWith('http');
     const hasOldDocLink = item.oldDoc && item.oldDoc.startsWith('http');
+    const hasPdfLink = (item.pdfLink && item.pdfLink.startsWith('http')) || (item.pdf && item.pdf.startsWith('http'));
+    const pdfUrl = item.pdfLink || item.pdf || '';
+
+    const taskTypeLower = (item.taskType || '').toLowerCase();
+    const typeLower = (item.type || '').toLowerCase();
+    const isUpdateTask = taskTypeLower.includes('update') || taskTypeLower.includes('optimi') || taskTypeLower.includes('refresh') || taskTypeLower.includes('revamp') || typeLower.includes('update') || typeLower.includes('optimi') || typeLower.includes('refresh');
 
     if (!hasNewDocLink) {
       return {
@@ -177,6 +183,26 @@ class SheetsClient {
           rejectionReasons: ['Missing Google Doc link. Please provide a valid submission URL in the sheet.'],
           keyStrengths: [],
           improvementAreas: ['Attach working Google Doc link before requesting review.']
+        }
+      };
+    }
+
+    if (isUpdateTask && !hasOldDocLink) {
+      return {
+        success: true,
+        audit: {
+          isApproved: false,
+          qualityVerdict: 'Needs Revision',
+          editorialScore: 1,
+          pointsAwarded: 0,
+          newDocWordCount: null,
+          oldDocWordCount: null,
+          netWordDiff: null,
+          docWordCountText: '🚫 Missing Old Doc (Required for Update)',
+          justificationSummary: 'Rejected: Task Type is "Update/Optimization", but no baseline Old Doc was provided in Column M. Every update task strictly requires both Old Doc (baseline) and New Doc to verify rewrite expansion and effort.',
+          rejectionReasons: ['Missing baseline Old Doc link for Update task. Please attach the baseline Old Doc in Column M so the diff and overhaul percentage can be audited.'],
+          keyStrengths: [],
+          improvementAreas: ['Attach baseline Old Doc in Column M so the AI can verify the net differential and rewritten words.']
         }
       };
     }
@@ -685,6 +711,10 @@ Use these exact extracted word counts in your evaluation.`;
       const rawNewDoc = getVal(13);
       const newDoc = (rawNewDoc && rawNewDoc.startsWith('http')) ? rawNewDoc : '';
 
+      // Column AA (idx 26): Official Notification PDF Link
+      const rawPdfLink = getVal(26);
+      const pdfLink = (rawPdfLink && rawPdfLink.startsWith('http')) ? rawPdfLink : '';
+
       // Column O (idx 14): Live URL
       let url = getVal(14);
       if (!url && getVal(3) && String(getVal(3)).startsWith('http')) url = getVal(3);
@@ -744,6 +774,7 @@ Use these exact extracted word counts in your evaluation.`;
         wordCount,
         oldDoc,
         newDoc,
+        pdfLink,
         url,
         reviewStatus,
         status,
@@ -1048,6 +1079,7 @@ Use these exact extracted word counts in your evaluation.`;
       const wordCount = (r[11] || '').trim();
       const oldDoc = (r[12] || '').trim();
       const newDoc = (r[13] || '').trim();
+      const pdfLink = (r[26] || '').trim();
       let url = (r[14] || '').trim();
       if (!url && r[3]) url = r[3].trim();
       const status = (r[16] || '').trim();
@@ -1064,6 +1096,7 @@ Use these exact extracted word counts in your evaluation.`;
         wordCount,
         oldDoc,
         newDoc,
+        pdfLink,
         url,
         status
       });

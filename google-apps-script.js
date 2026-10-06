@@ -81,11 +81,41 @@ function extractDocDetails(url) {
 }
 
 /**
- * Action: Fetches and compares Old Doc vs New Doc text & word counts
+ * Extracts text from an Official Notification PDF or Google Drive file
  */
-function handleFetchDocsText(newDocUrl, oldDocUrl) {
+function extractPdfDetails(url) {
+  if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+    return { accessible: false, text: '', error: 'No PDF URL provided' };
+  }
+  const fileId = extractGoogleDocId(url);
+  if (!fileId) {
+    return { accessible: false, text: '', error: 'No valid Drive ID found in URL' };
+  }
+  try {
+    const file = DriveApp.getFileById(fileId);
+    const mime = file.getMimeType();
+    if (mime === MimeType.GOOGLE_DOCS) {
+      const doc = DocumentApp.openById(fileId);
+      const text = doc.getBody().getText() || '';
+      return { accessible: true, fileId: fileId, text: text.substring(0, 8000) };
+    } else {
+      // Try to read file as text or export
+      const blob = file.getBlob();
+      const text = blob.getDataAsString() || '';
+      return { accessible: true, fileId: fileId, text: text.substring(0, 8000) };
+    }
+  } catch (err) {
+    return { accessible: false, text: '', error: err.message || 'Cannot access Drive file' };
+  }
+}
+
+/**
+ * Action: Fetches and compares Old Doc vs New Doc text & word counts + Official Notification PDF
+ */
+function handleFetchDocsText(newDocUrl, oldDocUrl, pdfUrl) {
   const newDocInfo = extractDocDetails(newDocUrl);
   const oldDocInfo = oldDocUrl ? extractDocDetails(oldDocUrl) : { accessible: false, wordCount: 0, text: '', error: 'No old doc' };
+  const pdfDocInfo = pdfUrl ? extractPdfDetails(pdfUrl) : { accessible: false, text: '', error: 'No PDF attached' };
   
   const netDiff = (newDocInfo.accessible && oldDocInfo.accessible)
     ? (newDocInfo.wordCount - oldDocInfo.wordCount)
@@ -120,6 +150,7 @@ function handleFetchDocsText(newDocUrl, oldDocUrl) {
     success: true,
     newDoc: newDocInfo,
     oldDoc: oldDocInfo,
+    pdfDoc: pdfDocInfo,
     netWordDiff: netDiff,
     rewrittenWords: rewrittenWords,
     overhaulPercent: overhaulPercent
@@ -183,7 +214,7 @@ function doGet(e) {
     const action = p.action || '';
 
     if (action === 'fetch_docs_text') {
-      return handleFetchDocsText(p.newDoc, p.oldDoc);
+      return handleFetchDocsText(p.newDoc, p.oldDoc, p.pdfDoc || p.pdf);
     }
 
     if (action === 'update_review_status') {
@@ -220,7 +251,7 @@ function doPost(e) {
     const action = body.action || '';
 
     if (action === 'fetch_docs_text') {
-      return handleFetchDocsText(body.newDoc, body.oldDoc);
+      return handleFetchDocsText(body.newDoc, body.oldDoc, body.pdfDoc || body.pdf);
     }
 
     if (action === 'update_review_status') {

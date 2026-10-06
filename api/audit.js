@@ -93,7 +93,14 @@ export default async function handler(req, res) {
 
   const hasNewDocLink = item.newDoc && item.newDoc.startsWith('http');
   const hasOldDocLink = item.oldDoc && item.oldDoc.startsWith('http');
+  const hasPdfLink = (item.pdfLink && item.pdfLink.startsWith('http')) || (item.pdf && item.pdf.startsWith('http'));
+  const pdfUrl = item.pdfLink || item.pdf || '';
 
+  const taskTypeLower = (item.taskType || '').toLowerCase();
+  const typeLower = (item.type || '').toLowerCase();
+  const isUpdateTask = taskTypeLower.includes('update') || taskTypeLower.includes('optimi') || taskTypeLower.includes('refresh') || taskTypeLower.includes('revamp') || typeLower.includes('update') || typeLower.includes('optimi') || typeLower.includes('refresh');
+
+  // Strict Rule 1: Every submission requires a New Doc
   if (!hasNewDocLink) {
     return res.status(200).json({
       success: true,
@@ -114,12 +121,33 @@ export default async function handler(req, res) {
     });
   }
 
+  // Strict Rule 2: For Update/Optimization tasks, BOTH Old Doc and New Doc are mandatory to evaluate diff & effort
+  if (isUpdateTask && !hasOldDocLink) {
+    return res.status(200).json({
+      success: true,
+      audit: {
+        isApproved: false,
+        qualityVerdict: 'Needs Revision',
+        editorialScore: 1,
+        pointsAwarded: 0,
+        newDocWordCount: null,
+        oldDocWordCount: null,
+        netWordDiff: null,
+        docWordCountText: '🚫 Missing Old Doc (Required for Update)',
+        justificationSummary: 'Rejected: Task Type is "Update/Optimization", but no baseline Old Doc link was provided in Column M. Every update task strictly requires both the Old Doc (baseline) and New Doc to verify rewrite expansion, factual refresh, and overhaul effort.',
+        rejectionReasons: ['Missing baseline Old Doc link for Update task. Please attach the baseline Old Doc in Column M so the diff and overhaul percentage can be audited.'],
+        keyStrengths: [],
+        improvementAreas: ['Attach baseline Old Doc in Column M so the AI can verify the net differential and rewritten words.']
+      }
+    });
+  }
+
   // 1. Extract verified doc text via Google Apps Script (Internal @testbook.com execution)
   let docExtraction = null;
   let diffMetrics = null;
   try {
     if (webAppUrl && (hasNewDocLink || hasOldDocLink)) {
-      const fetchUrl = `${webAppUrl}?action=fetch_docs_text&newDoc=${encodeURIComponent(item.newDoc || '')}&oldDoc=${encodeURIComponent(item.oldDoc || '')}`;
+      const fetchUrl = `${webAppUrl}?action=fetch_docs_text&newDoc=${encodeURIComponent(item.newDoc || '')}&oldDoc=${encodeURIComponent(item.oldDoc || '')}&pdfDoc=${encodeURIComponent(pdfUrl)}`;
       const extResp = await fetch(fetchUrl);
       if (extResp.ok) {
         const extData = await extResp.json();
@@ -157,7 +185,7 @@ export default async function handler(req, res) {
   }
 
   const systemPrompt = `You are a Senior Content Operations Lead & SEO Quality Auditor for an online education portal (Testbook).
-Evaluate this content submission under the official OND Point-Based Framework:
+Evaluate this content submission under the official OND Point-Based Framework with DUAL Auditing: (1) Editorial & Anti-Fluff Quality, and (2) Factual Integrity vs Official Notification.
 
 🎯 THE STANDARDIZED POINT MATRIX:
 1. Micro News Brief (350–450 words): 0.25 Points (Fast breaking alerts, result/admit card drops).
@@ -180,13 +208,20 @@ Evaluate this content submission under the official OND Point-Based Framework:
 - Deep Content Inspection: Verify that the document delivers real exam value (authentic syllabus topics, exam pattern tables, eligibility criteria, FAQs, structured headings).
 - If the draft contains redundant fluff, repeated ideas in different words, or irrelevant filler to pad length: Mark as "Needs Revision" with score < 6 and explicitly call out the filler in rejectionReasons.
 
-- For Optimizations / Refreshes:
-  - If Net Diff is >= +300 words: APPROVE (1.5 pts) only if additions are useful, high-intent exam content.
-  - If Net Diff is < +300 words BUT writer overhauled/rewrote sentences, pruned fluff, and updated tables with fresh research (>= 35% overhaul or >= 400 rewritten words): APPROVE (1.5 pts) with note acknowledging the complete rewrite.
-  - If ONLY minor changes were made (e.g. changing 2 dates or fix typos < 15% overhaul): Mark Needs Revision.
-- For Fresh Pieces:
-  - If Page Type is 'Target Page' or 'Pillar' and Type is 'New': Classify as "Target Page / Pillar" and award 3.0 pts.
-  - Standard New Content / Child Page (700+ words): Classify as "New Content" and award 1.0 pt. If <600 words or padded with fluff, mark Needs Revision.
+🎯 FACTUAL ACCURACY AUDITING (OFFICIAL NOTIFICATION PDF vs DRAFT):
+${hasPdfLink ? `An official Notification PDF link is attached (${pdfUrl}).` : 'Check for factual precision in exam details.'}
+Cross-check all factual parameters mentioned in the draft against standard official notifications for this exam:
+1. Important Dates: Online Application Start Date, Last Date to Apply, Exam Date.
+2. Vacancy Count: Total vacancies and category-wise distribution (UR, OBC, SC, ST, EWS).
+3. Age Limit & Crucial Date: Minimum and maximum age eligibility and cut-off calculation date.
+4. Educational Qualification: Required degree/diploma and cut-off date.
+5. Salary / Pay Scale: Pay Level (7th CPC), Basic Pay, Gross monthly emoluments.
+6. Application Fee: Category-wise fees.
+7. Exam Pattern: Number of tiers/stages, total marks, duration, negative marking.
+
+If any factual discrepancies or obsolete numbers are found in the draft:
+- Flag as a Factual Error in rejectionReasons and set isApproved to false.
+- Populate the "factualAudit" object detailing each checked parameter.
 
 Return a strict JSON evaluation object:
 {
@@ -205,7 +240,22 @@ Return a strict JSON evaluation object:
   "rejectionReasons": ["string listing specific failure points if rejected"],
   "keyStrengths": ["string", "string"],
   "improvementAreas": ["string"],
-  "recommendationNote": "string"
+  "recommendationNote": "string",
+  "factualAudit": {
+    "isFactuallyAccurate": boolean,
+    "factualScore": number (0 to 100),
+    "hasPdfAttached": boolean,
+    "pdfUrl": "string",
+    "factsChecked": [
+      { "parameter": "Important Dates", "officialValue": "string", "draftValue": "string", "status": "Match" | "Mismatch" | "Not Mentioned" },
+      { "parameter": "Total Vacancies", "officialValue": "string", "draftValue": "string", "status": "Match" | "Mismatch" | "Not Mentioned" },
+      { "parameter": "Age Eligibility", "officialValue": "string", "draftValue": "string", "status": "Match" | "Mismatch" | "Not Mentioned" },
+      { "parameter": "Educational Qualification", "officialValue": "string", "draftValue": "string", "status": "Match" | "Mismatch" | "Not Mentioned" },
+      { "parameter": "Salary / Pay Level", "officialValue": "string", "draftValue": "string", "status": "Match" | "Mismatch" | "Not Mentioned" },
+      { "parameter": "Exam Pattern & Marking", "officialValue": "string", "draftValue": "string", "status": "Match" | "Mismatch" | "Not Mentioned" }
+    ],
+    "factualDiscrepancies": ["string"]
+  }
 }`;
 
   let userMessage = `Please audit this content submission:
@@ -218,6 +268,7 @@ Page Type: ${item.pageType || 'Blog'}
 Writer: ${item.writer || 'Team Writer'}
 Old Doc Link: ${hasOldDocLink ? item.oldDoc : 'None (Fresh piece)'}
 New Draft Doc Link: ${item.newDoc}
+Official Notification PDF Link (Col AA): ${hasPdfLink ? pdfUrl : 'Not Attached'}
 Live URL: ${item.url || 'Pending indexation'}`;
 
   if (docExtraction && docExtraction.newDoc && docExtraction.newDoc.accessible) {
@@ -231,10 +282,11 @@ ${diffMetrics ? `Smart Rewrite Metrics: ~${diffMetrics.rewrittenWords} words rew
 New Document Text Sample:
 ${docExtraction.newDoc.text || ''}
 ${docExtraction.oldDoc?.text ? `\nOld Document Text Sample:\n${docExtraction.oldDoc.text}` : ''}
+${docExtraction.pdfDoc?.text ? `\nOfficial Notification PDF Text Sample:\n${docExtraction.pdfDoc.text}` : ''}
 -----------------------------------------------------------------
-Use these exact extracted word counts and rewrite overhaul metrics in your evaluation.`;
+Use these exact extracted word counts, rewrite overhaul metrics, and official PDF text in your factual and quality evaluation.`;
   } else {
-    userMessage += `\n\nInspect the content of the document(s), calculate word counts for Old Doc and New Doc, assess the net difference and rewrite effort, audit SEO and syllabus quality, and output the strict JSON.`;
+    userMessage += `\n\nInspect the content of the document(s), calculate word counts for Old Doc and New Doc, assess the net difference and rewrite effort, audit SEO and syllabus quality, perform factual verification vs official notification PDF, and output the strict JSON.`;
   }
 
   try {

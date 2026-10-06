@@ -3677,6 +3677,9 @@
           const newDocBtn = item.newDoc && item.newDoc.startsWith('http')
             ? `<a href="${item.newDoc}" target="_blank" style="color:#2563eb; font-size:0.75rem; font-weight:700; text-decoration:underline;">📝 New Doc ↗</a>`
             : `<span style="color:#ef4444; font-size:0.75rem; font-weight:700;">🚫 No Doc</span>`;
+          const pdfLinkBtn = (item.pdfLink && item.pdfLink.startsWith('http')) || (item.pdf && item.pdf.startsWith('http'))
+            ? `<a href="${item.pdfLink || item.pdf}" target="_blank" style="color:#d97706; font-size:0.75rem; font-weight:700; text-decoration:underline;">📄 PDF ↗</a>`
+            : `<span style="color:#cbd5e1; font-size:0.75rem;">—</span>`;
           const liveUrlBtn = item.url && item.url.startsWith('http')
             ? `<a href="${item.url}" target="_blank" style="color:#0284c7; font-size:0.75rem; text-decoration:underline;">🌐 Live URL ↗</a>`
             : `<span style="color:#cbd5e1; font-size:0.75rem;">—</span>`;
@@ -3766,6 +3769,7 @@
               <td style="font-size:0.75rem; color:#334155; font-weight:600;">${escapeHtml(item.fk || item.topic || '—')}</td>
               <td style="text-align:center;">${oldDocBtn}</td>
               <td style="text-align:center;">${newDocBtn}</td>
+              <td style="text-align:center;">${pdfLinkBtn}</td>
               <td style="text-align:center;">${liveUrlBtn}</td>
               <td style="background:#f0fdf4;">${docWordCountColHtml}</td>
               <td>${verdictHtml}</td>
@@ -4043,7 +4047,8 @@
         wordCountAssessment: a.wordCountAssessment || a.docWordCountText || '',
         keyStrengths: (a.keyStrengths && a.keyStrengths.length > 0) ? a.keyStrengths : ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
         improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Ensure internal linking to parent pillar page'],
-        recommendationNote: a.recommendationNote || (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.')
+        recommendationNote: a.recommendationNote || (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'),
+        factualAudit: a.factualAudit || null
       };
 
       // Save to cache
@@ -4079,6 +4084,57 @@
       `;
     }
 
+    // Official Notification Factual Verification Card
+    let factualAuditBlock = '';
+    if (a.factualAudit) {
+      const fa = a.factualAudit;
+      const isFactAcc = fa.isFactuallyAccurate !== false;
+      const fScore = fa.factualScore || (isFactAcc ? 100 : 60);
+      const fBadgeColor = isFactAcc ? '#15803d' : '#b91c1c';
+      const fBgColor = isFactAcc ? '#f0fdf4' : '#fef2f2';
+      const fBorderColor = isFactAcc ? '#bbf7d0' : '#fecaca';
+
+      const factsList = (fa.factsChecked && Array.isArray(fa.factsChecked) && fa.factsChecked.length > 0)
+        ? fa.factsChecked.map(fc => {
+            const isMatch = fc.status === 'Match';
+            const icon = isMatch ? '✅' : (fc.status === 'Mismatch' ? '❌' : 'ℹ️');
+            const clr = isMatch ? '#15803d' : (fc.status === 'Mismatch' ? '#b91c1c' : '#64748b');
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px dashed #e2e8f0; font-size:0.75rem;">
+                <span style="font-weight:700; color:#334155;">${escapeHtml(fc.parameter)}:</span>
+                <span style="color:${clr}; font-weight:600;">${icon} ${escapeHtml(fc.draftValue || fc.officialValue || fc.status)}</span>
+              </div>
+            `;
+          }).join('')
+        : '';
+
+      const discrepanciesList = (fa.factualDiscrepancies && Array.isArray(fa.factualDiscrepancies) && fa.factualDiscrepancies.length > 0)
+        ? `
+          <div style="margin-top:0.5rem; background:#fee2e2; border-radius:6px; padding:0.5rem; font-size:0.75rem; color:#991b1b;">
+            <div style="font-weight:800; margin-bottom:0.2rem;">⚠️ Factual Discrepancies vs Notification:</div>
+            <ul style="margin:0; padding-left:1.2rem; line-height:1.35;">
+              ${fa.factualDiscrepancies.map(d => `<li>${escapeHtml(d)}</li>`).join('')}
+            </ul>
+          </div>
+        `
+        : '';
+
+      factualAuditBlock = `
+        <div style="background:${fBgColor}; border:1px solid ${fBorderColor}; border-radius:8px; padding:0.75rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+            <div style="font-weight:800; color:${fBadgeColor}; font-size:0.82rem; display:flex; align-items:center; gap:0.35rem;">
+              <span>🎯 Official Notification Factual Audit (Col AA)</span>
+            </div>
+            <div style="font-size:0.72rem; font-weight:800; color:${fBadgeColor}; background:#ffffff; border:1px solid ${fBorderColor}; padding:2px 8px; border-radius:12px;">
+              ${isFactAcc ? '✅ 100% Factually Verified' : `⚠️ Factual Accuracy: ${fScore}%`}
+            </div>
+          </div>
+          ${factsList ? `<div style="background:#ffffff; border-radius:6px; padding:0.5rem; border:1px solid #e2e8f0;">${factsList}</div>` : ''}
+          ${discrepanciesList}
+        </div>
+      `;
+    }
+
     els.modalAiAuditContent.innerHTML = `
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.85rem; display:flex; justify-content:space-between; align-items:center;">
         <div>
@@ -4094,6 +4150,8 @@
       </div>
 
       ${rejectionsBlock}
+
+      ${factualAuditBlock}
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.6rem;">
         <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:0.6rem;">
