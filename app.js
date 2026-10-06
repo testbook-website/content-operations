@@ -4476,27 +4476,27 @@
 
     // Master list of writers grouped by squad with calculated 66-day targets
     const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Archita", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Shemaila", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Somya", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Mohit", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Sonika", squad: "Team A", target: "420" },
+      { writer: "Archita", squad: "Team A", target: "420" },
+      { writer: "Shemaila", squad: "Team A", target: "420" },
+      { writer: "Somya", squad: "Team A", target: "420" },
+      { writer: "Mohit", squad: "Team A", target: "420" },
 
-      { writer: "Nadeem", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Aditi", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Atul", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
-      { writer: "Trishala", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Nadeem", squad: "Team B", target: "438" },
+      { writer: "Shilpa Kohli", squad: "Team B", target: "438" },
+      { writer: "Aditi", squad: "Team B", target: "438" },
+      { writer: "Atul", squad: "Team B", target: "438" },
+      { writer: "Trishala", squad: "Team B", target: "438" },
 
-      { writer: "Lehron", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
-      { writer: "Dhananjay", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
-      { writer: "Falguni", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
-      { writer: "Swathi", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
-      { writer: "Sumit Kumar", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
-      { writer: "Manicka", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Lehron", squad: "Exam Prep", target: "660" },
+      { writer: "Dhananjay", squad: "Exam Prep", target: "660" },
+      { writer: "Falguni", squad: "Exam Prep", target: "660" },
+      { writer: "Swathi", squad: "Exam Prep", target: "660" },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: "660" },
+      { writer: "Manicka", squad: "Exam Prep", target: "660" },
 
-      { writer: "Archana", squad: "New Content", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
-      { writer: "Shilpa Singh", squad: "New Content", target: "660.0 pts (10 pts/day | 60 pts/wk)" }
+      { writer: "Archana", squad: "New Content", target: "660" },
+      { writer: "Shilpa Singh", squad: "New Content", target: "660" }
     ];
 
     let filtered = writersListRaw;
