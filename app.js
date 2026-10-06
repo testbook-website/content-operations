@@ -3193,11 +3193,21 @@
       });
 
       els.reviewDateFilter.innerHTML = `<option value="all">📅 All Dates (${items.length} total)</option>`;
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       sortedDates.forEach(d => {
         const count = items.filter(it => normalizeReviewDate(it.date) === d).length;
         const opt = document.createElement('option');
         opt.value = d;
-        opt.textContent = `📅 ${d} (${count} items)`;
+        const parts = d.split('/');
+        let friendly = d;
+        if (parts.length === 3) {
+          const mIdx = parseInt(parts[0], 10) - 1;
+          const dayNum = parseInt(parts[1], 10);
+          if (mIdx >= 0 && mIdx < 12) {
+            friendly = `${String(dayNum).padStart(2, '0')} ${monthNames[mIdx]} ${parts[2]}`;
+          }
+        }
+        opt.textContent = `📅 ${d} (${friendly}) — ${count} items`;
         els.reviewDateFilter.appendChild(opt);
       });
     }
@@ -4054,6 +4064,13 @@
       // Save to cache
       state.aiReviewCache[item.topic] = auditData;
       saveAiReviewCache(state.aiReviewCache);
+
+      // Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status)
+      if (typeof sheetsClient !== 'undefined') {
+        const notes = isAppr ? `AI Approved (${auditData.score}/10)` : `AI Revision: ${(auditData.rejectionReasons || []).join('; ')}`;
+        sheetsClient.updateWorkflowReviewStatus(item.rowIndex, item.topic, auditData.verdict, notes).catch(e => console.warn('Sheet sync error:', e));
+      }
+
       renderReviewHub(false);
     }
 

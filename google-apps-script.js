@@ -173,8 +173,10 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     const statusVal = reviewStatus || 'Approved';
 
     if (r && r >= 2) {
-      // Column Q (17) = Review Status
-      sheet.getRange(r, 17).setValue(statusVal);
+      // Column P (16) = Review Status
+      sheet.getRange(r, 16).setValue(statusVal);
+      // Column Q (17) = Status ('Done')
+      sheet.getRange(r, 17).setValue('Done');
       if (notes) {
         // Column R (18) = Review Notes
         sheet.getRange(r, 18).setValue(notes);
@@ -187,9 +189,14 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     if (topic) {
       const data = sheet.getDataRange().getValues();
       for (let i = 1; i < data.length; i++) {
-        const rowTopic = String(data[i][7] || '').trim(); // Col H is Topic
-        if (rowTopic.toLowerCase() === String(topic).trim().toLowerCase()) {
-          sheet.getRange(i + 1, 17).setValue(statusVal);
+        const rowTopicB = String(data[i][1] || '').trim(); // Col B is Topic
+        const rowTopicH = String(data[i][7] || '').trim(); // Col H is Topic fallback
+        if (
+          rowTopicB.toLowerCase() === String(topic).trim().toLowerCase() ||
+          rowTopicH.toLowerCase() === String(topic).trim().toLowerCase()
+        ) {
+          sheet.getRange(i + 1, 16).setValue(statusVal);
+          sheet.getRange(i + 1, 17).setValue('Done');
           if (notes) sheet.getRange(i + 1, 18).setValue(notes);
           return ContentService.createTextOutput(JSON.stringify({ success: true, row: i + 1, status: statusVal }))
             .setMimeType(ContentService.MimeType.JSON);
