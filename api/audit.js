@@ -106,38 +106,38 @@ export default async function handler(req, res) {
       success: true,
       audit: {
         isApproved: false,
-        qualityVerdict: 'Needs Revision',
-        editorialScore: 1,
+        qualityVerdict: 'Doc Missing',
+        editorialScore: 0,
         pointsAwarded: 0,
         newDocWordCount: null,
         oldDocWordCount: null,
         netWordDiff: null,
         docWordCountText: '🚫 No Doc Attached',
-        justificationSummary: 'Rejected: No valid Google Doc submission link was provided in the sheet.',
-        rejectionReasons: ['Missing Google Doc link. Please provide a valid submission URL.'],
+        justificationSummary: 'Doc Missing: No valid Google Doc submission link was provided in the sheet. Skipped AI review to save tokens.',
+        rejectionReasons: ['Missing Google Doc link. Please provide a valid submission URL in the sheet.'],
         keyStrengths: [],
         improvementAreas: ['Attach working Google Doc link before requesting review.']
       }
     });
   }
 
-  // Strict Rule 2: For Update/Optimization tasks, BOTH Old Doc and New Doc are mandatory to evaluate diff & effort
+  // Strict Rule 2: For Update/Optimization tasks, BOTH Old Doc and New Doc are mandatory
   if (isUpdateTask && !hasOldDocLink) {
     return res.status(200).json({
       success: true,
       audit: {
         isApproved: false,
-        qualityVerdict: 'Needs Revision',
-        editorialScore: 1,
+        qualityVerdict: 'Doc Missing',
+        editorialScore: 0,
         pointsAwarded: 0,
         newDocWordCount: null,
         oldDocWordCount: null,
         netWordDiff: null,
-        docWordCountText: '🚫 Missing Old Doc (Required for Update)',
-        justificationSummary: 'Rejected: Task Type is "Update/Optimization", but no baseline Old Doc link was provided in Column M. Every update task strictly requires both the Old Doc (baseline) and New Doc to verify rewrite expansion, factual refresh, and overhaul effort.',
-        rejectionReasons: ['Missing baseline Old Doc link for Update task. Please attach the baseline Old Doc in Column M so the diff and overhaul percentage can be audited.'],
+        docWordCountText: '🚫 Missing Old Doc',
+        justificationSummary: 'Doc Missing: Task Type is "Update/Optimization", but no baseline Old Doc link was provided in Column M. Skipped AI text evaluation to save tokens.',
+        rejectionReasons: ['Missing baseline Old Doc link for Update task in Column M.'],
         keyStrengths: [],
-        improvementAreas: ['Attach baseline Old Doc in Column M so the AI can verify the net differential and rewritten words.']
+        improvementAreas: ['Attach baseline Old Doc in Column M so the diff and overhaul percentage can be audited.']
       }
     });
   }

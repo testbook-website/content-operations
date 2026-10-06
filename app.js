@@ -3241,6 +3241,7 @@
       return state.aiReviewCache[item.topic].verdict;
     }
     const raw = (item.reviewStatus || '').trim();
+    if (raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc')) return 'Doc Missing';
     if (raw.toLowerCase().includes('approv')) return 'Approved';
     if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) return 'Needs Revision';
     return 'Pending Review';
@@ -3745,10 +3746,12 @@
           // Verdict / AI Status Column
           let verdictHtml = '';
           if (!hasValidDoc) {
-            verdictHtml = `<span style="color:#b91c1c; font-weight:700; font-size:0.75rem;">🚫 Cannot Access Doc</span>`;
+            verdictHtml = `<span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">🚫 No Doc Attached</span>`;
           } else if (aiRecord) {
             if (aiRecord.running) {
               verdictHtml = `<span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ In Progress...</span>`;
+            } else if (aiRecord.verdict === 'Doc Missing' || aiRecord.qualityVerdict === 'Doc Missing') {
+              verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">Old Doc required for update</span></div>`;
             } else {
               const isAppr = aiRecord.isApproved;
               if (isAppr) {
@@ -3758,6 +3761,8 @@
                 verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">${escapeHtml(reason)}</span></div>`;
               }
             }
+          } else if (status === 'Doc Missing') {
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
           } else if (status === 'Approved') {
             verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
           } else if (status === 'Needs Revision') {

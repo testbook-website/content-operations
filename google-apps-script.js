@@ -232,9 +232,45 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
       }
     }
 
-    const r = parseInt(rowIndex, 10);
     const statusVal = reviewStatus || 'Approved';
 
+    // 1. TOPIC-FIRST SEARCH: Finds exact row matching topic across all 1000+ rows
+    if (topic && String(topic).trim()) {
+      const cleanTopic = String(topic).trim().toLowerCase();
+      const data = sheet.getDataRange().getValues();
+      for (let i = 1; i < data.length; i++) {
+        const rowTopicB = String(data[i][1] || '').trim().toLowerCase(); // Col B (Topic)
+        const rowTopicH = String(data[i][7] || '').trim().toLowerCase(); // Col H
+        const rowTopicK = String(data[i][10] || '').trim().toLowerCase(); // Col K (FK)
+        if (
+          rowTopicB === cleanTopic ||
+          rowTopicH === cleanTopic ||
+          rowTopicK === cleanTopic ||
+          (cleanTopic.length > 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1))
+        ) {
+          const targetRow = i + 1;
+          sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
+          if (statusCol > 0 && statusCol !== reviewStatusCol) {
+            sheet.getRange(targetRow, statusCol).setValue('Done');
+          }
+          if (notes && notesCol > 0) {
+            sheet.getRange(targetRow, notesCol).setValue(notes);
+          }
+          return ContentService.createTextOutput(JSON.stringify({
+            success: true,
+            sheetName: sheet.getName(),
+            matchedBy: 'topic',
+            row: targetRow,
+            topic: topic,
+            reviewStatusCol: reviewStatusCol,
+            status: statusVal
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+    }
+
+    // 2. Fallback to rowIndex if given and valid
+    const r = parseInt(rowIndex, 10);
     if (r && r >= 2) {
       sheet.getRange(r, reviewStatusCol).setValue(statusVal);
       if (statusCol > 0 && statusCol !== reviewStatusCol) {
@@ -246,38 +282,11 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
         sheetName: sheet.getName(),
+        matchedBy: 'rowIndex',
         row: r,
         reviewStatusCol: reviewStatusCol,
         status: statusVal
       })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    // Search by Topic if rowIndex not given
-    if (topic) {
-      const data = sheet.getDataRange().getValues();
-      for (let i = 1; i < data.length; i++) {
-        const rowTopicB = String(data[i][1] || '').trim(); // Col B is Topic
-        const rowTopicH = String(data[i][7] || '').trim(); // Col H is Topic fallback
-        if (
-          rowTopicB.toLowerCase() === String(topic).trim().toLowerCase() ||
-          rowTopicH.toLowerCase() === String(topic).trim().toLowerCase()
-        ) {
-          sheet.getRange(i + 1, reviewStatusCol).setValue(statusVal);
-          if (statusCol > 0 && statusCol !== reviewStatusCol) {
-            sheet.getRange(i + 1, statusCol).setValue('Done');
-          }
-          if (notes && notesCol > 0) {
-            sheet.getRange(i + 1, notesCol).setValue(notes);
-          }
-          return ContentService.createTextOutput(JSON.stringify({
-            success: true,
-            sheetName: sheet.getName(),
-            row: i + 1,
-            reviewStatusCol: reviewStatusCol,
-            status: statusVal
-          })).setMimeType(ContentService.MimeType.JSON);
-        }
-      }
     }
 
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Row or topic not found in sheet: ' + sheet.getName() }))
