@@ -3549,23 +3549,35 @@
     allItems.forEach(item => {
       const writer = item.writer || 'Unassigned';
       const status = getEffectiveReviewStatus(item);
+      const cat = (item.category || '').toLowerCase();
       const tt = (item.taskType || '').toLowerCase();
       const type = (item.type || '').toLowerCase();
       const pt = (item.pageType || '').toLowerCase();
+      const wLower = (item.writer || '').toLowerCase();
+      const domain = (item.domain || '').toLowerCase();
 
-      const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
-      const isOpt = tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'));
-      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || item.classification === 'High Intent / PYP';
       const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
-      const isFresh = isTargetPillar || type === 'new' || tt.includes('new content');
+      const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka');
+      const isOpt = type === 'update' || tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'));
+      const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
+      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || item.classification === 'High Intent / PYP';
+      const isFresh = isTargetPillar || (isPrep && !isOpt) || type === 'new' || tt.includes('new content');
 
       let points = item.points;
       if (!points) {
-        if (isTargetPillar) points = 3.0;
-        else if (isOpt) points = 1.5;
-        else if (isHighIntent) points = 1.5;
-        else if (isNews) points = (item.wordCount >= 500 ? 0.5 : 0.25);
-        else points = 1.0; // Standard New Content
+        if (isNews) {
+          points = (item.wordCount >= 500 ? 0.5 : 0.25);
+        } else if (isPrep) {
+          // Prep Articles: New = 2.0 pts, Update/Opt = 1.5 pts
+          points = isOpt ? 1.5 : 2.0;
+        } else if (isTargetPillar) {
+          points = 3.0;
+        } else if (isOpt || isHighIntent) {
+          points = 1.5;
+        } else {
+          points = 1.0; // Standard New Content
+        }
       }
 
       if (!writerScorecard[writer]) {
@@ -3722,21 +3734,37 @@
         filtered.forEach((item, idx) => {
           const status = getEffectiveReviewStatus(item);
           const aiRecord = state.aiReviewCache ? state.aiReviewCache[item.topic] : null;
+          const cat = (item.category || '').toLowerCase();
           const tt = (item.taskType || '').toLowerCase();
           const type = (item.type || '').toLowerCase();
           const pt = (item.pageType || '').toLowerCase();
+          const wLower = (item.writer || '').toLowerCase();
+          const domain = (item.domain || '').toLowerCase();
+
+          const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
+          const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+                         wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka');
+          const isOpt = type === 'update' || tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'));
+          const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
+          const isHighIntent = tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP';
           
           let tierBadge = '';
-          if ((pt.includes('target') || pt.includes('pillar')) && type === 'new') {
-            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Target/Pillar (3.0p)</span>`;
-          } else if (tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'))) {
-            tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
-          } else if (tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP') {
-            tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 High-Intent (1.5p)</span>`;
-          } else if (tt.includes('news')) {
+          if (isNews) {
             tierBadge = item.wordCount >= 500
               ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 News (0.5p)</span>`
               : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ Micro (0.25p)</span>`;
+          } else if (isPrep) {
+            if (isOpt) {
+              tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
+            } else {
+              tierBadge = `<span style="background:#f0fdf4; color:#166534; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Prep (2.0p)</span>`;
+            }
+          } else if (isTargetPillar) {
+            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Target/Pillar (3.0p)</span>`;
+          } else if (isOpt) {
+            tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
+          } else if (isHighIntent) {
+            tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 High-Intent (1.5p)</span>`;
           } else if (type === 'new' || tt.includes('new content')) {
             tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 New (1.0p)</span>`;
           } else {
@@ -4353,18 +4381,35 @@
     const pt = (item.pageType || '').toString().toLowerCase().trim();
     const topic = (item.topic || '').toString().toLowerCase().trim();
     const cl = (item.classification || '').toString().toLowerCase().trim();
+    const cat = (item.category || '').toString().toLowerCase().trim();
+    const domain = (item.domain || '').toString().toLowerCase().trim();
+    const writer = (item.writer || '').toString().toLowerCase().trim();
     const wc = parseInt(item.wordCount, 10) || 0;
 
     // Rule: Everything which comes as News in Task Type we consider as News only
     const isNews = tt.includes('news') || cl.includes('news') || topic.includes('news') || pt.includes('news') || item.isNewsTask;
 
     if (isNews) {
-      // Micro News Brief (350-450w): 0.25 Points (LMS Update / fast breaking alerts)
-      // Standard News & Updates (500+w): 0.50 Points (New article in News with tables & official context)
       if (tt.includes('lms') || wc < 500) {
         return { points: 0.25, label: 'Micro News Brief', badgeColor: '#64748b', bg: '#f1f5f9', typeKey: 'micro_news' };
       } else {
         return { points: 0.50, label: 'Standard News & Updates', badgeColor: '#475569', bg: '#f8fafc', typeKey: 'standard_news' };
+      }
+    }
+
+    // Prep check: Category/task/domain contains 'prep' (e.g. IAS Prep, Exam Prep), or assigned to Prep Writer
+    const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+                   writer === 'lehron' || writer === 'dhananjay' || writer === 'falguni' || writer === 'swathi' || writer === 'sumit kumar' || writer.includes('manicka');
+
+    const isOpt = type === 'update' || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || (item.oldDoc && item.oldDoc.startsWith('http'));
+
+    if (isPrep) {
+      if (isOpt) {
+        // Update in Prep Articles: 1.5 Points
+        return { points: 1.50, label: 'Prep Optimization / Update', badgeColor: '#b45309', bg: '#fef3c7', typeKey: 'prep_opt' };
+      } else {
+        // New Prep Articles: 2.0 Points
+        return { points: 2.00, label: 'Fresh Prep Article', badgeColor: '#166534', bg: '#f0fdf4', typeKey: 'fresh_prep' };
       }
     }
 
@@ -4374,12 +4419,6 @@
       return { points: 3.00, label: 'Fresh Pillar (New Exam Page)', badgeColor: '#7e22ce', bg: '#faf5ff', typeKey: 'pillar' };
     }
 
-    // Standard Fresh Prep Article (800-1,200 words): 2.0 Points (Deep domain research)
-    const isStandardFresh = (type === 'new' || tt.includes('new') || tt.includes('prep') || cl.includes('fresh')) && wc >= 800;
-    if (isStandardFresh) {
-      return { points: 2.00, label: 'Standard Fresh Prep', badgeColor: '#6d28d9', bg: '#f5f3ff', typeKey: 'fresh_prep' };
-    }
-
     // PYP / Mock Test Landing Page: 1.5 Points (High Intent structured Q&A, exam patterns)
     const isHighIntentPyp = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || cl.includes('high intent') || topic.includes('mock') || topic.includes('previous year');
     if (isHighIntentPyp) {
@@ -4387,7 +4426,6 @@
     }
 
     // Data-Backed Content Optimization / Refresh: 1.5 Points (Requires baseline Old Doc)
-    const isOpt = tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || (item.oldDoc && item.oldDoc.startsWith('http'));
     if (isOpt) {
       return { points: 1.50, label: 'SEO Optimization & Refresh', badgeColor: '#b45309', bg: '#fef3c7', typeKey: 'optimization' };
     }
