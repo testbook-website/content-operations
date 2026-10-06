@@ -174,13 +174,19 @@ Evaluate this content submission under the official OND Point-Based Framework:
   2) newDocWordCount (words in new doc)
   3) netWordDiff = newDocWordCount - oldDocWordCount
   4) rewrittenWords & overhaulPercent (Volume of fresh sentences, overhauled paragraphs, and updated tables).
+
+🚫 STRICT ANTI-FLUFF & REDUNDANCY DETECTION (ANTI-CHEAT):
+- DO NOT APPROVE solely based on word count! Writers often add repetitive filler sentences, copied paragraphs, or generic off-topic text to artificially hit word count KPIs.
+- Deep Content Inspection: Verify that the document delivers real exam value (authentic syllabus topics, exam pattern tables, eligibility criteria, FAQs, structured headings).
+- If the draft contains redundant fluff, repeated ideas in different words, or irrelevant filler to pad length: Mark as "Needs Revision" with score < 6 and explicitly call out the filler in rejectionReasons.
+
 - For Optimizations / Refreshes:
-  - If Net Diff is >= +300 words: APPROVE (1.5 pts).
+  - If Net Diff is >= +300 words: APPROVE (1.5 pts) only if additions are useful, high-intent exam content.
   - If Net Diff is < +300 words BUT writer overhauled/rewrote sentences, pruned fluff, and updated tables with fresh research (>= 35% overhaul or >= 400 rewritten words): APPROVE (1.5 pts) with note acknowledging the complete rewrite.
   - If ONLY minor changes were made (e.g. changing 2 dates or fix typos < 15% overhaul): Mark Needs Revision.
 - For Fresh Pieces:
   - If Page Type is 'Target Page' or 'Pillar' and Type is 'New': Classify as "Target Page / Pillar" and award 3.0 pts.
-  - Standard New Content / Child Page (700+ words): Classify as "New Content" and award 1.0 pt. If <600 words and not a news brief, mark Needs Revision.
+  - Standard New Content / Child Page (700+ words): Classify as "New Content" and award 1.0 pt. If <600 words or padded with fluff, mark Needs Revision.
 
 Return a strict JSON evaluation object:
 {
