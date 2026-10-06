@@ -1082,6 +1082,7 @@ Use these exact extracted word counts in your evaluation.`;
       const pdfLink = (r[26] || '').trim();
       let url = (r[14] || '').trim();
       if (!url && r[3]) url = r[3].trim();
+      const reviewStatus = (r[15] || '').trim();
       const status = (r[16] || '').trim();
 
       items.push({
@@ -1098,6 +1099,7 @@ Use these exact extracted word counts in your evaluation.`;
         newDoc,
         pdfLink,
         url,
+        reviewStatus,
         status
       });
     }
