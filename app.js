@@ -110,6 +110,9 @@
     reviewOverrides: {},
     aiReviewCache: loadAiReviewCache(),
     aiRunnerActive: false,
+    kpiTimeframeFilter: 'q4_total', // 'q4_total' | 'current_week' | 'today'
+    kpiSquadFilter: 'all', // 'all' | 'teamA' | 'teamB' | 'prep' | 'new_content'
+    kpiSearch: '',
     calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
     calendarMonthFilter: 'all',
     calendarSearch: '',
@@ -129,10 +132,26 @@
     // Main Nav
     navTabs: document.querySelectorAll('.tab-btn'),
     sectionRoster: document.getElementById('sectionRoster'),
+    sectionKpi: document.getElementById('sectionKpi'),
     sectionNews: document.getElementById('sectionNews'),
     sectionReview: document.getElementById('sectionReview'),
     sectionProductivity: document.getElementById('sectionProductivity'),
     sectionCategory: document.getElementById('sectionCategory'),
+
+    // Team KPI Dashboard
+    kpiOverviewCards: document.getElementById('kpiOverviewCards'),
+    kpiTimeframeFilter: document.getElementById('kpiTimeframeFilter'),
+    kpiSquadFilter: document.getElementById('kpiSquadFilter'),
+    kpiSearch: document.getElementById('kpiSearch'),
+    kpiCountLabel: document.getElementById('kpiCountLabel'),
+    kpiTableBody: document.getElementById('kpiTableBody'),
+    btnExportKpiCSV: document.getElementById('btnExportKpiCSV'),
+    modalWriterKpiDrilldown: document.getElementById('modalWriterKpiDrilldown'),
+    drilldownWriterTitle: document.getElementById('drilldownWriterTitle'),
+    drilldownWriterSubtitle: document.getElementById('drilldownWriterSubtitle'),
+    drilldownContentBody: document.getElementById('drilldownContentBody'),
+    btnCloseModalDrilldown: document.getElementById('btnCloseModalDrilldown'),
+    btnCloseDrilldownFooter: document.getElementById('btnCloseDrilldownFooter'),
 
     // Review Hub & Quality Gates
     reviewKpiCards: document.getElementById('reviewKpiCards'),
@@ -389,7 +408,9 @@
           state.writerStatuses = { ...state.writerStatuses, ...data.writer_presence };
         }
         if (state.isAuthenticated) {
+          if (state.activeNavTab === 'kpi') renderKpiDashboard();
           if (state.activeNavTab === 'news') renderNews();
+          if (state.activeNavTab === 'review') renderReviewHub();
           if (state.activeNavTab === 'productivity') renderProductivity();
           if (state.activeNavTab === 'category') renderCategoryGrid();
           if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
@@ -721,6 +742,44 @@
       });
     }
 
+    // Team KPI Controls
+    if (els.kpiTimeframeFilter) {
+      els.kpiTimeframeFilter.addEventListener('change', (e) => {
+        state.kpiTimeframeFilter = e.target.value;
+        renderKpiDashboard();
+      });
+    }
+
+    if (els.kpiSquadFilter) {
+      els.kpiSquadFilter.addEventListener('change', (e) => {
+        state.kpiSquadFilter = e.target.value;
+        renderKpiDashboard();
+      });
+    }
+
+    if (els.kpiSearch) {
+      els.kpiSearch.addEventListener('input', (e) => {
+        state.kpiSearch = e.target.value.toLowerCase().trim();
+        renderKpiDashboard();
+      });
+    }
+
+    if (els.btnExportKpiCSV) {
+      els.btnExportKpiCSV.addEventListener('click', exportKpiCSV);
+    }
+
+    if (els.btnCloseModalDrilldown) {
+      els.btnCloseModalDrilldown.addEventListener('click', () => {
+        if (els.modalWriterKpiDrilldown) els.modalWriterKpiDrilldown.style.display = 'none';
+      });
+    }
+
+    if (els.btnCloseDrilldownFooter) {
+      els.btnCloseDrilldownFooter.addEventListener('click', () => {
+        if (els.modalWriterKpiDrilldown) els.modalWriterKpiDrilldown.style.display = 'none';
+      });
+    }
+
     if (els.btnCloseModalAiAudit) {
       els.btnCloseModalAiAudit.addEventListener('click', () => {
         if (els.modalAiAudit) els.modalAiAudit.style.display = 'none';
@@ -739,6 +798,7 @@
     els.navTabs.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
 
     if (els.sectionRoster) els.sectionRoster.style.display = tab === 'roster' ? 'block' : 'none';
+    if (els.sectionKpi) els.sectionKpi.style.display = tab === 'kpi' ? 'block' : 'none';
     if (els.sectionNews) els.sectionNews.style.display = tab === 'news' ? 'block' : 'none';
     if (els.sectionReview) els.sectionReview.style.display = tab === 'review' ? 'block' : 'none';
     if (els.sectionProductivity) els.sectionProductivity.style.display = tab === 'productivity' ? 'block' : 'none';
@@ -748,6 +808,7 @@
     if (els.sectionCalendar) els.sectionCalendar.style.display = tab === 'calendar' ? 'block' : 'none';
 
     if (tab === 'roster') renderRoster();
+    if (tab === 'kpi') renderKpiDashboard();
     if (tab === 'news') renderNews();
     if (tab === 'review') renderReviewHub();
     if (tab === 'productivity') renderProductivity();
@@ -4274,10 +4335,544 @@
   }
 
   // =========================================================================
+  // TAB: TEAM KPI DASHBOARD & 66-DAY TARGET ENGINE
+  // =========================================================================
+  function calculateItemKpiPoints(item) {
+    const tt = (item.taskType || '').toString().toLowerCase().trim();
+    const type = (item.type || '').toString().toLowerCase().trim();
+    const pt = (item.pageType || '').toString().toLowerCase().trim();
+    const topic = (item.topic || '').toString().toLowerCase().trim();
+    const cl = (item.classification || '').toString().toLowerCase().trim();
+    const wc = parseInt(item.wordCount, 10) || 0;
+
+    // Rule: Everything which comes as News in Task Type we consider as News only
+    const isNews = tt.includes('news') || cl.includes('news') || topic.includes('news') || pt.includes('news') || item.isNewsTask;
+
+    if (isNews) {
+      // Micro News Brief (350-450w): 0.25 Points (LMS Update / fast breaking alerts)
+      // Standard News & Updates (500+w): 0.50 Points (New article in News with tables & official context)
+      if (tt.includes('lms') || wc < 500) {
+        return { points: 0.25, label: 'Micro News Brief', badgeColor: '#64748b', bg: '#f1f5f9', typeKey: 'micro_news' };
+      } else {
+        return { points: 0.50, label: 'Standard News & Updates', badgeColor: '#475569', bg: '#f8fafc', typeKey: 'standard_news' };
+      }
+    }
+
+    // Fresh Pillar / Comprehensive Guide (1,500+ words): 3.0 Points (New Exam Page / Master Guide)
+    const isPillar = (pt.includes('target') || pt.includes('pillar') || pt.includes('exam page') || pt.includes('master')) && (type === 'new' || tt.includes('new'));
+    if (isPillar || wc >= 1500) {
+      return { points: 3.00, label: 'Fresh Pillar (New Exam Page)', badgeColor: '#7e22ce', bg: '#faf5ff', typeKey: 'pillar' };
+    }
+
+    // Standard Fresh Prep Article (800-1,200 words): 2.0 Points (Deep domain research)
+    const isStandardFresh = (type === 'new' || tt.includes('new') || tt.includes('prep') || cl.includes('fresh')) && wc >= 800;
+    if (isStandardFresh) {
+      return { points: 2.00, label: 'Standard Fresh Prep', badgeColor: '#6d28d9', bg: '#f5f3ff', typeKey: 'fresh_prep' };
+    }
+
+    // PYP / Mock Test Landing Page: 1.5 Points (High Intent structured Q&A, exam patterns)
+    const isHighIntentPyp = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || cl.includes('high intent') || topic.includes('mock') || topic.includes('previous year');
+    if (isHighIntentPyp) {
+      return { points: 1.50, label: 'PYP / Mock Test Landing Page', badgeColor: '#1d4ed8', bg: '#eff6ff', typeKey: 'high_intent' };
+    }
+
+    // Data-Backed Content Optimization / Refresh: 1.5 Points (Requires baseline Old Doc)
+    const isOpt = tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || (item.oldDoc && item.oldDoc.startsWith('http'));
+    if (isOpt) {
+      return { points: 1.50, label: 'SEO Optimization & Refresh', badgeColor: '#b45309', bg: '#fef3c7', typeKey: 'optimization' };
+    }
+
+    // New Child Pages: 1.0 Point
+    return { points: 1.00, label: 'New Child Page', badgeColor: '#15803d', bg: '#f0fdf4', typeKey: 'child_page' };
+  }
+
+  // Get Roster Squad metadata for any writer
+  function getWriterSquadMeta(writerName) {
+    const teamA = ["Sonika", "Archita", "Shemaila", "Somya", "Mohit"];
+    const teamB = ["Nadeem", "Shilpa Kohli", "Aditi", "Atul", "Trishala"];
+    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka"];
+    const newContent = ["Archana", "Shilpa Singh"];
+
+    const wClean = (writerName || '').trim();
+    if (teamA.includes(wClean)) return { squadId: 'teamA', squadName: 'Team A (Rotation)', isRotation: true, teamGroup: 'A' };
+    if (teamB.includes(wClean)) return { squadId: 'teamB', squadName: 'Team B (Rotation)', isRotation: true, teamGroup: 'B' };
+    if (prepTeam.includes(wClean)) return { squadId: 'prep', squadName: 'Exam Prep Team', isRotation: false, teamGroup: 'Prep' };
+    if (newContent.includes(wClean)) return { squadId: 'new_content', squadName: 'New Content Writers', isRotation: false, teamGroup: 'New' };
+    return { squadId: 'other', squadName: 'Editorial Staff', isRotation: false, teamGroup: 'Other' };
+  }
+
+  function getActiveWeekInfo() {
+    const currentWeekId = state.selectedWeekId || 1;
+    if (typeof ROSTER_CONFIG !== 'undefined' && Array.isArray(ROSTER_CONFIG.weeks)) {
+      const wk = ROSTER_CONFIG.weeks.find(w => w.id === currentWeekId) || ROSTER_CONFIG.weeks[0];
+      return wk;
+    }
+    return { id: 1, name: 'Wk 1', newsTeam: 'Team A', contentTeam: 'Team B' };
+  }
+
+  function getWriterKpiTarget(writerName, timeframe) {
+    const squadMeta = getWriterSquadMeta(writerName);
+    const activeWk = getActiveWeekInfo();
+
+    // 1. Entire Q4 (66 working days = 11 working weeks)
+    if (timeframe === 'q4_total') {
+      if (squadMeta.teamGroup === 'A') {
+        // Team A: 6 News Weeks (6 * 30 = 180) + 5 Content Weeks (5 * 15 = 75) = 255 pts
+        return { targetPoints: 255.0, daysCount: 66, roleLabel: 'Team A Roster (6 News / 5 Content Wks)', weeklyNewsTarget: 30.0, weeklyContentTarget: 15.0 };
+      } else if (squadMeta.teamGroup === 'B') {
+        // Team B: 5 News Weeks (5 * 30 = 150) + 6 Content Weeks (6 * 15 = 90) = 240 pts
+        return { targetPoints: 240.0, daysCount: 66, roleLabel: 'Team B Roster (5 News / 6 Content Wks)', weeklyNewsTarget: 30.0, weeklyContentTarget: 15.0 };
+      } else {
+        // Prep / New Content: 11 Content Weeks (11 * 15 = 165 pts)
+        return { targetPoints: 165.0, daysCount: 66, roleLabel: 'Content Track (11 Weeks × 15 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 15.0 };
+      }
+    }
+
+    // 2. Current Week (6 days / week)
+    if (timeframe === 'current_week') {
+      const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
+                             (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
+      if (isNewsThisWeek) {
+        return { targetPoints: 30.0, daysCount: 6, roleLabel: '🚨 News Week (5.0 pts/day)', isNewsWeek: true };
+      } else {
+        return { targetPoints: 15.0, daysCount: 6, roleLabel: '📝 Content Week (2.5 pts/day)', isNewsWeek: false };
+      }
+    }
+
+    // 3. Today (1 day)
+    if (timeframe === 'today') {
+      const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
+                             (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
+      if (isNewsThisWeek) {
+        return { targetPoints: 5.0, daysCount: 1, roleLabel: '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
+      } else {
+        return { targetPoints: 2.5, daysCount: 1, roleLabel: '📝 Content Duty (2.5 pts/day)', isNewsWeek: false };
+      }
+    }
+
+    return { targetPoints: 30.0, daysCount: 6, roleLabel: 'Standard Target' };
+  }
+
+  function renderKpiDashboard() {
+    if (!els.sectionKpi) return;
+
+    // Collect all tasks from Workflow <OND> and News
+    const workflowItems = getReviewList();
+    const newsItems = getNewsList().map(n => ({ ...n, isNewsTask: true }));
+    const allCombined = [...workflowItems, ...newsItems];
+
+    // Build master list of all known team writers
+    const allWritersSet = new Set([
+      "Sonika", "Archita", "Shemaila", "Somya", "Mohit",
+      "Nadeem", "Shilpa Kohli", "Aditi", "Atul", "Trishala",
+      "Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka",
+      "Archana", "Shilpa Singh"
+    ]);
+
+    allCombined.forEach(item => {
+      if (item.writer && item.writer !== '-' && item.writer !== 'Unassigned') {
+        allWritersSet.add(item.writer.trim());
+      }
+    });
+
+    const timeframe = state.kpiTimeframeFilter || 'q4_total';
+
+    // Calculate scorecards per writer
+    const writerKpiData = {};
+    allWritersSet.forEach(w => {
+      const meta = getWriterSquadMeta(w);
+      const targetMeta = getWriterKpiTarget(w, timeframe);
+      writerKpiData[w] = {
+        writer: w,
+        squadMeta: meta,
+        targetMeta: targetMeta,
+        targetPoints: targetMeta.targetPoints,
+        achievedPoints: 0,
+        approvedCount: 0,
+        totalTasks: 0,
+        totalWords: 0,
+        pointsMix: {
+          micro_news: 0,
+          standard_news: 0,
+          child_page: 0,
+          optimization: 0,
+          high_intent: 0,
+          fresh_prep: 0,
+          pillar: 0
+        },
+        taskItems: []
+      };
+    });
+
+    // Process tasks
+    let teamTotalAchievedPoints = 0;
+    let teamTotalTargetPoints = 0;
+    let teamTotalApprovedTasks = 0;
+    let teamTotalNewsPoints = 0;
+    let teamTotalContentPoints = 0;
+
+    allCombined.forEach(item => {
+      const writer = (item.writer || '').trim();
+      if (!writer || writer === 'Unassigned' || !writerKpiData[writer]) return;
+
+      const ptInfo = calculateItemKpiPoints(item);
+      const effStatus = getEffectiveReviewStatus(item);
+      const isDoneOrApproved = effStatus === 'Approved' || isStatusDone(item.status);
+
+      writerKpiData[writer].totalTasks++;
+      writerKpiData[writer].totalWords += (parseInt(item.wordCount, 10) || 0);
+      writerKpiData[writer].taskItems.push({
+        ...item,
+        kpiPoints: ptInfo.points,
+        kpiLabel: ptInfo.label,
+        typeKey: ptInfo.typeKey,
+        isApproved: isDoneOrApproved,
+        effectiveReviewStatus: effStatus
+      });
+
+      if (isDoneOrApproved) {
+        writerKpiData[writer].approvedCount++;
+        writerKpiData[writer].achievedPoints += ptInfo.points;
+        writerKpiData[writer].pointsMix[ptInfo.typeKey] = (writerKpiData[writer].pointsMix[ptInfo.typeKey] || 0) + ptInfo.points;
+
+        teamTotalAchievedPoints += ptInfo.points;
+        teamTotalApprovedTasks++;
+
+        if (ptInfo.typeKey === 'micro_news' || ptInfo.typeKey === 'standard_news') {
+          teamTotalNewsPoints += ptInfo.points;
+        } else {
+          teamTotalContentPoints += ptInfo.points;
+        }
+      }
+    });
+
+    // Aggregate overall team target
+    Object.values(writerKpiData).forEach(w => {
+      teamTotalTargetPoints += w.targetPoints;
+    });
+
+    // 1. Render Executive KPI Overview Cards
+    if (els.kpiOverviewCards) {
+      const overallCompletionPct = teamTotalTargetPoints > 0 ? Math.min(Math.round((teamTotalAchievedPoints / teamTotalTargetPoints) * 100), 200) : 0;
+      const activeWritersCount = Object.values(writerKpiData).filter(w => w.totalTasks > 0).length;
+      const tfLabel = timeframe === 'q4_total' ? 'Q4 (66 Days)' : (timeframe === 'current_week' ? 'Active Week' : 'Today');
+
+      els.kpiOverviewCards.innerHTML = `
+        <div class="kpi-card" style="border-top:3px solid #4f46e5;">
+          <div class="kpi-label">🏆 Team Points Achieved (${tfLabel})</div>
+          <div class="kpi-value" style="color:#4338ca;">${teamTotalAchievedPoints.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">/ ${teamTotalTargetPoints.toFixed(0)} pts (${overallCompletionPct}%)</span></div>
+          <div class="kpi-subtext">Cumulative verified points scored by team</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #10b981;">
+          <div class="kpi-label">✅ Approved Content Tasks</div>
+          <div class="kpi-value" style="color:#059669;">${teamTotalApprovedTasks} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">tasks</span></div>
+          <div class="kpi-subtext">Passed AI Editorial Quality Gates</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #f43f5e;">
+          <div class="kpi-label">🚨 News Points Scored</div>
+          <div class="kpi-value" style="color:#e11d48;">${teamTotalNewsPoints.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts</span></div>
+          <div class="kpi-subtext">30.0 pts/wk Target (0.25p / 0.50p per alert)</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
+          <div class="kpi-label">📝 Fresh &amp; Pillars &amp; Opt Points</div>
+          <div class="kpi-value" style="color:#0284c7;">${teamTotalContentPoints.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts</span></div>
+          <div class="kpi-subtext">15.0 pts/wk Target (1.0p / 1.5p / 2.0p / 3.0p)</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #8b5cf6;">
+          <div class="kpi-label">👥 Active Team Writers</div>
+          <div class="kpi-value" style="color:#6d28d9;">${activeWritersCount} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">/ ${allWritersSet.size}</span></div>
+          <div class="kpi-subtext">Team A, Team B, Prep &amp; New Content</div>
+        </div>
+      `;
+    }
+
+    // 2. Filter & Sort Writers
+    let writersList = Object.values(writerKpiData);
+
+    if (state.kpiSquadFilter && state.kpiSquadFilter !== 'all') {
+      writersList = writersList.filter(w => w.squadMeta.squadId === state.kpiSquadFilter);
+    }
+
+    if (state.kpiSearch) {
+      const q = state.kpiSearch.toLowerCase();
+      writersList = writersList.filter(w => w.writer.toLowerCase().includes(q) || w.squadMeta.squadName.toLowerCase().includes(q));
+    }
+
+    // Sort by achieved points descending
+    writersList.sort((a, b) => b.achievedPoints - a.achievedPoints);
+
+    if (els.kpiCountLabel) {
+      els.kpiCountLabel.textContent = `Showing ${writersList.length} writers`;
+    }
+
+    // 3. Render KPI Table Rows
+    if (els.kpiTableBody) {
+      if (writersList.length === 0) {
+        els.kpiTableBody.innerHTML = `
+          <tr>
+            <td colspan="10" style="text-align:center; padding:2.5rem; color:#94a3b8;">
+              <div style="font-weight:700; color:#334155; font-size:0.95rem;">No writers found matching current filter</div>
+            </td>
+          </tr>
+        `;
+      } else {
+        let html = '';
+        writersList.forEach((w, idx) => {
+          const achieved = w.achievedPoints;
+          const target = w.targetPoints;
+          const pct = target > 0 ? Math.min(Math.round((achieved / target) * 100), 200) : 0;
+
+          // Squad Badge
+          let squadBadgeHtml = '';
+          if (w.squadMeta.teamGroup === 'A') {
+            squadBadgeHtml = `<span style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:6px;">Team A</span>`;
+          } else if (w.squadMeta.teamGroup === 'B') {
+            squadBadgeHtml = `<span style="background:#fdf4ff; color:#86198f; border:1px solid #f5d0fe; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:6px;">Team B</span>`;
+          } else if (w.squadMeta.teamGroup === 'Prep') {
+            squadBadgeHtml = `<span style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:6px;">Exam Prep</span>`;
+          } else {
+            squadBadgeHtml = `<span style="background:#fffbeb; color:#92400e; border:1px solid #fde68a; font-size:0.7rem; font-weight:800; padding:2px 7px; border-radius:6px;">New Content</span>`;
+          }
+
+          // Performance Badge & Progress Bar
+          let statusBadge = '';
+          let barColor = '#4f46e5';
+          if (pct >= 100) {
+            statusBadge = `<span style="background:#dcfce7; color:#15803d; border:1px solid #86efac; font-weight:800; font-size:0.72rem; padding:2px 8px; border-radius:6px;">🌟 Target Met (${pct}%)</span>`;
+            barColor = '#10b981';
+          } else if (pct >= 70) {
+            statusBadge = `<span style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-weight:700; font-size:0.72rem; padding:2px 8px; border-radius:6px;">🟢 On Track (${pct}%)</span>`;
+            barColor = '#0284c7';
+          } else if (pct > 0) {
+            statusBadge = `<span style="background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; font-weight:700; font-size:0.72rem; padding:2px 8px; border-radius:6px;">⚡ In Progress (${pct}%)</span>`;
+            barColor = '#f59e0b';
+          } else {
+            statusBadge = `<span style="background:#f1f5f9; color:#64748b; font-weight:600; font-size:0.72rem; padding:2px 8px; border-radius:6px;">⏳ Pending Tasks</span>`;
+            barColor = '#cbd5e1';
+          }
+
+          // Points Mix Pills
+          const mix = w.pointsMix;
+          const mixPills = [];
+          if (mix.micro_news > 0) mixPills.push(`<span style="background:#f1f5f9; color:#475569; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="Micro News Briefs">${mix.micro_news.toFixed(1)}p Micro</span>`);
+          if (mix.standard_news > 0) mixPills.push(`<span style="background:#f8fafc; color:#334155; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="Standard News">${mix.standard_news.toFixed(1)}p News</span>`);
+          if (mix.child_page > 0) mixPills.push(`<span style="background:#f0fdf4; color:#15803d; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="Child Pages">${mix.child_page.toFixed(1)}p Child</span>`);
+          if (mix.optimization > 0) mixPills.push(`<span style="background:#fef3c7; color:#b45309; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="Optimizations">${mix.optimization.toFixed(1)}p Opt</span>`);
+          if (mix.high_intent > 0) mixPills.push(`<span style="background:#eff6ff; color:#1d4ed8; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="PYP / High Intent">${mix.high_intent.toFixed(1)}p PYP</span>`);
+          if (mix.fresh_prep > 0) mixPills.push(`<span style="background:#f5f3ff; color:#6d28d9; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="Standard Fresh">${mix.fresh_prep.toFixed(1)}p Fresh</span>`);
+          if (mix.pillar > 0) mixPills.push(`<span style="background:#faf5ff; color:#7e22ce; padding:1px 5px; border-radius:4px; font-size:0.68rem; font-weight:700;" title="Fresh Pillars">${mix.pillar.toFixed(1)}p Pillar</span>`);
+
+          const mixHtml = mixPills.length > 0 ? mixPills.join(' ') : `<span style="color:#cbd5e1; font-size:0.72rem;">No points yet</span>`;
+          const rankEmoji = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : ''));
+
+          html += `
+            <tr data-writer="${escapeHtml(w.writer)}">
+              <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.75rem;">${rankEmoji}${idx + 1}</td>
+              <td>
+                <div style="font-weight:800; color:#0f172a; font-size:0.88rem; cursor:pointer;" class="btn-writer-name" data-writer="${escapeHtml(w.writer)}">${escapeHtml(w.writer)}</div>
+                <div style="font-size:0.7rem; color:#64748b;">${w.approvedCount} Approved / ${w.totalTasks} Tasks (${w.totalWords.toLocaleString()}w)</div>
+              </td>
+              <td style="text-align:center;">${squadBadgeHtml}</td>
+              <td style="text-align:center; font-size:0.75rem; color:#334155; font-weight:600;">${escapeHtml(w.targetMeta.roleLabel)}</td>
+              <td style="text-align:center; background:#eff6ff;">
+                <span style="font-weight:900; font-size:1.15rem; color:#1e40af;">${achieved.toFixed(1)}</span>
+                <span style="font-size:0.72rem; color:#3b82f6; font-weight:700;">pts</span>
+              </td>
+              <td style="text-align:center;">
+                <span style="font-weight:700; font-size:0.95rem; color:#475569;">${target.toFixed(1)}</span>
+                <span style="font-size:0.72rem; color:#64748b;">pts</span>
+              </td>
+              <td>
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700; margin-bottom:2px; color:#475569;">
+                  <span>${pct}% Complete</span>
+                  <span>${achieved.toFixed(1)} / ${target.toFixed(0)}</span>
+                </div>
+                <div style="height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                  <div style="height:100%; width:${Math.min(pct, 100)}%; background:${barColor}; border-radius:3px; transition:width 0.3s ease;"></div>
+                </div>
+              </td>
+              <td style="text-align:center;">${statusBadge}</td>
+              <td><div style="display:flex; flex-wrap:wrap; gap:3px;">${mixHtml}</div></td>
+              <td style="text-align:center;">
+                <button class="btn-action btn-kpi-drilldown" data-writer="${escapeHtml(w.writer)}" style="font-size:0.7rem; padding:3px 7px; background:#f8fafc; border:1px solid #cbd5e1; font-weight:700; cursor:pointer;" title="View Writer Receipts">
+                  🔍 Tasks
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+
+        els.kpiTableBody.innerHTML = html;
+
+        // Attach click handlers
+        els.kpiTableBody.querySelectorAll('.btn-kpi-drilldown, .btn-writer-name').forEach(el => {
+          el.addEventListener('click', () => {
+            const writerName = el.dataset.writer;
+            if (writerName) openWriterKpiDrilldown(writerName, writerKpiData[writerName]);
+          });
+        });
+      }
+    }
+  }
+
+  // Open Writer KPI Drilldown Modal
+  function openWriterKpiDrilldown(writerName, writerData) {
+    if (!els.modalWriterKpiDrilldown) return;
+
+    if (els.drilldownWriterTitle) {
+      els.drilldownWriterTitle.textContent = `👤 ${writerName} — KPI Task Breakdown`;
+    }
+
+    if (els.drilldownWriterSubtitle && writerData) {
+      els.drilldownWriterSubtitle.textContent = `${writerData.squadMeta.squadName} | Total Points Scored: ${writerData.achievedPoints.toFixed(1)} pts (${writerData.approvedCount} Approved of ${writerData.totalTasks} Tasks)`;
+    }
+
+    if (els.drilldownContentBody) {
+      const tasks = writerData ? writerData.taskItems : [];
+      if (tasks.length === 0) {
+        els.drilldownContentBody.innerHTML = `
+          <div style="text-align:center; padding:2rem; color:#94a3b8;">
+            No tasks found for <strong>${escapeHtml(writerName)}</strong> in the active scope.
+          </div>
+        `;
+      } else {
+        let rowsHtml = '';
+        tasks.forEach((t, idx) => {
+          const ptInfo = calculateItemKpiPoints(t);
+          const isAppr = t.isApproved;
+          const statusBadge = isAppr
+            ? `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✅ Approved (${ptInfo.points}p)</span>`
+            : `<span style="background:#f1f5f9; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⏳ Pending (0p)</span>`;
+
+          const docLink = t.newDoc && t.newDoc.startsWith('http')
+            ? `<a href="${t.newDoc}" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight:700;">Doc ↗</a>`
+            : (t.url && t.url.startsWith('http') ? `<a href="${t.url}" target="_blank" style="color:#0284c7; text-decoration:underline;">Link ↗</a>` : '—');
+
+          rowsHtml += `
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="text-align:center; font-size:0.72rem; color:#94a3b8;">${idx + 1}</td>
+              <td style="font-size:0.75rem; color:#475569; white-space:nowrap;">${escapeHtml(t.date || '—')}</td>
+              <td>
+                <div style="font-weight:700; color:#0f172a; font-size:0.82rem;">${escapeHtml(t.topic)}</div>
+                <div style="font-size:0.7rem; color:#64748b;">${escapeHtml(t.category || 'General')} | FK: <em>${escapeHtml(t.fk || t.topic)}</em></div>
+              </td>
+              <td>
+                <span style="background:${ptInfo.bg}; color:${ptInfo.badgeColor}; font-weight:700; font-size:0.7rem; padding:2px 6px; border-radius:4px;">
+                  ${ptInfo.label} (${ptInfo.points}p)
+                </span>
+              </td>
+              <td style="text-align:center; font-size:0.78rem; font-weight:600; color:#1e293b;">${(parseInt(t.wordCount, 10) || 0).toLocaleString()}w</td>
+              <td style="text-align:center; font-size:0.75rem;">${docLink}</td>
+              <td style="text-align:center;">${statusBadge}</td>
+              <td style="text-align:center;">
+                <button class="btn-action btn-drilldown-ai" data-topic="${escapeHtml(t.topic)}" style="background:#4f46e5; color:#ffffff; font-size:0.68rem; padding:2px 6px; border-radius:4px; font-weight:700; border:none; cursor:pointer;" title="Inspect AI Report">
+                  🤖 Report
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+
+        els.drilldownContentBody.innerHTML = `
+          <table class="data-table" style="font-size:0.78rem; width:100%;">
+            <thead>
+              <tr style="background:#f8fafc;">
+                <th style="width:30px; text-align:center;">#</th>
+                <th style="width:80px;">Date</th>
+                <th>Topic &amp; Keyword</th>
+                <th style="width:160px;">KPI Rule &amp; Value</th>
+                <th style="width:75px; text-align:center;">Words</th>
+                <th style="width:60px; text-align:center;">Doc</th>
+                <th style="width:110px; text-align:center;">Status</th>
+                <th style="width:65px; text-align:center;">AI Audit</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        `;
+
+        // Attach click handlers to open AI audit modal for that specific task
+        els.drilldownContentBody.querySelectorAll('.btn-drilldown-ai').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const topic = btn.dataset.topic;
+            const item = tasks.find(it => it.topic === topic);
+            if (item) {
+              openAiAuditModal(item, false);
+            }
+          });
+        });
+      }
+    }
+
+    els.modalWriterKpiDrilldown.style.display = 'flex';
+  }
+
+  function exportKpiCSV() {
+    const timeframe = state.kpiTimeframeFilter || 'q4_total';
+    const filename = `Team_KPI_Dashboard_${timeframe}_${Date.now()}.csv`;
+    
+    const headers = ['Writer', 'Squad', 'Active Role', 'Points Scored', 'KPI Target', 'Completion %', 'Approved Tasks', 'Total Tasks', 'Total Words'];
+    const csvLines = [headers.join(',')];
+
+    // Gather data
+    const allItems = getReviewList();
+    const writerKpiData = {};
+    allItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (!w || w === 'Unassigned') return;
+      if (!writerKpiData[w]) {
+        const meta = getWriterSquadMeta(w);
+        const targetMeta = getWriterKpiTarget(w, timeframe);
+        writerKpiData[w] = {
+          writer: w,
+          squad: meta.squadName,
+          role: targetMeta.roleLabel,
+          target: targetMeta.targetPoints,
+          achieved: 0,
+          approved: 0,
+          total: 0,
+          words: 0
+        };
+      }
+      writerKpiData[w].total++;
+      writerKpiData[w].words += (parseInt(item.wordCount, 10) || 0);
+      const isAppr = getEffectiveReviewStatus(item) === 'Approved';
+      if (isAppr) {
+        writerKpiData[w].approved++;
+        const pt = calculateItemKpiPoints(item);
+        writerKpiData[w].achieved += pt.points;
+      }
+    });
+
+    Object.values(writerKpiData).forEach(w => {
+      const pct = w.target > 0 ? Math.round((w.achieved / w.target) * 100) : 0;
+      const row = [
+        `"${w.writer.replace(/"/g, '""')}"`,
+        `"${w.squad.replace(/"/g, '""')}"`,
+        `"${w.role.replace(/"/g, '""')}"`,
+        w.achieved.toFixed(1),
+        w.target.toFixed(1),
+        `"${pct}%"`,
+        w.approved,
+        w.total,
+        w.words
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
   // Master Initialization
   // =========================================================================
   function renderApp() {
     renderRoster();
+    renderKpiDashboard();
     renderNews();
     renderReviewHub();
     renderProductivity();
