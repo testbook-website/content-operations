@@ -4427,36 +4427,44 @@
     // 1. Entire Q4 (66 working days = 11 working weeks)
     if (timeframe === 'q4_total') {
       if (squadMeta.teamGroup === 'A') {
-        // Team A: 6 News Weeks (6 * 30 = 180) + 5 Content Weeks (5 * 15 = 75) = 255 pts
-        return { targetPoints: 255.0, daysCount: 66, roleLabel: 'Team A Roster (6 News / 5 Content Wks)', weeklyNewsTarget: 30.0, weeklyContentTarget: 15.0 };
+        // Team A: 6 News Weeks (6 * 30 = 180) + 5 Content Weeks (5 * 48 = 240) = 420 pts
+        return { targetPoints: 420.0, daysCount: 66, roleLabel: 'Team A Roster (6 News @ 30 / 5 Content @ 48)', weeklyNewsTarget: 30.0, weeklyContentTarget: 48.0 };
       } else if (squadMeta.teamGroup === 'B') {
-        // Team B: 5 News Weeks (5 * 30 = 150) + 6 Content Weeks (6 * 15 = 90) = 240 pts
-        return { targetPoints: 240.0, daysCount: 66, roleLabel: 'Team B Roster (5 News / 6 Content Wks)', weeklyNewsTarget: 30.0, weeklyContentTarget: 15.0 };
+        // Team B: 5 News Weeks (5 * 30 = 150) + 6 Content Weeks (6 * 48 = 288) = 438 pts
+        return { targetPoints: 438.0, daysCount: 66, roleLabel: 'Team B Roster (5 News @ 30 / 6 Content @ 48)', weeklyNewsTarget: 30.0, weeklyContentTarget: 48.0 };
       } else {
-        // Prep / New Content: 11 Content Weeks (11 * 15 = 165 pts)
-        return { targetPoints: 165.0, daysCount: 66, roleLabel: 'Content Track (11 Weeks × 15 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 15.0 };
+        // Prep / New Content: 66 days * 10 pts/day = 660 pts (60 pts/wk)
+        return { targetPoints: 660.0, daysCount: 66, roleLabel: 'Exam Prep & Content (66 Days × 10 pts = 660 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 60.0 };
       }
     }
 
     // 2. Current Week (6 days / week)
     if (timeframe === 'current_week') {
-      const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
-                             (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
-      if (isNewsThisWeek) {
-        return { targetPoints: 30.0, daysCount: 6, roleLabel: '🚨 News Week (5.0 pts/day)', isNewsWeek: true };
+      if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
+        const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
+                               (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
+        if (isNewsThisWeek) {
+          return { targetPoints: 30.0, daysCount: 6, roleLabel: '🚨 News Week (5.0 pts/day = 30 pts)', isNewsWeek: true };
+        } else {
+          return { targetPoints: 48.0, daysCount: 6, roleLabel: '📝 Content Week (8.0 pts/day = 48 pts)', isNewsWeek: false };
+        }
       } else {
-        return { targetPoints: 15.0, daysCount: 6, roleLabel: '📝 Content Week (2.5 pts/day)', isNewsWeek: false };
+        return { targetPoints: 60.0, daysCount: 6, roleLabel: '📚 Exam Prep (10.0 pts/day = 60 pts)', isNewsWeek: false };
       }
     }
 
     // 3. Today (1 day)
     if (timeframe === 'today') {
-      const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
-                             (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
-      if (isNewsThisWeek) {
-        return { targetPoints: 5.0, daysCount: 1, roleLabel: '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
+      if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
+        const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
+                               (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
+        if (isNewsThisWeek) {
+          return { targetPoints: 5.0, daysCount: 1, roleLabel: '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
+        } else {
+          return { targetPoints: 8.0, daysCount: 1, roleLabel: '📝 Content Duty (8.0 pts/day)', isNewsWeek: false };
+        }
       } else {
-        return { targetPoints: 2.5, daysCount: 1, roleLabel: '📝 Content Duty (2.5 pts/day)', isNewsWeek: false };
+        return { targetPoints: 10.0, daysCount: 1, roleLabel: '📚 Exam Prep (10.0 pts/day)', isNewsWeek: false };
       }
     }
 
@@ -4466,29 +4474,29 @@
   function renderKpiDashboard() {
     if (!els.sectionKpi) return;
 
-    // Master list of writers grouped by squad
+    // Master list of writers grouped by squad with calculated 66-day targets
     const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Archita", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Shemaila", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Somya", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Mohit", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
+      { writer: "Sonika", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Archita", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Shemaila", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Somya", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Mohit", squad: "Team A", target: "420.0 pts (News: 30/wk, Content: 48/wk)" },
 
-      { writer: "Nadeem", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Aditi", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Atul", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Trishala", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
+      { writer: "Nadeem", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Shilpa Kohli", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Aditi", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Atul", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
+      { writer: "Trishala", squad: "Team B", target: "438.0 pts (News: 30/wk, Content: 48/wk)" },
 
-      { writer: "Lehron", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Dhananjay", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Falguni", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Swathi", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Sumit Kumar", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Manicka", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
+      { writer: "Lehron", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Dhananjay", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Falguni", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Swathi", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Manicka", squad: "Exam Prep", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
 
-      { writer: "Archana", squad: "New Content", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Shilpa Singh", squad: "New Content", target: "165.0 pts (15 pts/wk)" }
+      { writer: "Archana", squad: "New Content", target: "660.0 pts (10 pts/day | 60 pts/wk)" },
+      { writer: "Shilpa Singh", squad: "New Content", target: "660.0 pts (10 pts/day | 60 pts/wk)" }
     ];
 
     let filtered = writersListRaw;
