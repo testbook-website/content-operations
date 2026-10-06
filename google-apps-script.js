@@ -243,10 +243,10 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
         const rowTopicH = String(data[i][7] || '').trim().toLowerCase(); // Col H
         const rowTopicK = String(data[i][10] || '').trim().toLowerCase(); // Col K (FK)
         if (
-          rowTopicB === cleanTopic ||
-          rowTopicH === cleanTopic ||
-          rowTopicK === cleanTopic ||
-          (cleanTopic.length > 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1))
+          (rowTopicB && rowTopicB === cleanTopic) ||
+          (rowTopicK && rowTopicK === cleanTopic) ||
+          (rowTopicH && rowTopicH === cleanTopic) ||
+          (rowTopicB && cleanTopic.length >= 5 && rowTopicB.length >= 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1))
         ) {
           const targetRow = i + 1;
           sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
