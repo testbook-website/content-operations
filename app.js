@@ -1094,9 +1094,9 @@
       `;
     } else {
       // Monthly View
-      const tillWords = sumObj(s2['Till Now']);
-      const tillPub = sumObj(s1['Till Now']);
-      const tillPick = sumObj(s3['JAS']) + sumObj(s3['AMJ']);
+      const tillWords = sumObj(s2['Till Now']) || (sumObj(s2['October']) + sumObj(s2['November']) + sumObj(s2['December']));
+      const tillPub = sumObj(s1['Till Now']) || (sumObj(s1['October']) + sumObj(s1['November']) + sumObj(s1['December']));
+      const tillPick = sumObj(s3['Till Now']) || sumObj(s3['OND']) || (sumObj(s3['October']) + sumObj(s3['November']) + sumObj(s3['December']));
 
       els.prodKpiCards.innerHTML = `
         <div class="kpi-card">
@@ -1241,7 +1241,7 @@
     const writers = data.sheet1_published.headers;
     let filtered = state.prodSearch ? writers.filter(w => w.toLowerCase().includes(state.prodSearch)) : writers;
     const s2 = data.sheet2_wordcount.summary;
-    const months = ['April', 'May', 'June', 'July', 'August', 'September'];
+    const months = ['October', 'November', 'December'];
 
     const monthTotals = {};
     months.forEach(m => { monthTotals[m] = 0; });
@@ -1312,7 +1312,7 @@
       }
     });
 
-    // 2. Augment with real-time Workflow entries if available
+    // 2. Augment with real-time Workflow entries if available (OND only)
     const liveWf = (typeof sheetsClient !== 'undefined' && sheetsClient.data) ? (sheetsClient.data.workflow_ond || sheetsClient.data.workflow_jas) : null;
     if (liveWf && liveWf.length > 0) {
       const liveDateMap = {};
@@ -1352,8 +1352,12 @@
       });
     }
 
-    // Filter out rows with 0 articles
-    let rows = Object.values(rowsMap).filter(r => r.total > 0);
+    // Filter out rows with 0 articles and strictly consider only Q4 OND (October, November, December 2026)
+    let rows = Object.values(rowsMap).filter(r => {
+      if (!r || !r.total || r.total <= 0) return false;
+      const m = (r.date || '').split('/')[0];
+      return m === '10' || m === '11' || m === '12';
+    });
 
     // Filter by Month
     if (state.catMonthFilter !== 'all') {
@@ -1851,15 +1855,21 @@
     let raw = [];
     if (state.sheetsData && Array.isArray(state.sheetsData.workflow_ond) && state.sheetsData.workflow_ond.length > 0) {
       raw = state.sheetsData.workflow_ond;
-    } else if (state.sheetsData && Array.isArray(state.sheetsData.workflow_jas) && state.sheetsData.workflow_jas.length > 0) {
-      raw = state.sheetsData.workflow_jas;
     } else if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && Array.isArray(BASELINE_WORKFLOW_DATA)) {
       raw = BASELINE_WORKFLOW_DATA;
     }
-    // Filter out rows without a topic (skip empty/blank rows)
+    // Filter out rows without a topic, and strictly enforce Q4 OND (October, November, December 2026)
     return raw.filter(item => {
       const topic = (item.topic || '').trim();
-      return topic && topic !== '-' && topic.toLowerCase() !== 'topic';
+      if (!topic || topic === '-' || topic.toLowerCase() === 'topic') return false;
+      if (item.date) {
+        const d = parseWorkflowDate(item.date);
+        if (d) {
+          const m = d.getMonth(); // 9 = Oct, 10 = Nov, 11 = Dec
+          if (m < 9 || m > 11) return false;
+        }
+      }
+      return true;
     });
   }
 
@@ -4507,25 +4517,18 @@
       } else {
         let html = '';
         filtered.forEach((w, idx) => {
-          let squadBadge = '';
-          if (w.squad === 'Team A') squadBadge = `<span style="background:#eff6ff; color:#1d4ed8; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; margin-left:0.4rem;">Team A</span>`;
-          else if (w.squad === 'Team B') squadBadge = `<span style="background:#fdf4ff; color:#86198f; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; margin-left:0.4rem;">Team B</span>`;
-          else if (w.squad === 'Exam Prep') squadBadge = `<span style="background:#f0fdf4; color:#166534; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; margin-left:0.4rem;">Exam Prep</span>`;
-          else squadBadge = `<span style="background:#fffbeb; color:#92400e; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; margin-left:0.4rem;">New Content</span>`;
-
           html += `
             <tr>
-              <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.75rem;">${idx + 1}</td>
-              <td>
-                <div style="font-weight:800; color:#0f172a; font-size:0.9rem; display:flex; align-items:center;">
-                  <span>${escapeHtml(w.writer)}</span>
-                  ${squadBadge}
+              <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.82rem; padding:0.75rem 0.5rem;">${idx + 1}</td>
+              <td style="padding:0.75rem 1rem;">
+                <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">
+                  ${escapeHtml(w.writer)}
                 </div>
               </td>
-              <td style="text-align:center; background:#eff6ff; font-weight:800; color:#64748b; font-size:0.9rem;">
+              <td style="text-align:center; background:#eff6ff; font-weight:700; color:#64748b; font-size:0.9rem; padding:0.75rem 0.5rem;">
                 —
               </td>
-              <td style="text-align:center; font-weight:700; color:#1e293b; font-size:0.85rem;">
+              <td style="text-align:center; font-weight:600; color:#1e293b; font-size:0.85rem; padding:0.75rem 0.5rem;">
                 ${escapeHtml(w.target)}
               </td>
             </tr>

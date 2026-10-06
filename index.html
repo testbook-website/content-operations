@@ -183,14 +183,20 @@
       </div>
 
       <!-- Simple KPI Table: Writer Name | Points Scored | Target -->
-      <div class="table-wrap" style="margin-bottom:1.5rem;">
-        <table class="data-table" id="kpiTable" style="font-size:0.82rem;">
+      <div class="table-wrap" style="max-width:960px; margin:0 auto 1.5rem auto; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); border-radius:8px; overflow:hidden; border:1px solid #e2e8f0;">
+        <table class="data-table" id="kpiTable" style="font-size:0.85rem; width:100%; table-layout:fixed;">
+          <colgroup>
+            <col style="width: 8%;">
+            <col style="width: 44%;">
+            <col style="width: 24%;">
+            <col style="width: 24%;">
+          </colgroup>
           <thead>
             <tr>
-              <th style="width:40px; text-align:center;">#</th>
-              <th style="min-width:200px;">Writer Name</th>
-              <th style="width:160px; text-align:center; background:#eff6ff; color:#1e40af;">Points Scored</th>
-              <th style="width:160px; text-align:center;">Target</th>
+              <th style="text-align:center; padding:0.75rem 0.5rem;">#</th>
+              <th style="text-align:left; padding:0.75rem 1rem;">WRITER NAME</th>
+              <th style="text-align:center; padding:0.75rem 0.5rem; background:#eff6ff; color:#1e40af;">POINTS SCORED</th>
+              <th style="text-align:center; padding:0.75rem 0.5rem;">TARGET</th>
             </tr>
           </thead>
           <tbody id="kpiTableBody"></tbody>
@@ -243,16 +249,12 @@
         <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
           <label style="font-size:0.8rem; font-weight:600;">Filter:</label>
           <select class="select-simple" id="catMonthFilter">
-            <option value="all" selected>All Months (Oct - Apr 2026)</option>
-            <option value="09">September 2026</option>
-            <option value="08">August 2026</option>
-            <option value="07">July 2026</option>
-            <option value="06">June 2026</option>
-            <option value="05">May 2026</option>
-            <option value="04">April 2026</option>
+            <option value="all" selected>All Months (OND 2026)</option>
             <option value="10">October 2026</option>
+            <option value="11">November 2026</option>
+            <option value="12">December 2026</option>
           </select>
-          <input type="text" class="input-simple" id="catSearch" placeholder="Search date (e.g. 04/01, 09/15)..." style="width:220px;">
+          <input type="text" class="input-simple" id="catSearch" placeholder="Search date (e.g. 10/01, 10/06)..." style="width:220px;">
           <span id="catStatsLabel" style="font-size:0.75rem; color:#6b7280; font-weight:500;"></span>
         </div>
 
