@@ -158,31 +158,98 @@ function handleFetchDocsText(newDocUrl, oldDocUrl, pdfUrl) {
 }
 
 /**
- * Action: Updates Review Status on "Workflow <OND>" tab
+ * Robust helper to locate the Workflow tab regardless of exact naming (OND/JAS)
+ */
+/**
+ * Robust helper to locate the Workflow tab (Prioritizes OND over JAS)
+ */
+function findWorkflowSheet(ss) {
+  if (!ss) return null;
+
+  // 1. Exact matches for Workflow OND
+  var ondNames = ['Workflow<OND>', 'Workflow <OND>', 'Workflow OND', 'Workflow(OND)'];
+  for (var i = 0; i < ondNames.length; i++) {
+    var s = ss.getSheetByName(ondNames[i]);
+    if (s) return s;
+  }
+
+  // 2. Exact GID match for 436581067 (Workflow<OND>)
+  var sheets = ss.getSheets();
+  for (var j = 0; j < sheets.length; j++) {
+    if (String(sheets[j].getSheetId()) === '436581067') {
+      return sheets[j];
+    }
+  }
+
+  // 3. ANY sheet containing BOTH 'workflow' AND 'ond'
+  for (var k = 0; k < sheets.length; k++) {
+    var name = sheets[k].getName().toLowerCase();
+    if (name.indexOf('workflow') !== -1 && name.indexOf('ond') !== -1) {
+      return sheets[k];
+    }
+  }
+
+  // 4. Fallback: Workflow <JAS>
+  var sJas = ss.getSheetByName('Workflow<OND>') || ss.getSheetByName('Workflow <JAS>') || ss.getSheetByName('Workflow<JAS>');
+  if (sJas) return sJas;
+
+  // 5. Fallback: Any workflow sheet
+  for (var m = 0; m < sheets.length; m++) {
+    if (sheets[m].getName().toLowerCase().indexOf('workflow') !== -1) {
+      return sheets[m];
+    }
+  }
+
+  return sheets[0] || null;
+}
+
+/**
+ * Action: Updates Review Status on Workflow tab
  */
 function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
   try {
     const ss = getTargetSpreadsheet();
-    const sheet = ss.getSheetByName('Workflow <OND>');
+    const sheet = findWorkflowSheet(ss);
     if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Workflow <OND> tab not found' }))
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Workflow sheet tab not found in spreadsheet' }))
         .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const lastCol = Math.max(sheet.getLastColumn(), 30);
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0] || [];
+    let reviewStatusCol = 16; // Default Column P
+    let statusCol = 17;       // Default Column Q
+    let notesCol = -1;
+
+    for (let c = 0; c < headers.length; c++) {
+      const h = String(headers[c] || '').trim().toLowerCase();
+      if (h === 'review status' || h === 'review_status') {
+        reviewStatusCol = c + 1;
+      } else if (h === 'status' && reviewStatusCol !== (c + 1)) {
+        statusCol = c + 1;
+      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1) {
+        notesCol = c + 1;
+      }
     }
 
     const r = parseInt(rowIndex, 10);
     const statusVal = reviewStatus || 'Approved';
 
     if (r && r >= 2) {
-      // Column P (16) = Review Status
-      sheet.getRange(r, 16).setValue(statusVal);
-      // Column Q (17) = Status ('Done')
-      sheet.getRange(r, 17).setValue('Done');
-      if (notes) {
-        // Column R (18) = Review Notes
-        sheet.getRange(r, 18).setValue(notes);
+      sheet.getRange(r, reviewStatusCol).setValue(statusVal);
+      if (statusCol > 0 && statusCol !== reviewStatusCol) {
+        sheet.getRange(r, statusCol).setValue('Done');
       }
-      return ContentService.createTextOutput(JSON.stringify({ success: true, row: r, status: statusVal }))
-        .setMimeType(ContentService.MimeType.JSON);
+      if (notes && notesCol > 0) {
+        sheet.getRange(r, notesCol).setValue(notes);
+      }
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        sheetName: sheet.getName(),
+        row: r,
+        reviewStatusCol: reviewStatusCol,
+        status: statusVal
+      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // Search by Topic if rowIndex not given
@@ -195,16 +262,25 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
           rowTopicB.toLowerCase() === String(topic).trim().toLowerCase() ||
           rowTopicH.toLowerCase() === String(topic).trim().toLowerCase()
         ) {
-          sheet.getRange(i + 1, 16).setValue(statusVal);
-          sheet.getRange(i + 1, 17).setValue('Done');
-          if (notes) sheet.getRange(i + 1, 18).setValue(notes);
-          return ContentService.createTextOutput(JSON.stringify({ success: true, row: i + 1, status: statusVal }))
-            .setMimeType(ContentService.MimeType.JSON);
+          sheet.getRange(i + 1, reviewStatusCol).setValue(statusVal);
+          if (statusCol > 0 && statusCol !== reviewStatusCol) {
+            sheet.getRange(i + 1, statusCol).setValue('Done');
+          }
+          if (notes && notesCol > 0) {
+            sheet.getRange(i + 1, notesCol).setValue(notes);
+          }
+          return ContentService.createTextOutput(JSON.stringify({
+            success: true,
+            sheetName: sheet.getName(),
+            row: i + 1,
+            reviewStatusCol: reviewStatusCol,
+            status: statusVal
+          })).setMimeType(ContentService.MimeType.JSON);
         }
       }
     }
 
-    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Row or topic not found' }))
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Row or topic not found in sheet: ' + sheet.getName() }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
@@ -219,6 +295,14 @@ function doGet(e) {
   try {
     const p = (e && e.parameter) ? e.parameter : {};
     const action = p.action || '';
+
+    if (action === 'list_sheets') {
+      const ss = getTargetSpreadsheet();
+      const all = ss.getSheets().map(function(s) { return { name: s.getName(), gid: s.getSheetId() }; });
+      const active = findWorkflowSheet(ss);
+      return ContentService.createTextOutput(JSON.stringify({ success: true, activeWorkflow: active ? active.getName() : null, sheets: all }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
 
     if (action === 'fetch_docs_text') {
       return handleFetchDocsText(p.newDoc, p.oldDoc, p.pdfDoc || p.pdf);
