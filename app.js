@@ -4109,7 +4109,7 @@
     renderReviewHub(false);
 
     if (typeof sheetsClient !== 'undefined') {
-      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Approved');
+      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Approved', 'Approved by Editor');
     }
   }
 
