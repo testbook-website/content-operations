@@ -310,6 +310,104 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
 }
 
 /**
+ * Action: Batch populates short review notes into Column S for all rows marked Needs Revision
+ */
+function handlePopulateAllRevisionNotes() {
+  try {
+    const ss = getTargetSpreadsheet();
+    const sheet = findWorkflowSheet(ss);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Workflow sheet tab not found' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet is empty' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const headers = data[0];
+    let reviewStatusCol = 16; // Col P
+    let notesCol = 19;        // Col S
+
+    for (let c = 0; c < headers.length; c++) {
+      const h = String(headers[c] || '').trim().toLowerCase();
+      if (h === 'review status' || h === 'review_status') {
+        reviewStatusCol = c + 1;
+      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
+        notesCol = c + 1;
+      }
+    }
+
+    let updatedCount = 0;
+    const notesValues = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const currentNote = String(row[notesCol - 1] || '').trim();
+      const status = String(row[reviewStatusCol - 1] || '').trim().toLowerCase();
+      const isRevision = status.indexOf('revis') !== -1 || status.indexOf('reject') !== -1;
+
+      if (isRevision && !currentNote) {
+        const topic = String(row[1] || '').trim();
+        const taskType = String(row[6] || '').trim().toLowerCase();
+        const type = String(row[7] || '').trim().toLowerCase();
+        const wcRaw = String(row[11] || '').replace(/,/g, '').trim();
+        const wc = parseFloat(wcRaw) || 0;
+        const oldDoc = String(row[12] || '').trim();
+        const newDoc = String(row[13] || '').trim();
+        const hasDoc = newDoc.indexOf('http') !== -1;
+        const hasOld = oldDoc.indexOf('http') !== -1;
+        const isNews = taskType.indexOf('news') !== -1 || type.indexOf('news') !== -1;
+        const isOpt = taskType.indexOf('optimi') !== -1 || type.indexOf('update') !== -1 || taskType.indexOf('update') !== -1;
+        const isHighIntent = taskType.indexOf('high in') !== -1 || taskType.indexOf('pyp') !== -1;
+
+        let note = '';
+        if (!hasDoc) {
+          note = 'AI Rev: Missing Google Doc link in Col N';
+        } else if (isOpt && !hasOld) {
+          note = 'AI Rev: Missing baseline Old Doc in Col M for diff';
+        } else if (wc > 0 && wc < 250) {
+          note = `AI Rev: Word count deficit (${wc}w; min 350w required)`;
+        } else if (isNews && wc > 0 && wc < 350) {
+          note = `AI Rev: News brief below threshold (${wc}/350w)`;
+        } else if (isOpt && wc > 0 && wc < 300) {
+          note = `AI Rev: Net addition below +300w threshold (${wc}w)`;
+        } else if (isHighIntent && wc > 0 && wc < 700) {
+          note = `AI Rev: Word count deficit (${wc}/700w for High-Intent)`;
+        } else if (wc > 0 && wc < 800 && !isNews) {
+          note = `AI Rev: Word count deficit (${wc}/800w min)`;
+        } else if (wc === 0) {
+          note = 'AI Rev: Zero word count reported; verify content draft';
+        } else {
+          note = 'AI Rev: Content depth deficit; add syllabus tables & FAQ';
+        }
+
+        notesValues.push([note]);
+        updatedCount++;
+      } else {
+        notesValues.push([currentNote]);
+      }
+    }
+
+    if (updatedCount > 0) {
+      sheet.getRange(2, notesCol, notesValues.length, 1).setValues(notesValues);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      sheetName: sheet.getName(),
+      updatedCount: updatedCount,
+      notesCol: notesCol
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
  * Web App GET Handler
  */
 function doGet(e) {
@@ -331,6 +429,10 @@ function doGet(e) {
 
     if (action === 'update_review_status') {
       return handleUpdateReviewStatus(p.rowIndex, p.topic, p.reviewStatus, p.notes);
+    }
+
+    if (action === 'populate_all_revision_notes' || action === 'populate_revision_notes') {
+      return handlePopulateAllRevisionNotes();
     }
 
     return ContentService.createTextOutput(JSON.stringify({
@@ -368,6 +470,10 @@ function doPost(e) {
 
     if (action === 'update_review_status') {
       return handleUpdateReviewStatus(body.rowIndex, body.topic, body.reviewStatus, body.notes);
+    }
+
+    if (action === 'populate_all_revision_notes' || action === 'populate_revision_notes') {
+      return handlePopulateAllRevisionNotes();
     }
 
     return ContentService.createTextOutput(JSON.stringify({
