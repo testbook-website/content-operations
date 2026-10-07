@@ -246,16 +246,13 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     if (topic && String(topic).trim()) {
       const cleanTopic = String(topic).trim().toLowerCase();
       const data = sheet.getDataRange().getValues();
+
+      // Pass 1: EXACT topic match
       for (let i = 1; i < data.length; i++) {
-        const rowTopicB = String(data[i][1] || '').trim().toLowerCase(); // Col B (Topic)
-        const rowTopicH = String(data[i][7] || '').trim().toLowerCase(); // Col H
-        const rowTopicK = String(data[i][10] || '').trim().toLowerCase(); // Col K (FK)
-        if (
-          (rowTopicB && rowTopicB === cleanTopic) ||
-          (rowTopicK && rowTopicK === cleanTopic) ||
-          (rowTopicH && rowTopicH === cleanTopic) ||
-          (rowTopicB && cleanTopic.length >= 5 && rowTopicB.length >= 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1))
-        ) {
+        const rowTopicB = String(data[i][1] || '').trim().toLowerCase();
+        const rowTopicH = String(data[i][7] || '').trim().toLowerCase();
+        const rowTopicK = String(data[i][10] || '').trim().toLowerCase();
+        if ((rowTopicB && rowTopicB === cleanTopic) || (rowTopicK && rowTopicK === cleanTopic) || (rowTopicH && rowTopicH === cleanTopic)) {
           const targetRow = i + 1;
           sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
           if (statusCol > 0 && statusCol !== reviewStatusCol) {
@@ -267,7 +264,33 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
           return ContentService.createTextOutput(JSON.stringify({
             success: true,
             sheetName: sheet.getName(),
-            matchedBy: 'topic',
+            matchedBy: 'exact_topic',
+            row: targetRow,
+            topic: topic,
+            reviewStatusCol: reviewStatusCol,
+            notesCol: notesCol,
+            status: statusVal,
+            notes: shortNoteVal
+          })).setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+
+      // Pass 2: Fuzzy / Substring fallback match
+      for (let j = 1; j < data.length; j++) {
+        const rowTopicB = String(data[j][1] || '').trim().toLowerCase();
+        if (rowTopicB && cleanTopic.length >= 5 && rowTopicB.length >= 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1)) {
+          const targetRow = j + 1;
+          sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
+          if (statusCol > 0 && statusCol !== reviewStatusCol) {
+            sheet.getRange(targetRow, statusCol).setValue('Done');
+          }
+          if (shortNoteVal && notesCol > 0) {
+            sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
+          }
+          return ContentService.createTextOutput(JSON.stringify({
+            success: true,
+            sheetName: sheet.getName(),
+            matchedBy: 'fuzzy_topic',
             row: targetRow,
             topic: topic,
             reviewStatusCol: reviewStatusCol,
