@@ -514,6 +514,35 @@ Use these exact extracted word counts in your evaluation.`;
     });
   }
 
+  // Robust date formatter handling GViz Date(yyyy, m, d) & string variants
+  formatGVizDateCell(cell) {
+    if (!cell) return '';
+    if (cell.f !== undefined && cell.f !== null) {
+      const fStr = String(cell.f).trim();
+      const m = fStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        return `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
+      }
+      return fStr;
+    }
+    if (cell.v !== undefined && cell.v !== null) {
+      const vStr = String(cell.v).trim();
+      const dMatch = vStr.match(/Date\((\d{4}),\s*(\d+),\s*(\d+)(?:,\s*(\d+),\s*(\d+),\s*(\d+))?\)/);
+      if (dMatch) {
+        const y = dMatch[1];
+        const mo = String(parseInt(dMatch[2], 10) + 1).padStart(2, '0');
+        const dy = String(dMatch[3]).padStart(2, '0');
+        return `${mo}/${dy}/${y}`;
+      }
+      const m = vStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        return `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${m[3]}`;
+      }
+      return vStr;
+    }
+    return '';
+  }
+
   // Parse GViz Table for N & U Daily
   parseGVizNewsDaily(table) {
     if (!table || !table.rows) return [];
@@ -528,7 +557,7 @@ Use these exact extracted word counts in your evaluation.`;
         return '';
       };
 
-      const date = getVal(0);
+      const date = this.formatGVizDateCell(r[0]) || getVal(0);
       const topic = getVal(1);
       if (!topic || topic === '-' || topic.toLowerCase() === 'topic') continue;
 
@@ -593,10 +622,11 @@ Use these exact extracted word counts in your evaluation.`;
       if (!row || !row.c) continue;
 
       const c0 = row.c[0];
-      const label = (c0 && (c0.f !== undefined && c0.f !== null ? String(c0.f) : (c0.v !== undefined && c0.v !== null ? String(c0.v) : ''))).trim();
+      const normDate = this.formatGVizDateCell(c0);
+      const label = (normDate || (c0 && c0.f !== undefined && c0.f !== null ? String(c0.f) : (c0 && c0.v !== undefined && c0.v !== null ? String(c0.v) : ''))).trim();
 
       // Check if this row is a daily date row (e.g. "4/1/2026", "04/01/2026", "2026-04-01")
-      if (label && /^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(label)) {
+      if (label && (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/.test(label) || normDate)) {
         const dayData = {};
         for (let h = 0; h < headers.length; h++) {
           const cell = row.c[h + 1];
@@ -693,7 +723,7 @@ Use these exact extracted word counts in your evaluation.`;
         return '';
       };
 
-      const date = getVal(0);
+      const date = this.formatGVizDateCell(r[0]) || getVal(0);
       const topic = getVal(1) || getVal(2);
       if (!topic || topic === '-' || topic.toLowerCase() === 'topic' || topic.toLowerCase() === 'duplicate topic') continue;
 
@@ -703,6 +733,7 @@ Use these exact extracted word counts in your evaluation.`;
       const type = getVal(7) || getVal(6) || 'New';
       const pageType = getVal(8) || getVal(7) || 'Blog';
       const writer = getVal(9) || getVal(8) || 'Unassigned';
+      const fk = getVal(10) || topic;
       const rawWc = getVal(11);
       const wordCount = parseInt(rawWc, 10) || 0;
       

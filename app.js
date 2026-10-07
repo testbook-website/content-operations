@@ -1990,6 +1990,14 @@
       const year = parseInt(slashMatch[3], 10);
       return new Date(year, month, day);
     }
+    // match: GViz Date(YYYY, M, D)
+    const dMatch = clean.match(/Date\((\d{4}),\s*(\d+),\s*(\d+)(?:,\s*(\d+),\s*(\d+),\s*(\d+))?\)/);
+    if (dMatch) {
+      const year = parseInt(dMatch[1], 10);
+      const month = parseInt(dMatch[2], 10);
+      const day = parseInt(dMatch[3], 10);
+      return new Date(year, month, day);
+    }
     const t = Date.parse(clean);
     return isNaN(t) ? null : new Date(t);
   }
@@ -2009,14 +2017,20 @@
     });
 
     const dayMs = 24 * 60 * 60 * 1000;
-    const todayTime = maxTime;
-    const yesterdayTime = maxTime - dayMs;
-    const sevenDaysAgo = maxTime - (7 * dayMs);
-    const fourteenDaysAgo = maxTime - (14 * dayMs);
-    const thirtyDaysAgo = maxTime - (30 * dayMs);
+    // Current real-world date anchor: October 7, 2026 midnight
+    const now = new Date();
+    const realToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+    // If future items exist (e.g. 10/08/2026), anchor Today to realToday so 10/07 is Today and 10/06 is Yesterday!
+    const effectiveToday = (maxTime >= realToday) ? realToday : (maxTime || realToday);
+    const todayTime = effectiveToday;
+    const yesterdayTime = todayTime - dayMs;
+    const sevenDaysAgo = todayTime - (7 * dayMs);
+    const fourteenDaysAgo = todayTime - (14 * dayMs);
+    const thirtyDaysAgo = todayTime - (30 * dayMs);
 
     // Dynamically update option labels for Today and Yesterday if elements exist
-    if (maxTime > 0) {
+    if (todayTime > 0) {
       const todayDate = new Date(todayTime);
       const yesterdayDate = new Date(yesterdayTime);
       const fmt = (d) => `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
@@ -2408,6 +2422,12 @@
     if (!dateStr) return null;
     const s = String(dateStr).trim();
     
+    // Check GViz Date(YYYY, M, D)
+    const gvizMatch = s.match(/Date\((\d{4}),\s*(\d+),\s*(\d+)(?:,\s*(\d+),\s*(\d+),\s*(\d+))?\)/);
+    if (gvizMatch) {
+      return new Date(parseInt(gvizMatch[1], 10), parseInt(gvizMatch[2], 10), parseInt(gvizMatch[3], 10));
+    }
+
     // Check YYYY-MM-DD
     const isoMatch = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
     if (isoMatch) {
@@ -2454,7 +2474,9 @@
       }
     });
 
-    const refDate = maxDate || new Date();
+    const now = new Date();
+    const realToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const refDate = (maxDate && maxDate.getTime() >= realToday.getTime()) ? realToday : (maxDate || realToday);
     const refYear = refDate.getFullYear();
     const refMonth = refDate.getMonth();
     const refDay = refDate.getDate();
@@ -3340,7 +3362,14 @@
   // =========================================================================
   function normalizeReviewDate(dStr) {
     if (!dStr) return '';
-    const clean = dStr.trim();
+    const clean = String(dStr).trim();
+    const dMatch = clean.match(/Date\((\d{4}),\s*(\d+),\s*(\d+)/);
+    if (dMatch) {
+      const y = dMatch[1];
+      const mo = String(parseInt(dMatch[2], 10) + 1).padStart(2, '0');
+      const dy = String(dMatch[3]).padStart(2, '0');
+      return `${mo}/${dy}/${y}`;
+    }
     const parts = clean.split(/[\/\-]/);
     if (parts.length === 3) {
       let m = parseInt(parts[0], 10);
@@ -3364,9 +3393,15 @@
     return [];
   }
 
-  let reviewFiltersPopulated = false;
-  function populateReviewFilters(items) {
-    if (reviewFiltersPopulated || !els.reviewWriterFilter) return;
+  let lastReviewItemCount = 0;
+  function populateReviewFilters(items, force = false) {
+    if (!els.reviewWriterFilter) return;
+    if (!force && lastReviewItemCount === items.length && items.length > 0) return;
+    lastReviewItemCount = items.length;
+
+    const currentSelectedDate = (els.reviewDateFilter && els.reviewDateFilter.value) || state.reviewDateFilter || 'all';
+    const currentSelectedWriter = (els.reviewWriterFilter && els.reviewWriterFilter.value) || state.reviewWriterFilter || 'all';
+    const currentSelectedCat = (els.reviewCategoryFilter && els.reviewCategoryFilter.value) || state.reviewCategoryFilter || 'all';
 
     const writersSet = new Set();
     const categoriesSet = new Set();
@@ -3412,27 +3447,38 @@
         opt.textContent = `📅 ${d} (${friendly}) — ${count} items`;
         els.reviewDateFilter.appendChild(opt);
       });
+
+      if (currentSelectedDate && Array.from(els.reviewDateFilter.options).some(o => o.value === currentSelectedDate)) {
+        els.reviewDateFilter.value = currentSelectedDate;
+        state.reviewDateFilter = currentSelectedDate;
+      }
     }
 
     // Populate Writers
+    els.reviewWriterFilter.innerHTML = `<option value="all">All Writers</option>`;
     Array.from(writersSet).sort().forEach(w => {
       const opt = document.createElement('option');
       opt.value = w;
       opt.textContent = w;
       els.reviewWriterFilter.appendChild(opt);
     });
+    if (currentSelectedWriter && Array.from(els.reviewWriterFilter.options).some(o => o.value === currentSelectedWriter)) {
+      els.reviewWriterFilter.value = currentSelectedWriter;
+    }
 
     // Populate Categories
     if (els.reviewCategoryFilter) {
+      els.reviewCategoryFilter.innerHTML = `<option value="all">All Categories</option>`;
       Array.from(categoriesSet).sort().forEach(c => {
         const opt = document.createElement('option');
         opt.value = c;
         opt.textContent = c;
         els.reviewCategoryFilter.appendChild(opt);
       });
+      if (currentSelectedCat && Array.from(els.reviewCategoryFilter.options).some(o => o.value === currentSelectedCat)) {
+        els.reviewCategoryFilter.value = currentSelectedCat;
+      }
     }
-
-    reviewFiltersPopulated = true;
   }
 
   function getEffectiveReviewStatus(item) {
