@@ -258,8 +258,12 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
           if (statusCol > 0 && statusCol !== reviewStatusCol) {
             sheet.getRange(targetRow, statusCol).setValue('Done');
           }
-          if (shortNoteVal && notesCol > 0) {
-            sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
+          if (notesCol > 0 && notes !== undefined) {
+            if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
+              sheet.getRange(targetRow, notesCol).setValue('');
+            } else if (shortNoteVal) {
+              sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
+            }
           }
           return ContentService.createTextOutput(JSON.stringify({
             success: true,
@@ -284,8 +288,12 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
           if (statusCol > 0 && statusCol !== reviewStatusCol) {
             sheet.getRange(targetRow, statusCol).setValue('Done');
           }
-          if (shortNoteVal && notesCol > 0) {
-            sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
+          if (notesCol > 0 && notes !== undefined) {
+            if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
+              sheet.getRange(targetRow, notesCol).setValue('');
+            } else if (shortNoteVal) {
+              sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
+            }
           }
           return ContentService.createTextOutput(JSON.stringify({
             success: true,
@@ -309,8 +317,12 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
       if (statusCol > 0 && statusCol !== reviewStatusCol) {
         sheet.getRange(r, statusCol).setValue('Done');
       }
-      if (shortNoteVal && notesCol > 0) {
-        sheet.getRange(r, notesCol).setValue(shortNoteVal);
+      if (notesCol > 0 && notes !== undefined) {
+        if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
+          sheet.getRange(r, notesCol).setValue('');
+        } else if (shortNoteVal) {
+          sheet.getRange(r, notesCol).setValue(shortNoteVal);
+        }
       }
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
@@ -404,11 +416,16 @@ function handlePopulateAllRevisionNotes() {
         } else if (wc === 0) {
           note = 'AI Rev: Zero word count reported; verify content draft';
         } else {
-          note = 'AI Rev: Content depth deficit; add syllabus tables & FAQ';
+          // Never output generic "tables & FAQ" filler notes
+          note = '';
         }
 
-        notesValues.push([note]);
-        updatedCount++;
+        if (note) {
+          notesValues.push([note]);
+          updatedCount++;
+        } else {
+          notesValues.push([currentNote]);
+        }
       } else {
         notesValues.push([currentNote]);
       }
@@ -427,6 +444,49 @@ function handlePopulateAllRevisionNotes() {
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Standalone one-click utility function:
+ * Clears all generic "tables & FAQ" filler notes from Column S of the Workflow sheet.
+ * Leaves authentic AI audit reasons (like proofreading lapses, factual errors, etc.) 100% untouched.
+ * Run this directly in the Apps Script Editor or via Web App action.
+ */
+function clearGenericTableFaqNotes() {
+  try {
+    const ss = getTargetSpreadsheet();
+    const sheet = findWorkflowSheet(ss);
+    if (!sheet) {
+      Logger.log('Workflow sheet not found');
+      return 'Workflow sheet not found';
+    }
+
+    const data = sheet.getDataRange().getValues();
+    let notesCol = 19;
+    const headers = data[0] || [];
+    for (let c = 0; c < headers.length; c++) {
+      const h = String(headers[c] || '').trim().toLowerCase();
+      if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
+        notesCol = c + 1;
+        break;
+      }
+    }
+
+    let clearedCount = 0;
+    for (let i = 1; i < data.length; i++) {
+      const val = String(data[i][notesCol - 1] || '').trim();
+      if (/tables?\s*(&|and)?\s*faqs?/i.test(val) || val.indexOf('syllabus tables') !== -1 || val === 'CLEAR') {
+        sheet.getRange(i + 1, notesCol).setValue('');
+        clearedCount++;
+      }
+    }
+
+    Logger.log('Successfully cleared ' + clearedCount + ' generic notes from Column ' + notesCol);
+    return 'Cleared ' + clearedCount + ' generic notes';
+  } catch (err) {
+    Logger.log('Error in clearGenericTableFaqNotes: ' + err.toString());
+    return err.toString();
   }
 }
 
@@ -456,6 +516,12 @@ function doGet(e) {
 
     if (action === 'populate_all_revision_notes' || action === 'populate_revision_notes') {
       return handlePopulateAllRevisionNotes();
+    }
+
+    if (action === 'clear_generic_notes' || action === 'clean_notes' || action === 'clear_tables_faqs') {
+      const res = clearGenericTableFaqNotes();
+      return ContentService.createTextOutput(JSON.stringify({ success: true, result: res }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     return ContentService.createTextOutput(JSON.stringify({
@@ -497,6 +563,12 @@ function doPost(e) {
 
     if (action === 'populate_all_revision_notes' || action === 'populate_revision_notes') {
       return handlePopulateAllRevisionNotes();
+    }
+
+    if (action === 'clear_generic_notes' || action === 'clean_notes' || action === 'clear_tables_faqs') {
+      const res = clearGenericTableFaqNotes();
+      return ContentService.createTextOutput(JSON.stringify({ success: true, result: res }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     return ContentService.createTextOutput(JSON.stringify({

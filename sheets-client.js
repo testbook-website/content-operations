@@ -726,8 +726,9 @@ Use these exact extracted word counts in your evaluation.`;
       const reviewStatus = getVal(15) || 'Pending Review';
       // Column Q (idx 16): Status
       const status = getVal(16) || 'Done';
-      // Column S (idx 18) [or fallback Col R idx 17]: Review Notes / Rejection Reason
-      const reviewNotes = getVal(18) || getVal(17);
+      // Column S (idx 18): Review Notes / Rejection Reason (Strictly Column S, Never Column R)
+      const rawNotes = getVal(18);
+      const reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables'))) ? '' : rawNotes;
 
       // OND Framework Standard Point Matrix
       const tt = String(taskType).toLowerCase();
@@ -1090,7 +1091,8 @@ Use these exact extracted word counts in your evaluation.`;
       if (!url && r[3]) url = r[3].trim();
       const reviewStatus = (r[15] || '').trim();
       const status = (r[16] || '').trim();
-      const reviewNotes = (r[18] || r[17] || '').trim();
+      const rawNotes = (r[18] || '').trim();
+      const reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || rawNotes.includes('syllabus tables'))) ? '' : rawNotes;
 
       items.push({
         date,

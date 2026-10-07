@@ -86,7 +86,7 @@
     return note.length > 120 ? note.substring(0, 117) + '...' : note;
   }
 
-  // Two-way sync: Hydrate AI review cache directly from live Google Sheet Column R (Notes) & Column P (Review Status)
+  // Two-way sync: Hydrate AI review cache directly from live Google Sheet Column S (Notes) & Column P (Review Status)
   function syncAiCacheFromSheetWorkflow(workflowItems) {
     if (!workflowItems || !Array.isArray(workflowItems)) return;
     if (!state.aiReviewCache) state.aiReviewCache = {};
@@ -95,6 +95,12 @@
     workflowItems.forEach(item => {
       if (!item || !item.topic) return;
       const rawStat = (item.reviewStatus || '').trim().toLowerCase();
+
+      // Sanitize: Purge generic "tables & FAQ" filler from sheet notes
+      if (item.reviewNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(item.reviewNotes) || item.reviewNotes.includes('syllabus tables'))) {
+        item.reviewNotes = '';
+      }
+
       const hasNote = Boolean(item.reviewNotes && item.reviewNotes.trim());
       const hasDefinitiveStatus = rawStat.includes('approv') || rawStat.includes('revis') || rawStat.includes('reject');
 
@@ -123,14 +129,17 @@
           cacheChanged = true;
         }
       } else if (hasNote && !state.aiReviewCache[item.topic].running) {
-        // Keep note updated if sheet Column R was updated on another machine
         const cur = state.aiReviewCache[item.topic];
-        if (cur.justificationSummary !== item.reviewNotes) {
-          cur.justificationSummary = item.reviewNotes;
-          if (!cur.isApproved) {
-            cur.rejectionReasons = [item.reviewNotes];
+        // CRITICAL: NEVER overwrite authentic in-browser AI audit findings with external sheet notes!
+        // Only update if cur itself was created from sheet sync
+        if (cur.fromSheetSync) {
+          if (cur.justificationSummary !== item.reviewNotes) {
+            cur.justificationSummary = item.reviewNotes;
+            if (!cur.isApproved) {
+              cur.rejectionReasons = [item.reviewNotes];
+            }
+            cacheChanged = true;
           }
-          cacheChanged = true;
         }
       }
     });
@@ -138,6 +147,29 @@
     if (cacheChanged) {
       saveAiReviewCache(state.aiReviewCache);
     }
+  }
+
+  // Pushes genuine in-browser AI audit findings directly to Column S of Google Sheet
+  function pushAuthenticAiCacheToSheet(workflowItems) {
+    if (!state.aiReviewCache || !workflowItems || !Array.isArray(workflowItems)) return;
+    if (typeof sheetsClient === 'undefined') return;
+
+    workflowItems.forEach((item, idx) => {
+      if (!item || !item.topic) return;
+      const rec = state.aiReviewCache[item.topic];
+      if (rec && !rec.fromSheetSync && !rec.running && rec.isApproved !== undefined) {
+        const genuineReason = (!rec.isApproved && rec.rejectionReasons && rec.rejectionReasons[0]) ? rec.rejectionReasons[0] : '';
+        const shortNote = formatShortReviewNote(rec.isApproved, rec.score, rec.rejectionReasons);
+        
+        // If sheet note is missing, or has generic filler, sync authentic note to sheet
+        const currentSheetNote = item.reviewNotes || '';
+        const needsSync = !currentSheetNote || /tables?\s*(&|and)?\s*faqs?/i.test(currentSheetNote) || currentSheetNote.includes('syllabus tables');
+        if (needsSync && (genuineReason || rec.isApproved)) {
+          sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (idx + 2), item.topic, rec.verdict || (rec.isApproved ? 'Approved' : 'Needs Revision'), shortNote)
+            .catch(e => console.warn('Background sync error:', e));
+        }
+      }
+    });
   }
 
   // Application State
@@ -479,6 +511,7 @@
         }
         if (data && Array.isArray(data.workflow_ond)) {
           syncAiCacheFromSheetWorkflow(data.workflow_ond);
+          pushAuthenticAiCacheToSheet(data.workflow_ond);
         }
         if (state.isAuthenticated) {
           if (state.activeNavTab === 'kpi') renderKpiDashboard();
@@ -2234,17 +2267,24 @@
         }
       }
 
-      // Topic + Column R Notes Badge
+      // Topic + Column S Notes Badge (Prioritizes genuine AI audit findings)
       let topicNoteHtml = '';
-      if (e.reviewNotes) {
-        const isRev = (e.reviewStatus || '').toLowerCase().includes('revis') || (e.reviewStatus || '').toLowerCase().includes('reject');
+      const aiRec = state.aiReviewCache && state.aiReviewCache[e.topic];
+      const genuineNote = (aiRec && !aiRec.fromSheetSync && aiRec.rejectionReasons && aiRec.rejectionReasons[0])
+        ? aiRec.rejectionReasons[0]
+        : (e.reviewNotes || '');
+
+      const cleanTopicNote = (/tables?\s*(&|and)?\s*faqs?/i.test(genuineNote) || genuineNote.includes('syllabus tables')) ? '' : genuineNote;
+
+      if (cleanTopicNote) {
+        const isRev = (e.reviewStatus || '').toLowerCase().includes('revis') || (e.reviewStatus || '').toLowerCase().includes('reject') || (aiRec && !aiRec.isApproved);
         const badgeColor = isRev ? '#b91c1c' : '#15803d';
         const badgeBg = isRev ? '#fee2e2' : '#dcfce7';
         const badgeIcon = isRev ? '⚠️' : '📝';
         topicNoteHtml = `
-          <div style="margin-top:3px; display:inline-flex; align-items:center; gap:0.25rem; background:${badgeBg}; color:${badgeColor}; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; max-width:100%;" title="${escapeHtml(e.reviewNotes)}">
+          <div style="margin-top:3px; display:inline-flex; align-items:center; gap:0.25rem; background:${badgeBg}; color:${badgeColor}; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; max-width:100%;" title="${escapeHtml(cleanTopicNote)}">
             <span>${badgeIcon}</span>
-            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">${escapeHtml(e.reviewNotes)}</span>
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">${escapeHtml(cleanTopicNote)}</span>
           </div>
         `;
       }
@@ -3948,7 +3988,11 @@
                 const noteText = item.reviewNotes || 'Passed';
                 verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">${escapeHtml(noteText)}</span></div>`;
               } else {
-                const reason = item.reviewNotes || (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || aiRecord.justificationSummary || 'Needs revision';
+                const genuineReason = (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || (!aiRecord.fromSheetSync && aiRecord.justificationSummary ? aiRecord.justificationSummary : '');
+                let reason = genuineReason || item.reviewNotes || aiRecord.justificationSummary || 'Needs revision';
+                if (/tables?\s*(&|and)?\s*faqs?/i.test(reason) || reason.includes('syllabus tables')) {
+                  reason = genuineReason || 'Needs revision';
+                }
                 verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(reason)}">${escapeHtml(reason)}</span></div>`;
               }
             }
@@ -3958,8 +4002,11 @@
             const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Passed (Sheet Synced)';
             verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">${noteText}</span></div>`;
           } else if (status === 'Needs Revision') {
-            const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Needs revision (Sheet Synced)';
-            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(item.reviewNotes || '')}">${noteText}</span></div>`;
+            let noteText = item.reviewNotes || 'Needs revision (Sheet Synced)';
+            if (/tables?\s*(&|and)?\s*faqs?/i.test(noteText) || noteText.includes('syllabus tables')) {
+              noteText = 'Needs revision';
+            }
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(noteText)}">${escapeHtml(noteText)}</span></div>`;
           } else {
             verdictHtml = `<span style="background:#f1f5f9; color:#64748b; font-weight:600; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ Pending Run</span>`;
           }
@@ -4180,8 +4227,12 @@
     // Check if existing audit is cached and we are NOT forcing a re-audit
     let cached = (!forceReAudit && state.aiReviewCache) ? state.aiReviewCache[item.topic] : null;
 
-    // If not cached, but item has reviewStatus or reviewNotes from live Google Sheet (Column R), hydrate auditData
-    if (!cached && !forceReAudit && (item.reviewNotes || (item.reviewStatus && item.reviewStatus !== 'Pending Review'))) {
+    // If not cached, but item has reviewStatus or reviewNotes from live Google Sheet (Column S), hydrate auditData
+    const cleanSheetNote = (item.reviewNotes && !/tables?\s*(&|and)?\s*faqs?/i.test(item.reviewNotes) && !item.reviewNotes.includes('syllabus tables'))
+      ? item.reviewNotes
+      : '';
+
+    if (!cached && !forceReAudit && (cleanSheetNote || (item.reviewStatus && item.reviewStatus !== 'Pending Review'))) {
       const isAppr = (item.reviewStatus || '').toLowerCase().includes('approv');
       cached = {
         isApproved: isAppr,
@@ -4193,12 +4244,12 @@
         newDocWordCount: item.wordCount || null,
         oldDocWordCount: 0,
         docWordCountText: `${item.wordCount || 0} words (Sheet Synced)`,
-        justificationSummary: item.reviewNotes || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)'),
-        rejectionReasons: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : (isAppr ? [] : ['Marked for revision in workflow sheet']),
+        justificationSummary: cleanSheetNote || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)'),
+        rejectionReasons: (!isAppr && cleanSheetNote) ? [cleanSheetNote] : (isAppr ? [] : ['Marked for revision in workflow sheet']),
         wordCountAssessment: `${item.wordCount || 0} words reported`,
         keyStrengths: ['Exam syllabus alignment', 'Tracked in Q4 OND Content Workflow'],
-        improvementAreas: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : ['Review content depth against syllabus standards'],
-        recommendationNote: item.reviewNotes || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.'),
+        improvementAreas: (!isAppr && cleanSheetNote) ? [cleanSheetNote] : ['Review content depth against syllabus standards'],
+        recommendationNote: cleanSheetNote || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.'),
         reviewedAt: item.date || new Date().toISOString(),
         fromSheetSync: true
       };
