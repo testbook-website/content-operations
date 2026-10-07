@@ -714,8 +714,8 @@ Use these exact extracted word counts in your evaluation.`;
       const rawNewDoc = getVal(13);
       const newDoc = (rawNewDoc && rawNewDoc.startsWith('http')) ? rawNewDoc : '';
 
-      // Column AA (idx 26): Official Notification PDF Link
-      const rawPdfLink = getVal(26);
+      // Column AB (idx 27) or AA (idx 26): Official Notification PDF Link
+      const rawPdfLink = getVal(27) || getVal(26);
       const pdfLink = (rawPdfLink && rawPdfLink.startsWith('http')) ? rawPdfLink : '';
 
       // Column O (idx 14): Live URL
@@ -726,8 +726,8 @@ Use these exact extracted word counts in your evaluation.`;
       const reviewStatus = getVal(15) || 'Pending Review';
       // Column Q (idx 16): Status
       const status = getVal(16) || 'Done';
-      // Column R (idx 17): Review Notes / Rejection Reason / Publishing Status
-      const reviewNotes = getVal(17);
+      // Column S (idx 18) [or fallback Col R idx 17]: Review Notes / Rejection Reason
+      const reviewNotes = getVal(18) || getVal(17);
 
       // OND Framework Standard Point Matrix
       const tt = String(taskType).toLowerCase();
@@ -1085,12 +1085,12 @@ Use these exact extracted word counts in your evaluation.`;
       const wordCount = (r[11] || '').trim();
       const oldDoc = (r[12] || '').trim();
       const newDoc = (r[13] || '').trim();
-      const pdfLink = (r[26] || '').trim();
+      const pdfLink = (r[27] || r[26] || '').trim();
       let url = (r[14] || '').trim();
       if (!url && r[3]) url = r[3].trim();
       const reviewStatus = (r[15] || '').trim();
       const status = (r[16] || '').trim();
-      const reviewNotes = (r[17] || '').trim();
+      const reviewNotes = (r[18] || r[17] || '').trim();
 
       items.push({
         date,

@@ -219,7 +219,7 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0] || [];
     let reviewStatusCol = 16; // Default Column P
     let statusCol = 17;       // Default Column Q
-    let notesCol = 18;        // Default Column R (Index 18 in 1-based indexing)
+    let notesCol = 19;        // Default Column S (Index 19 in 1-based indexing)
 
     for (let c = 0; c < headers.length; c++) {
       const h = String(headers[c] || '').trim().toLowerCase();
@@ -227,7 +227,7 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
         reviewStatusCol = c + 1;
       } else if (h === 'status' && reviewStatusCol !== (c + 1)) {
         statusCol = c + 1;
-      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1 || h.indexOf('publishing status') !== -1) {
+      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
         notesCol = c + 1;
       }
     }
