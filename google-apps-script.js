@@ -227,7 +227,7 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
         reviewStatusCol = c + 1;
       } else if (h === 'status' && reviewStatusCol !== (c + 1)) {
         statusCol = c + 1;
-      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
+      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1 || h.indexOf('publishing status') !== -1) {
         notesCol = c + 1;
       }
     }
