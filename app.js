@@ -70,6 +70,76 @@
     }
   }
 
+  // Format concise short note (under 120 chars) for Google Sheet Column R to prevent sheet lag/breaking
+  function formatShortReviewNote(isApproved, score, reasons, customNote) {
+    if (customNote) {
+      const clean = String(customNote).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+      return clean.length > 120 ? clean.substring(0, 117) + '...' : clean;
+    }
+    if (isApproved) {
+      return `AI Approved (${score || 9}/10)`;
+    }
+    const list = Array.isArray(reasons) ? reasons : (reasons ? [reasons] : []);
+    let first = list.length > 0 ? String(list[0]).trim() : 'Needs revision';
+    first = first.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').replace(/^Needs Revision:?\s*/i, '');
+    const note = `AI Rev: ${first}`;
+    return note.length > 120 ? note.substring(0, 117) + '...' : note;
+  }
+
+  // Two-way sync: Hydrate AI review cache directly from live Google Sheet Column R (Notes) & Column P (Review Status)
+  function syncAiCacheFromSheetWorkflow(workflowItems) {
+    if (!workflowItems || !Array.isArray(workflowItems)) return;
+    if (!state.aiReviewCache) state.aiReviewCache = {};
+    let cacheChanged = false;
+
+    workflowItems.forEach(item => {
+      if (!item || !item.topic) return;
+      const rawStat = (item.reviewStatus || '').trim().toLowerCase();
+      const hasNote = Boolean(item.reviewNotes && item.reviewNotes.trim());
+      const hasDefinitiveStatus = rawStat.includes('approv') || rawStat.includes('revis') || rawStat.includes('reject');
+
+      if (!state.aiReviewCache[item.topic]) {
+        if (hasNote || hasDefinitiveStatus) {
+          const isAppr = rawStat.includes('approv');
+          state.aiReviewCache[item.topic] = {
+            isApproved: isAppr,
+            verdict: isAppr ? 'Approved' : 'Needs Revision',
+            score: isAppr ? 9 : 5,
+            suggestedClassification: item.classification || 'Standard Fresh',
+            pointsAwarded: isAppr ? (item.points || 2.0) : 0,
+            netWordDiff: null,
+            newDocWordCount: item.wordCount || null,
+            oldDocWordCount: 0,
+            docWordCountText: `${item.wordCount || 0} words (Sheet Synced)`,
+            justificationSummary: item.reviewNotes || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)'),
+            rejectionReasons: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : (isAppr ? [] : ['Marked for revision in workflow sheet']),
+            wordCountAssessment: `${item.wordCount || 0} words reported`,
+            keyStrengths: ['Exam syllabus alignment', 'Tracked in Q4 OND Content Workflow'],
+            improvementAreas: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : ['Review content depth against syllabus standards'],
+            recommendationNote: item.reviewNotes || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.'),
+            reviewedAt: item.date || new Date().toISOString(),
+            fromSheetSync: true
+          };
+          cacheChanged = true;
+        }
+      } else if (hasNote && !state.aiReviewCache[item.topic].running) {
+        // Keep note updated if sheet Column R was updated on another machine
+        const cur = state.aiReviewCache[item.topic];
+        if (cur.justificationSummary !== item.reviewNotes) {
+          cur.justificationSummary = item.reviewNotes;
+          if (!cur.isApproved) {
+            cur.rejectionReasons = [item.reviewNotes];
+          }
+          cacheChanged = true;
+        }
+      }
+    });
+
+    if (cacheChanged) {
+      saveAiReviewCache(state.aiReviewCache);
+    }
+  }
+
   // Application State
   const state = {
     isAuthenticated: false,
@@ -406,6 +476,9 @@
         }
         if (data && data.writer_presence) {
           state.writerStatuses = { ...state.writerStatuses, ...data.writer_presence };
+        }
+        if (data && Array.isArray(data.workflow_ond)) {
+          syncAiCacheFromSheetWorkflow(data.workflow_ond);
         }
         if (state.isAuthenticated) {
           if (state.activeNavTab === 'kpi') renderKpiDashboard();
@@ -2161,11 +2234,27 @@
         }
       }
 
+      // Topic + Column R Notes Badge
+      let topicNoteHtml = '';
+      if (e.reviewNotes) {
+        const isRev = (e.reviewStatus || '').toLowerCase().includes('revis') || (e.reviewStatus || '').toLowerCase().includes('reject');
+        const badgeColor = isRev ? '#b91c1c' : '#15803d';
+        const badgeBg = isRev ? '#fee2e2' : '#dcfce7';
+        const badgeIcon = isRev ? '⚠️' : '📝';
+        topicNoteHtml = `
+          <div style="margin-top:3px; display:inline-flex; align-items:center; gap:0.25rem; background:${badgeBg}; color:${badgeColor}; font-size:0.68rem; font-weight:700; padding:1px 6px; border-radius:4px; max-width:100%;" title="${escapeHtml(e.reviewNotes)}">
+            <span>${badgeIcon}</span>
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">${escapeHtml(e.reviewNotes)}</span>
+          </div>
+        `;
+      }
+
       rowsHtml += `
         <tr>
           <td style="font-weight:600; color:#334155; white-space:nowrap;">${escapeHtml(e.date)}</td>
           <td>
             <div style="font-weight:600; color:#0f172a; line-height:1.35;">${escapeHtml(e.topic)}</div>
+            ${topicNoteHtml}
           </td>
           <td><span class="badge-cat">${escapeHtml(e.category || 'Others')}</span></td>
           <td><span class="badge-task-type">${escapeHtml(e.taskType || '—')}</span></td>
@@ -2205,7 +2294,7 @@
       return true;
     });
 
-    const headers = ['Date', 'Topic', 'Category', 'Task Type', 'Type', 'Page Type', 'Writer', 'FK', 'Word Count', 'New Content (Doc)', 'URL'];
+    const headers = ['Date', 'Topic', 'Category', 'Task Type', 'Type', 'Page Type', 'Writer', 'FK', 'Word Count', 'New Content (Doc)', 'URL', 'Review Status', 'Review Notes'];
     const csvLines = [headers.join(',')];
 
     filteredItems.forEach(e => {
@@ -2220,7 +2309,9 @@
         `"${(e.fk || '').replace(/"/g, '""')}"`,
         `"${(e.wordCount || '').replace(/"/g, '""')}"`,
         `"${(e.newDoc || '').replace(/"/g, '""')}"`,
-        `"${(e.url || '').replace(/"/g, '""')}"`
+        `"${(e.url || '').replace(/"/g, '""')}"`,
+        `"${(e.reviewStatus || '').replace(/"/g, '""')}"`,
+        `"${(e.reviewNotes || '').replace(/"/g, '""')}"`
       ];
       csvLines.push(row.join(','));
     });
@@ -3503,8 +3594,8 @@
         if (!state.reviewOverrides) state.reviewOverrides = {};
         state.reviewOverrides[item.topic] = verdict;
 
-        // Sync to Google Sheet Col P in background
-        const notes = isApproved ? `AI Approved (${score}/10)` : `AI Revision: ${(audit.rejectionReasons || []).join('; ')}`;
+        // Sync to Google Sheet Col P & Col R in background (Concise short note to keep sheet safe)
+        const notes = formatShortReviewNote(isApproved, score, audit.rejectionReasons);
         sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (i + 2), item.topic, verdict, notes).catch(e => console.warn(e));
 
         processed++;
@@ -3854,18 +3945,21 @@
             } else {
               const isAppr = aiRecord.isApproved;
               if (isAppr) {
-                verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">Passed</span></div>`;
+                const noteText = item.reviewNotes || 'Passed';
+                verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">${escapeHtml(noteText)}</span></div>`;
               } else {
-                const reason = (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || aiRecord.justificationSummary || 'Needs revision';
-                verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">${escapeHtml(reason)}</span></div>`;
+                const reason = item.reviewNotes || (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || aiRecord.justificationSummary || 'Needs revision';
+                verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(reason)}">${escapeHtml(reason)}</span></div>`;
               }
             }
           } else if (status === 'Doc Missing') {
             verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
           } else if (status === 'Approved') {
-            verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
+            const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Passed (Sheet Synced)';
+            verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">${noteText}</span></div>`;
           } else if (status === 'Needs Revision') {
-            verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
+            const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Needs revision (Sheet Synced)';
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(item.reviewNotes || '')}">${noteText}</span></div>`;
           } else {
             verdictHtml = `<span style="background:#f1f5f9; color:#64748b; font-weight:600; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ Pending Run</span>`;
           }
@@ -3892,7 +3986,7 @@
               <td style="background:#f0fdf4;">${docWordCountColHtml}</td>
               <td>${verdictHtml}</td>
               <td style="text-align:center;">
-                <button class="btn-action btn-review-ai" data-topic="${escapeHtml(item.topic)}" style="background:#4f46e5; color:#ffffff; font-weight:700; font-size:0.7rem; padding:2px 7px; border-radius:5px; border:none; cursor:pointer;" title="Audit / Re-audit with AI">
+                <button class="btn-action btn-review-ai" data-topic="${escapeHtml(item.topic)}" style="background:#4f46e5; color:#ffffff; font-weight:700; font-size:0.7rem; padding:2px 7px; border-radius:5px; border:none; cursor:pointer;" title="View Report / Audit with AI">
                   🤖 Audit
                 </button>
               </td>
@@ -3902,12 +3996,12 @@
 
         els.reviewTableBody.innerHTML = html;
 
-        // Attach audit click handlers
+        // Attach audit click handlers (opens saved audit / rejection report; does not force re-audit)
         els.reviewTableBody.querySelectorAll('.btn-review-ai').forEach(btn => {
           btn.addEventListener('click', () => {
             const topic = btn.dataset.topic;
             const item = allItems.find(it => it.topic === topic);
-            if (item) openAiAuditModal(item, true);
+            if (item) openAiAuditModal(item, false);
           });
         });
       }
@@ -4021,8 +4115,10 @@
 
   // Handle Request Revision Action
   async function requestRevisionItem(topic, rowIdx) {
-    const note = prompt(`Enter revision note / failure reason for writer on "${topic}":`, "Word count is below requirement. Please add net +300 words with updated syllabus/data.");
-    if (note === null) return; // cancelled
+    const rawNote = prompt(`Enter revision note / failure reason for writer on "${topic}":`, "Word count is below requirement. Please add net +300 words with updated syllabus/data.");
+    if (rawNote === null) return; // cancelled
+
+    const note = formatShortReviewNote(false, 5, [rawNote], rawNote);
 
     if (!state.reviewOverrides) state.reviewOverrides = {};
     state.reviewOverrides[topic] = 'Needs Revision';
@@ -4082,7 +4178,34 @@
     els.modalAiAudit.style.display = 'flex';
 
     // Check if existing audit is cached and we are NOT forcing a re-audit
-    const cached = (!forceReAudit && state.aiReviewCache) ? state.aiReviewCache[item.topic] : null;
+    let cached = (!forceReAudit && state.aiReviewCache) ? state.aiReviewCache[item.topic] : null;
+
+    // If not cached, but item has reviewStatus or reviewNotes from live Google Sheet (Column R), hydrate auditData
+    if (!cached && !forceReAudit && (item.reviewNotes || (item.reviewStatus && item.reviewStatus !== 'Pending Review'))) {
+      const isAppr = (item.reviewStatus || '').toLowerCase().includes('approv');
+      cached = {
+        isApproved: isAppr,
+        verdict: isAppr ? 'Approved' : 'Needs Revision',
+        score: isAppr ? 9 : 5,
+        suggestedClassification: item.classification || 'Standard Fresh',
+        pointsAwarded: isAppr ? (item.points || 2.0) : 0,
+        netWordDiff: null,
+        newDocWordCount: item.wordCount || null,
+        oldDocWordCount: 0,
+        docWordCountText: `${item.wordCount || 0} words (Sheet Synced)`,
+        justificationSummary: item.reviewNotes || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)'),
+        rejectionReasons: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : (isAppr ? [] : ['Marked for revision in workflow sheet']),
+        wordCountAssessment: `${item.wordCount || 0} words reported`,
+        keyStrengths: ['Exam syllabus alignment', 'Tracked in Q4 OND Content Workflow'],
+        improvementAreas: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : ['Review content depth against syllabus standards'],
+        recommendationNote: item.reviewNotes || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.'),
+        reviewedAt: item.date || new Date().toISOString(),
+        fromSheetSync: true
+      };
+      if (!state.aiReviewCache) state.aiReviewCache = {};
+      state.aiReviewCache[item.topic] = cached;
+      saveAiReviewCache(state.aiReviewCache);
+    }
 
     let auditData = null;
 
@@ -4173,9 +4296,9 @@
       state.aiReviewCache[item.topic] = auditData;
       saveAiReviewCache(state.aiReviewCache);
 
-      // Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status)
+      // Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status) & Col R (Notes)
       if (typeof sheetsClient !== 'undefined') {
-        const notes = isAppr ? `AI Approved (${auditData.score}/10)` : `AI Revision: ${(auditData.rejectionReasons || []).join('; ')}`;
+        const notes = formatShortReviewNote(isAppr, auditData.score, auditData.rejectionReasons);
         sheetsClient.updateWorkflowReviewStatus(item.rowIndex, item.topic, auditData.verdict, notes).catch(e => console.warn('Sheet sync error:', e));
       }
 
@@ -4342,7 +4465,7 @@
 
   function exportReviewCSV() {
     const allItems = getReviewList();
-    const headers = ['Row', 'Date', 'Topic', 'Focus Keyword', 'Category', 'Task Type', 'Type', 'Page Type', 'Writer', 'Word Count', 'Classification', 'Points', 'Review Status', 'Old Doc', 'New Doc', 'Live URL'];
+    const headers = ['Row', 'Date', 'Topic', 'Focus Keyword', 'Category', 'Task Type', 'Type', 'Page Type', 'Writer', 'Word Count', 'Classification', 'Points', 'Review Status', 'Review Notes', 'Old Doc', 'New Doc', 'Live URL'];
     const csvLines = [headers.join(',')];
 
     allItems.forEach((item, idx) => {
@@ -4361,6 +4484,7 @@
         `"${(item.classification || '').replace(/"/g, '""')}"`,
         item.points || 0,
         `"${status.replace(/"/g, '""')}"`,
+        `"${(item.reviewNotes || '').replace(/"/g, '""')}"`,
         `"${(item.oldDoc || '').replace(/"/g, '""')}"`,
         `"${(item.newDoc || '').replace(/"/g, '""')}"`,
         `"${(item.url || '').replace(/"/g, '""')}"`

@@ -219,7 +219,7 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0] || [];
     let reviewStatusCol = 16; // Default Column P
     let statusCol = 17;       // Default Column Q
-    let notesCol = -1;
+    let notesCol = 18;        // Default Column R (Index 18 in 1-based indexing)
 
     for (let c = 0; c < headers.length; c++) {
       const h = String(headers[c] || '').trim().toLowerCase();
@@ -227,12 +227,20 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
         reviewStatusCol = c + 1;
       } else if (h === 'status' && reviewStatusCol !== (c + 1)) {
         statusCol = c + 1;
-      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1) {
+      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
         notesCol = c + 1;
       }
     }
 
     const statusVal = reviewStatus || 'Approved';
+
+    // Format concise short note (max 120 chars) to prevent sheet lag/breaking
+    const formatShortNote = function(n) {
+      if (!n) return '';
+      const clean = String(n).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+      return clean.length > 120 ? clean.substring(0, 117) + '...' : clean;
+    };
+    const shortNoteVal = formatShortNote(notes);
 
     // 1. TOPIC-FIRST SEARCH: Finds exact row matching topic across all 1000+ rows
     if (topic && String(topic).trim()) {
@@ -253,8 +261,8 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
           if (statusCol > 0 && statusCol !== reviewStatusCol) {
             sheet.getRange(targetRow, statusCol).setValue('Done');
           }
-          if (notes && notesCol > 0) {
-            sheet.getRange(targetRow, notesCol).setValue(notes);
+          if (shortNoteVal && notesCol > 0) {
+            sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
           }
           return ContentService.createTextOutput(JSON.stringify({
             success: true,
@@ -263,7 +271,9 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
             row: targetRow,
             topic: topic,
             reviewStatusCol: reviewStatusCol,
-            status: statusVal
+            notesCol: notesCol,
+            status: statusVal,
+            notes: shortNoteVal
           })).setMimeType(ContentService.MimeType.JSON);
         }
       }
@@ -276,8 +286,8 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
       if (statusCol > 0 && statusCol !== reviewStatusCol) {
         sheet.getRange(r, statusCol).setValue('Done');
       }
-      if (notes && notesCol > 0) {
-        sheet.getRange(r, notesCol).setValue(notes);
+      if (shortNoteVal && notesCol > 0) {
+        sheet.getRange(r, notesCol).setValue(shortNoteVal);
       }
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
@@ -285,7 +295,9 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
         matchedBy: 'rowIndex',
         row: r,
         reviewStatusCol: reviewStatusCol,
-        status: statusVal
+        notesCol: notesCol,
+        status: statusVal,
+        notes: shortNoteVal
       })).setMimeType(ContentService.MimeType.JSON);
     }
 

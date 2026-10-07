@@ -144,12 +144,15 @@ class SheetsClient {
   }
 
   async updateWorkflowReviewStatus(rowIndex, topic, reviewStatus, notes = '') {
+    // Truncate note to safe concise length (under 120 chars) to prevent Google Sheet lag or corruption
+    const cleanNote = String(notes || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const shortNote = cleanNote.length > 120 ? cleanNote.substring(0, 117) + '...' : cleanNote;
     return await this.postToWebApp({
       action: 'update_review_status',
       rowIndex: rowIndex,
       topic: topic,
       reviewStatus: reviewStatus,
-      notes: notes
+      notes: shortNote
     });
   }
 
@@ -723,6 +726,8 @@ Use these exact extracted word counts in your evaluation.`;
       const reviewStatus = getVal(15) || 'Pending Review';
       // Column Q (idx 16): Status
       const status = getVal(16) || 'Done';
+      // Column R (idx 17): Review Notes / Rejection Reason / Publishing Status
+      const reviewNotes = getVal(17);
 
       // OND Framework Standard Point Matrix
       const tt = String(taskType).toLowerCase();
@@ -778,6 +783,7 @@ Use these exact extracted word counts in your evaluation.`;
         url,
         reviewStatus,
         status,
+        reviewNotes,
         points,
         classification
       });
@@ -1084,6 +1090,7 @@ Use these exact extracted word counts in your evaluation.`;
       if (!url && r[3]) url = r[3].trim();
       const reviewStatus = (r[15] || '').trim();
       const status = (r[16] || '').trim();
+      const reviewNotes = (r[17] || '').trim();
 
       items.push({
         date,
@@ -1100,7 +1107,8 @@ Use these exact extracted word counts in your evaluation.`;
         pdfLink,
         url,
         reviewStatus,
-        status
+        status,
+        reviewNotes
       });
     }
     return items;
