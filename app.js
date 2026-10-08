@@ -4683,79 +4683,86 @@
     const squadMeta = getWriterSquadMeta(writerName);
     const activeWk = getActiveWeekInfo();
 
-    // 1. Entire Q4 (66 working days = 11 working weeks)
+    // 1. Entire Q4 Roster (13 weeks total)
+    // News Week: 5 days * 5.0 pts + Sat 0.25 pts = 25.25 pts
+    // Content Week (SEO Optimization / High Intent): 9.0 pts in 5 Days
     if (timeframe === 'q4_total') {
       if (squadMeta.teamGroup === 'A') {
-        // Team A: 6 News Weeks (6 * 30 = 180) + 5 Content Weeks (5 * 48 = 240) = 420 pts
-        return { targetPoints: 420.0, daysCount: 66, roleLabel: 'Team A Roster (6 News @ 30 / 5 Content @ 48)', weeklyNewsTarget: 30.0, weeklyContentTarget: 48.0 };
+        // Team A: 7 News Weeks (7 * 25.25 = 176.75) + 6 Content Weeks (6 * 9 = 54) = 230.75 pts
+        return { targetPoints: 230.75, daysCount: 72, roleLabel: 'Team A Roster (7 News @ 25.25 / 6 Content @ 9.0)', weeklyNewsTarget: 25.25, weeklyContentTarget: 9.0 };
       } else if (squadMeta.teamGroup === 'B') {
-        // Team B: 5 News Weeks (5 * 30 = 150) + 6 Content Weeks (6 * 48 = 288) = 438 pts
-        return { targetPoints: 438.0, daysCount: 66, roleLabel: 'Team B Roster (5 News @ 30 / 6 Content @ 48)', weeklyNewsTarget: 30.0, weeklyContentTarget: 48.0 };
+        // Team B: 6 News Weeks (6 * 25.25 = 151.50) + 7 Content Weeks (7 * 9 = 63) = 214.50 pts
+        return { targetPoints: 214.50, daysCount: 71, roleLabel: 'Team B Roster (6 News @ 25.25 / 7 Content @ 9.0)', weeklyNewsTarget: 25.25, weeklyContentTarget: 9.0 };
       } else {
-        // Prep / New Content: 66 days * 10 pts/day = 660 pts (60 pts/wk)
-        return { targetPoints: 660.0, daysCount: 66, roleLabel: 'Exam Prep & Content (66 Days × 10 pts = 660 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 60.0 };
+        // Prep / New Content: 13 weeks * 9.0 pts = 117.0 pts (5 Days / week)
+        return { targetPoints: 117.0, daysCount: 65, roleLabel: 'Exam Prep & Content (13 Weeks × 9.0 pts = 117 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 9.0 };
       }
     }
 
-    // 2. Current Week (6 days / week)
+    // 2. Current Week
     if (timeframe === 'current_week') {
       if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
         const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
                                (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
         if (isNewsThisWeek) {
-          return { targetPoints: 30.0, daysCount: 6, roleLabel: '🚨 News Week (5.0 pts/day = 30 pts)', isNewsWeek: true };
+          return { targetPoints: 25.25, daysCount: 6, roleLabel: '🚨 News Week (5.0/day × 5 + 0.25 Sat = 25.25 pts)', isNewsWeek: true };
         } else {
-          return { targetPoints: 48.0, daysCount: 6, roleLabel: '📝 Content Week (8.0 pts/day = 48 pts)', isNewsWeek: false };
+          return { targetPoints: 9.0, daysCount: 5, roleLabel: '📝 Content Week (9.0 pts in 5 Days)', isNewsWeek: false };
         }
       } else {
-        return { targetPoints: 60.0, daysCount: 6, roleLabel: '📚 Exam Prep (10.0 pts/day = 60 pts)', isNewsWeek: false };
+        return { targetPoints: 9.0, daysCount: 5, roleLabel: '📚 Exam Prep (9.0 pts in 5 Days)', isNewsWeek: false };
       }
     }
 
     // 3. Today (1 day)
     if (timeframe === 'today') {
+      const now = new Date();
+      const isSat = now.getDay() === 6;
       if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
         const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
                                (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
         if (isNewsThisWeek) {
-          return { targetPoints: 5.0, daysCount: 1, roleLabel: '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
+          return { targetPoints: isSat ? 0.25 : 5.0, daysCount: 1, roleLabel: isSat ? '🚨 News Saturday Duty (0.25 pts)' : '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
         } else {
-          return { targetPoints: 8.0, daysCount: 1, roleLabel: '📝 Content Duty (8.0 pts/day)', isNewsWeek: false };
+          return { targetPoints: isSat ? 0.0 : 1.8, daysCount: 1, roleLabel: isSat ? '📝 Content Duty (Saturday OFF)' : '📝 Content Duty (1.8 pts/day)', isNewsWeek: false };
         }
       } else {
-        return { targetPoints: 10.0, daysCount: 1, roleLabel: '📚 Exam Prep (10.0 pts/day)', isNewsWeek: false };
+        return { targetPoints: isSat ? 0.0 : 1.8, daysCount: 1, roleLabel: isSat ? '📚 Exam Prep (Saturday OFF)' : '📚 Exam Prep (1.8 pts/day)', isNewsWeek: false };
       }
     }
 
-    return { targetPoints: 30.0, daysCount: 6, roleLabel: 'Standard Target' };
+    return { targetPoints: 25.25, daysCount: 6, roleLabel: 'Standard Target' };
   }
 
   function renderKpiDashboard() {
     if (!els.sectionKpi) return;
 
-    // Master list of writers grouped by squad with calculated 66-day targets
+    // Master list of writers grouped by squad with calculated targets as per Roster:
+    // Team A: 7 News Weeks @ 25.25 pts + 6 Content Weeks @ 9.0 pts = 230.75 pts
+    // Team B: 6 News Weeks @ 25.25 pts + 7 Content Weeks @ 9.0 pts = 214.50 pts
+    // Exam Prep & New Content: 13 Weeks @ 9.0 pts = 117 pts
     const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "420" },
-      { writer: "Archita", squad: "Team A", target: "420" },
-      { writer: "Shemaila", squad: "Team A", target: "420" },
-      { writer: "Somya", squad: "Team A", target: "420" },
-      { writer: "Mohit", squad: "Team A", target: "420" },
+      { writer: "Sonika", squad: "Team A", target: "230.75" },
+      { writer: "Archita", squad: "Team A", target: "230.75" },
+      { writer: "Shemaila", squad: "Team A", target: "230.75" },
+      { writer: "Somya", squad: "Team A", target: "230.75" },
+      { writer: "Mohit", squad: "Team A", target: "230.75" },
 
-      { writer: "Nadeem", squad: "Team B", target: "438" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "438" },
-      { writer: "Aditi", squad: "Team B", target: "438" },
-      { writer: "Atul", squad: "Team B", target: "438" },
-      { writer: "Trishala", squad: "Team B", target: "438" },
+      { writer: "Nadeem", squad: "Team B", target: "214.50" },
+      { writer: "Shilpa Kohli", squad: "Team B", target: "214.50" },
+      { writer: "Aditi", squad: "Team B", target: "214.50" },
+      { writer: "Atul", squad: "Team B", target: "214.50" },
+      { writer: "Trishala", squad: "Team B", target: "214.50" },
 
-      { writer: "Lehron", squad: "Exam Prep", target: "660" },
-      { writer: "Dhananjay", squad: "Exam Prep", target: "660" },
-      { writer: "Falguni", squad: "Exam Prep", target: "660" },
-      { writer: "Swathi", squad: "Exam Prep", target: "660" },
-      { writer: "Sumit Kumar", squad: "Exam Prep", target: "660" },
-      { writer: "Manicka", squad: "Exam Prep", target: "660" },
+      { writer: "Lehron", squad: "Exam Prep", target: "117" },
+      { writer: "Dhananjay", squad: "Exam Prep", target: "117" },
+      { writer: "Falguni", squad: "Exam Prep", target: "117" },
+      { writer: "Swathi", squad: "Exam Prep", target: "117" },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: "117" },
+      { writer: "Manicka", squad: "Exam Prep", target: "117" },
 
-      { writer: "Archana", squad: "New Content", target: "660" },
-      { writer: "Shilpa Singh", squad: "New Content", target: "660" }
+      { writer: "Archana", squad: "New Content", target: "117" },
+      { writer: "Shilpa Singh", squad: "New Content", target: "117" }
     ];
 
     let filtered = writersListRaw;
@@ -4772,6 +4779,27 @@
       filtered = filtered.filter(w => w.writer.toLowerCase().includes(q) || w.squad.toLowerCase().includes(q));
     }
 
+    // Pre-calculate scored points dynamically from workflow
+    const allWorkflowItems = getReviewList();
+    const writerScoredMap = {};
+    const writerTaskMap = {};
+    const writerApprovedMap = {};
+
+    allWorkflowItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (!w || w === '-' || w === 'Unassigned') return;
+      const key = w.toLowerCase();
+      if (!writerTaskMap[key]) writerTaskMap[key] = [];
+      writerTaskMap[key].push(item);
+
+      const status = getEffectiveReviewStatus(item);
+      if (status === 'Approved') {
+        writerApprovedMap[key] = (writerApprovedMap[key] || 0) + 1;
+        const ptInfo = calculateItemKpiPoints(item);
+        writerScoredMap[key] = (writerScoredMap[key] || 0) + (ptInfo.points || 0);
+      }
+    });
+
     if (els.kpiTableBody) {
       if (filtered.length === 0) {
         els.kpiTableBody.innerHTML = `
@@ -4784,24 +4812,40 @@
       } else {
         let html = '';
         filtered.forEach((w, idx) => {
+          const key = w.writer.toLowerCase();
+          const scoredVal = writerScoredMap[key] !== undefined ? writerScoredMap[key].toFixed(2) : '0.00';
+          const apprCount = writerApprovedMap[key] || 0;
+          const totalTasks = (writerTaskMap[key] || []).length;
+
           html += `
-            <tr>
+            <tr style="cursor:pointer;" class="kpi-row-item" data-writer="${escapeHtml(w.writer)}" title="Click to view full task breakdown">
               <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.82rem; padding:0.75rem 0.5rem;">${idx + 1}</td>
               <td style="padding:0.75rem 1rem;">
                 <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">
                   ${escapeHtml(w.writer)}
                 </div>
+                <div style="font-size:0.72rem; color:#64748b;">
+                  ${escapeHtml(w.squad)}
+                </div>
               </td>
-              <td style="text-align:center; background:#eff6ff; font-weight:700; color:#64748b; font-size:0.9rem; padding:0.75rem 0.5rem;">
-                —
+              <td style="text-align:center; background:#eff6ff; font-weight:800; color:#1e40af; font-size:0.92rem; padding:0.75rem 0.5rem;">
+                ${scoredVal} <span style="font-size:0.72rem; color:#64748b; font-weight:600;">(${apprCount} appr / ${totalTasks})</span>
               </td>
-              <td style="text-align:center; font-weight:600; color:#1e293b; font-size:0.85rem; padding:0.75rem 0.5rem;">
+              <td style="text-align:center; font-weight:700; color:#0f172a; font-size:0.88rem; padding:0.75rem 0.5rem;">
                 ${escapeHtml(w.target)}
               </td>
             </tr>
           `;
         });
         els.kpiTableBody.innerHTML = html;
+
+        // Attach click handlers to open drilldown modal for that writer
+        els.kpiTableBody.querySelectorAll('.kpi-row-item').forEach(tr => {
+          tr.addEventListener('click', () => {
+            const writerName = tr.dataset.writer;
+            if (writerName) openWriterKpiDrilldown(writerName);
+          });
+        });
       }
     }
   }
@@ -4904,35 +4948,51 @@
     const csvLines = [headers.join(',')];
 
     const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Archita", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Shemaila", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Somya", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
-      { writer: "Mohit", squad: "Team A", target: "255.0 pts (30 pts/wk on News)" },
+      { writer: "Sonika", squad: "Team A", target: "230.75" },
+      { writer: "Archita", squad: "Team A", target: "230.75" },
+      { writer: "Shemaila", squad: "Team A", target: "230.75" },
+      { writer: "Somya", squad: "Team A", target: "230.75" },
+      { writer: "Mohit", squad: "Team A", target: "230.75" },
 
-      { writer: "Nadeem", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Aditi", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Atul", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
-      { writer: "Trishala", squad: "Team B", target: "240.0 pts (30 pts/wk on News)" },
+      { writer: "Nadeem", squad: "Team B", target: "214.50" },
+      { writer: "Shilpa Kohli", squad: "Team B", target: "214.50" },
+      { writer: "Aditi", squad: "Team B", target: "214.50" },
+      { writer: "Atul", squad: "Team B", target: "214.50" },
+      { writer: "Trishala", squad: "Team B", target: "214.50" },
 
-      { writer: "Lehron", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Dhananjay", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Falguni", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Swathi", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Sumit Kumar", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Manicka", squad: "Exam Prep", target: "165.0 pts (15 pts/wk)" },
+      { writer: "Lehron", squad: "Exam Prep", target: "117" },
+      { writer: "Dhananjay", squad: "Exam Prep", target: "117" },
+      { writer: "Falguni", squad: "Exam Prep", target: "117" },
+      { writer: "Swathi", squad: "Exam Prep", target: "117" },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: "117" },
+      { writer: "Manicka", squad: "Exam Prep", target: "117" },
 
-      { writer: "Archana", squad: "New Content", target: "165.0 pts (15 pts/wk)" },
-      { writer: "Shilpa Singh", squad: "New Content", target: "165.0 pts (15 pts/wk)" }
+      { writer: "Archana", squad: "New Content", target: "117" },
+      { writer: "Shilpa Singh", squad: "New Content", target: "117" }
     ];
 
+    const allWorkflowItems = getReviewList();
+    const writerScoredMap = {};
+
+    allWorkflowItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (!w || w === '-' || w === 'Unassigned') return;
+      const key = w.toLowerCase();
+      const status = getEffectiveReviewStatus(item);
+      if (status === 'Approved') {
+        const ptInfo = calculateItemKpiPoints(item);
+        writerScoredMap[key] = (writerScoredMap[key] || 0) + (ptInfo.points || 0);
+      }
+    });
+
     writersListRaw.forEach((w, idx) => {
+      const key = w.writer.toLowerCase();
+      const scoredVal = writerScoredMap[key] !== undefined ? writerScoredMap[key].toFixed(2) : '0.00';
       const row = [
         idx + 1,
         `"${w.writer.replace(/"/g, '""')}"`,
         `"${w.squad.replace(/"/g, '""')}"`,
-        `"—"`,
+        `"${scoredVal}"`,
         `"${w.target.replace(/"/g, '""')}"`
       ];
       csvLines.push(row.join(','));
