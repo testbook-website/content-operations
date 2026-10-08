@@ -175,6 +175,18 @@ function installAutomationTriggers() {
   }
 }
 
+function getNuDailySheet(ss) {
+  if (!ss) return null;
+  const sheets = ss.getSheets();
+  for (let s of sheets) {
+    const n = s.getName().toLowerCase().trim();
+    if (n.includes('n & u daily') || n.includes('n&u daily')) {
+      return s;
+    }
+  }
+  return ss.getSheetByName('N & U Daily');
+}
+
 /**
  * Checks if Topic and Task Type are both validly entered (not empty or dashes)
  */
@@ -190,7 +202,8 @@ function isValidTask(topic, taskType) {
 function handleEditEvent(e) {
   if (!e || !e.range) return;
   const sheet = e.range.getSheet();
-  if (sheet.getName() !== 'N & U Daily') return;
+  const sheetName = sheet.getName().toLowerCase();
+  if (!sheetName.includes('n & u daily') && !sheetName.includes('n&u daily')) return;
 
   const row = e.range.getRow();
   if (row === 1) return; // Skip header row
@@ -202,9 +215,6 @@ function handleEditEvent(e) {
   const category = sheet.getRange(row, 4).getValue(); // Col D: Category
   const currentWriter = sheet.getRange(row, 5).getValue(); // Col E: Owner / Writer
   const status = sheet.getRange(row, 8).getValue(); // Col H: Status
-
-  // Only process rows for TODAY
-  if (!isRowToday(rowDate)) return;
 
   // Case 1: Manual Reassignment in Column E (Writer edited manually by lead/team)
   if (col === 5) {
@@ -221,7 +231,7 @@ function handleEditEvent(e) {
     }
   }
 
-  // Case 2: New Task Added -> Auto-Assign ONLY when BOTH Topic and Task Type are entered
+  // Case 2: New / Pending Task -> Auto-Assign when BOTH Topic and Task Type are entered and not done
   if (isValidTask(topic, taskType) && !isStatusDone(status) && (!currentWriter || currentWriter.toString().trim() === '' || currentWriter.toString().trim() === 'Unassigned')) {
     assignRow(sheet, row, topic, taskType, category);
   }
@@ -429,37 +439,41 @@ function isRowToday(rowDateRaw) {
 }
 
 /**
- * Batch Auto-Assign all unassigned pending rows for TODAY ONLY (Never touches old history)
+ * Batch Auto-Assign all unassigned pending rows in recent history
  */
 function autoAssignAllPending() {
   const ss = getTargetSpreadsheet();
-  const sheet = ss ? ss.getSheetByName('N & U Daily') : null;
-  if (!sheet) return;
+  const sheet = getNuDailySheet(ss);
+  if (!sheet) {
+    Logger.log('N & U Daily sheet not found in spreadsheet.');
+    return;
+  }
 
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
 
-  // Only scan recent rows (up to last 60 rows) to prevent touching old archived records
-  const startRow = Math.max(2, lastRow - 60);
+  // Scan recent rows (up to last 100 rows)
+  const startRow = Math.max(2, lastRow - 100);
   let assignedCount = 0;
 
   for (let row = startRow; row <= lastRow; row++) {
-    const rowDate = sheet.getRange(row, 1).getValue(); // Col A: Date
     const topic = sheet.getRange(row, 2).getValue();     // Col B: Topic
     const taskType = sheet.getRange(row, 3).getValue();  // Col C: Task Type
     const category = sheet.getRange(row, 4).getValue();  // Col D: Category
     const currentWriter = sheet.getRange(row, 5).getValue(); // Col E: Writer
     const status = sheet.getRange(row, 8).getValue();    // Col H: Status
 
-    // STRICT FILTER: Must be TODAY's row, have BOTH valid topic & task type, NOT be done, and writer is empty
-    if (isRowToday(rowDate) && isValidTask(topic, taskType) && !isStatusDone(status) && (!currentWriter || currentWriter.toString().trim() === '' || currentWriter.toString().trim() === 'Unassigned')) {
+    // If valid topic & task type, not done, and writer is empty/unassigned -> ASSIGN!
+    if (isValidTask(topic, taskType) && !isStatusDone(status) && (!currentWriter || currentWriter.toString().trim() === '' || currentWriter.toString().trim() === 'Unassigned')) {
       assignRow(sheet, row, topic, taskType, category);
       assignedCount++;
     }
   }
 
   if (assignedCount > 0) {
-    Logger.log(`Assigned ${assignedCount} tasks for today.`);
+    Logger.log(`Successfully assigned ${assignedCount} pending task(s).`);
+  } else {
+    Logger.log('No unassigned pending tasks found to assign.');
   }
 }
 
