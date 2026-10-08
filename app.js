@@ -4684,15 +4684,15 @@
     const activeWk = getActiveWeekInfo();
 
     // 1. Entire Q4 Roster (13 weeks total)
-    // News Week: 5 days * 5.0 pts + Sat 0.25 pts = 25.25 pts
+    // News Week: 5 days * 5.0 pts + Sat 2.25 pts = 27.25 pts
     // Content Week (SEO Optimization / High Intent): 9.0 pts in 5 Days
     if (timeframe === 'q4_total') {
       if (squadMeta.teamGroup === 'A') {
-        // Team A: 7 News Weeks (7 * 25.25 = 176.75) + 6 Content Weeks (6 * 9 = 54) = 230.75 pts
-        return { targetPoints: 230.75, daysCount: 72, roleLabel: 'Team A Roster (7 News @ 25.25 / 6 Content @ 9.0)', weeklyNewsTarget: 25.25, weeklyContentTarget: 9.0 };
+        // Team A: 7 News Weeks (7 * 27.25 = 190.75) + 6 Content Weeks (6 * 9 = 54) = 244.75 pts
+        return { targetPoints: 244.75, daysCount: 72, roleLabel: 'Team A Roster (7 News @ 27.25 / 6 Content @ 9.0)', weeklyNewsTarget: 27.25, weeklyContentTarget: 9.0 };
       } else if (squadMeta.teamGroup === 'B') {
-        // Team B: 6 News Weeks (6 * 25.25 = 151.50) + 7 Content Weeks (7 * 9 = 63) = 214.50 pts
-        return { targetPoints: 214.50, daysCount: 71, roleLabel: 'Team B Roster (6 News @ 25.25 / 7 Content @ 9.0)', weeklyNewsTarget: 25.25, weeklyContentTarget: 9.0 };
+        // Team B: 6 News Weeks (6 * 27.25 = 163.50) + 7 Content Weeks (7 * 9 = 63) = 226.50 pts
+        return { targetPoints: 226.50, daysCount: 71, roleLabel: 'Team B Roster (6 News @ 27.25 / 7 Content @ 9.0)', weeklyNewsTarget: 27.25, weeklyContentTarget: 9.0 };
       } else {
         // Prep / New Content: 13 weeks * 9.0 pts = 117.0 pts (5 Days / week)
         return { targetPoints: 117.0, daysCount: 65, roleLabel: 'Exam Prep & Content (13 Weeks × 9.0 pts = 117 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 9.0 };
@@ -4705,7 +4705,7 @@
         const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
                                (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
         if (isNewsThisWeek) {
-          return { targetPoints: 25.25, daysCount: 6, roleLabel: '🚨 News Week (5.0/day × 5 + 0.25 Sat = 25.25 pts)', isNewsWeek: true };
+          return { targetPoints: 27.25, daysCount: 6, roleLabel: '🚨 News Week (5.0/day × 5 + 2.25 Sat = 27.25 pts)', isNewsWeek: true };
         } else {
           return { targetPoints: 9.0, daysCount: 5, roleLabel: '📝 Content Week (9.0 pts in 5 Days)', isNewsWeek: false };
         }
@@ -4722,7 +4722,7 @@
         const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
                                (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
         if (isNewsThisWeek) {
-          return { targetPoints: isSat ? 0.25 : 5.0, daysCount: 1, roleLabel: isSat ? '🚨 News Saturday Duty (0.25 pts)' : '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
+          return { targetPoints: isSat ? 2.25 : 5.0, daysCount: 1, roleLabel: isSat ? '🚨 News Saturday Duty (2.25 pts)' : '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
         } else {
           return { targetPoints: isSat ? 0.0 : 1.8, daysCount: 1, roleLabel: isSat ? '📝 Content Duty (Saturday OFF)' : '📝 Content Duty (1.8 pts/day)', isNewsWeek: false };
         }
@@ -4731,28 +4731,28 @@
       }
     }
 
-    return { targetPoints: 25.25, daysCount: 6, roleLabel: 'Standard Target' };
+    return { targetPoints: 27.25, daysCount: 6, roleLabel: 'Standard Target' };
   }
 
   function renderKpiDashboard() {
     if (!els.sectionKpi) return;
 
     // Master list of writers grouped by squad with calculated targets as per Roster:
-    // Team A: 7 News Weeks @ 25.25 pts + 6 Content Weeks @ 9.0 pts = 230.75 pts
-    // Team B: 6 News Weeks @ 25.25 pts + 7 Content Weeks @ 9.0 pts = 214.50 pts
+    // Team A: 7 News Weeks @ 27.25 pts + 6 Content Weeks @ 9.0 pts = 244.75 pts
+    // Team B: 6 News Weeks @ 27.25 pts + 7 Content Weeks @ 9.0 pts = 226.50 pts
     // Exam Prep & New Content: 13 Weeks @ 9.0 pts = 117 pts
     const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "230.75" },
-      { writer: "Archita", squad: "Team A", target: "230.75" },
-      { writer: "Shemaila", squad: "Team A", target: "230.75" },
-      { writer: "Somya", squad: "Team A", target: "230.75" },
-      { writer: "Mohit", squad: "Team A", target: "230.75" },
+      { writer: "Sonika", squad: "Team A", target: "244.75" },
+      { writer: "Archita", squad: "Team A", target: "244.75" },
+      { writer: "Shemaila", squad: "Team A", target: "244.75" },
+      { writer: "Somya", squad: "Team A", target: "244.75" },
+      { writer: "Mohit", squad: "Team A", target: "244.75" },
 
-      { writer: "Nadeem", squad: "Team B", target: "214.50" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "214.50" },
-      { writer: "Aditi", squad: "Team B", target: "214.50" },
-      { writer: "Atul", squad: "Team B", target: "214.50" },
-      { writer: "Trishala", squad: "Team B", target: "214.50" },
+      { writer: "Nadeem", squad: "Team B", target: "226.50" },
+      { writer: "Shilpa Kohli", squad: "Team B", target: "226.50" },
+      { writer: "Aditi", squad: "Team B", target: "226.50" },
+      { writer: "Atul", squad: "Team B", target: "226.50" },
+      { writer: "Trishala", squad: "Team B", target: "226.50" },
 
       { writer: "Lehron", squad: "Exam Prep", target: "117" },
       { writer: "Dhananjay", squad: "Exam Prep", target: "117" },
@@ -4948,17 +4948,17 @@
     const csvLines = [headers.join(',')];
 
     const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "230.75" },
-      { writer: "Archita", squad: "Team A", target: "230.75" },
-      { writer: "Shemaila", squad: "Team A", target: "230.75" },
-      { writer: "Somya", squad: "Team A", target: "230.75" },
-      { writer: "Mohit", squad: "Team A", target: "230.75" },
+      { writer: "Sonika", squad: "Team A", target: "244.75" },
+      { writer: "Archita", squad: "Team A", target: "244.75" },
+      { writer: "Shemaila", squad: "Team A", target: "244.75" },
+      { writer: "Somya", squad: "Team A", target: "244.75" },
+      { writer: "Mohit", squad: "Team A", target: "244.75" },
 
-      { writer: "Nadeem", squad: "Team B", target: "214.50" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "214.50" },
-      { writer: "Aditi", squad: "Team B", target: "214.50" },
-      { writer: "Atul", squad: "Team B", target: "214.50" },
-      { writer: "Trishala", squad: "Team B", target: "214.50" },
+      { writer: "Nadeem", squad: "Team B", target: "226.50" },
+      { writer: "Shilpa Kohli", squad: "Team B", target: "226.50" },
+      { writer: "Aditi", squad: "Team B", target: "226.50" },
+      { writer: "Atul", squad: "Team B", target: "226.50" },
+      { writer: "Trishala", squad: "Team B", target: "226.50" },
 
       { writer: "Lehron", squad: "Exam Prep", target: "117" },
       { writer: "Dhananjay", squad: "Exam Prep", target: "117" },
