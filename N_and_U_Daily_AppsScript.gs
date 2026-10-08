@@ -107,13 +107,17 @@ function isStatusDone(status) {
  * Custom Menu on Spreadsheet Open
  */
 function onOpen() {
-  const ui = SpreadsheetApp.getUi();
-  ui.createMenu('⚡ Content Ops')
-    .addItem('Run Auto-Assignment (N & U Daily)', 'autoAssignAllPending')
-    .addItem('Setup Automation & Triggers (Sweeper + Alerts)', 'installAutomationTriggers')
-    .addSeparator()
-    .addItem('🛑 Stop & Delete All Triggers', 'stopAndClearAllTriggers')
-    .addToUi();
+  try {
+    const ui = SpreadsheetApp.getUi();
+    ui.createMenu('⚡ Content Ops')
+      .addItem('Run Auto-Assignment (N & U Daily)', 'autoAssignAllPending')
+      .addItem('Setup Automation & Triggers (Sweeper + Alerts)', 'installAutomationTriggers')
+      .addSeparator()
+      .addItem('🛑 Stop & Delete All Triggers', 'stopAndClearAllTriggers')
+      .addToUi();
+  } catch (e) {
+    Logger.log('UI menu skipped (running from editor or non-container context).');
+  }
 }
 
 /**
@@ -156,12 +160,19 @@ function installAutomationTriggers() {
     .create();
 
   // 2. Create installable OnEdit trigger for instant Chat Alerts on manual edits
-  ScriptApp.newTrigger('installedOnEdit')
-    .forSpreadsheet(ss)
-    .onEdit()
-    .create();
+  if (ss) {
+    ScriptApp.newTrigger('installedOnEdit')
+      .forSpreadsheet(ss)
+      .onEdit()
+      .create();
+  }
 
-  SpreadsheetApp.getUi().alert('⚡ Automation Active!\n\n1. 1-Minute Auto-Sweeper installed.\n2. Instant On-Edit Trigger installed for real-time Google Chat alerts on new additions & manual reassignments.');
+  Logger.log('⚡ Automation Active! 1-Minute Auto-Sweeper & On-Edit triggers installed successfully.');
+  try {
+    SpreadsheetApp.getUi().alert('⚡ Automation Active!\n\n1. 1-Minute Auto-Sweeper installed.\n2. Instant On-Edit Trigger installed for real-time Google Chat alerts on new additions & manual reassignments.');
+  } catch (e) {
+    Logger.log('Notice: Trigger alert dialog skipped in Editor context.');
+  }
 }
 
 /**
@@ -397,17 +408,7 @@ function calculateCurrentWorkloads(sheet, excludeRow) {
   return workloads;
 }
 
-/**
- * EMERGENCY STOP: Instantly deletes and removes all active background triggers
- */
-function stopAndClearAllTriggers() {
-  const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(t => ScriptApp.deleteTrigger(t));
-  Logger.log('All triggers stopped and cleared successfully.');
-  try {
-    SpreadsheetApp.getUi().alert('🛑 Emergency Stop Activated!\n\nAll background triggers have been completely deleted.');
-  } catch (e) {}
-}
+
 
 /**
  * Checks if a date cell belongs to TODAY in IST
