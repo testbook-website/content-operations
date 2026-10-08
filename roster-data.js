@@ -36,6 +36,12 @@ const ROSTER_CONFIG = {
     { member: "Shilpa Singh", domain: "All Category" }
   ],
 
+  hindiTeam: [
+    { member: "Anshika", domain: "Hindi Content" },
+    { member: "Vidit", domain: "Hindi Content" },
+    { member: "Prabodh", domain: "Hindi Content" }
+  ],
+
   categoryMentors: [
     { mentor: "Aditi", category: "Police Exams" },
     { mentor: "Archita", category: "State-Govt Exams" },

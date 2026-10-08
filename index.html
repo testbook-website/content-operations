@@ -159,25 +159,22 @@
           <span>Fresh Prep: <strong>2.00</strong></span> |
           <span>Pillar: <strong>3.00</strong></span>
         </div>
-        <div style="display:flex; gap:0.4rem; font-size:0.74rem; flex-wrap:wrap;">
+        <div id="kpiRuleBadges" style="display:flex; gap:0.4rem; font-size:0.74rem; flex-wrap:wrap;">
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.25 pts/wk (5.0/day Mon–Fri + 2.25 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Q4 Target: 474 pts (30d News @ 5 + 12 Sat @ 2.25 + 33d SEO @ 9)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 474 pts</span>
         </div>
       </div>
 
-      <!-- Controls Sub-Bar -->
-      <div class="sub-bar" style="margin-bottom:0.75rem;">
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <label style="font-size:0.8rem; font-weight:700;">Show Squad:</label>
-          <select class="select-simple" id="kpiSquadFilter" style="font-weight:600;">
-            <option value="all">All Teams (18 Writers)</option>
-            <option value="teamA">Team A (5 Writers)</option>
-            <option value="teamB">Team B (5 Writers)</option>
-            <option value="prep">Exam Prep Team</option>
-            <option value="new_content">New Content Writers</option>
-          </select>
-          <input type="text" class="input-simple" id="kpiSearch" placeholder="Search writer..." style="width:180px;">
+      <!-- Controls Sub-Bar with 3 Sub Tabs: Regular | Prep | Hindi -->
+      <div class="sub-bar" style="margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          <div class="sub-btns" id="kpiSubTabs">
+            <button class="sub-btn active" data-kpitab="regular" id="kpiSubtabRegular">Regular (Team A &amp; B)</button>
+            <button class="sub-btn" data-kpitab="prep" id="kpiSubtabPrep">Prep Team (10 pts/day)</button>
+            <button class="sub-btn" data-kpitab="hindi" id="kpiSubtabHindi">Hindi (9 pts/day)</button>
+          </div>
+          <input type="text" class="input-simple" id="kpiSearch" placeholder="Search writer..." style="width:170px;">
         </div>
 
         <button class="btn-action" id="btnExportKpiCSV" style="font-size:0.75rem;">Export CSV</button>

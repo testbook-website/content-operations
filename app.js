@@ -213,7 +213,7 @@
     aiReviewCache: loadAiReviewCache(),
     aiRunnerActive: false,
     kpiTimeframeFilter: 'q4_total', // 'q4_total' | 'current_week' | 'today'
-    kpiSquadFilter: 'all', // 'all' | 'teamA' | 'teamB' | 'prep' | 'new_content'
+    kpiSubTab: 'regular', // 'regular' | 'prep' | 'hindi'
     kpiSearch: '',
     calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
     calendarMonthFilter: 'all',
@@ -242,8 +242,9 @@
 
     // Team KPI Dashboard
     kpiOverviewCards: document.getElementById('kpiOverviewCards'),
-    kpiTimeframeFilter: document.getElementById('kpiTimeframeFilter'),
-    kpiSquadFilter: document.getElementById('kpiSquadFilter'),
+    kpiSubTabs: document.getElementById('kpiSubTabs'),
+    kpiSubBtns: document.querySelectorAll('#kpiSubTabs .sub-btn'),
+    kpiRuleBadges: document.getElementById('kpiRuleBadges'),
     kpiSearch: document.getElementById('kpiSearch'),
     kpiCountLabel: document.getElementById('kpiCountLabel'),
     kpiTableBody: document.getElementById('kpiTableBody'),
@@ -849,17 +850,11 @@
     }
 
     // Team KPI Controls
-    if (els.kpiTimeframeFilter) {
-      els.kpiTimeframeFilter.addEventListener('change', (e) => {
-        state.kpiTimeframeFilter = e.target.value;
-        renderKpiDashboard();
-      });
-    }
-
-    if (els.kpiSquadFilter) {
-      els.kpiSquadFilter.addEventListener('change', (e) => {
-        state.kpiSquadFilter = e.target.value;
-        renderKpiDashboard();
+    if (els.kpiSubBtns) {
+      els.kpiSubBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchKpiSubTab(btn.dataset.kpitab);
+        });
       });
     }
 
@@ -928,6 +923,14 @@
     state.activeProdSubTab = subtab;
     els.prodSubBtns.forEach(b => b.classList.toggle('active', b.dataset.subtab === subtab));
     renderProductivity();
+  }
+
+  function switchKpiSubTab(subtab) {
+    state.kpiSubTab = subtab;
+    if (els.kpiSubBtns) {
+      els.kpiSubBtns.forEach(b => b.classList.toggle('active', b.dataset.kpitab === subtab));
+    }
+    renderKpiDashboard();
   }
 
   // =========================================================================
@@ -4659,14 +4662,14 @@
   function getWriterSquadMeta(writerName) {
     const teamA = ["Sonika", "Archita", "Shemaila", "Somya", "Mohit"];
     const teamB = ["Nadeem", "Shilpa Kohli", "Aditi", "Atul", "Trishala"];
-    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka"];
-    const newContent = ["Archana", "Shilpa Singh"];
+    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka", "Archana", "Shilpa Singh"];
+    const hindiTeam = ["Anshika", "Vidit", "Prabodh"];
 
     const wClean = (writerName || '').trim();
     if (teamA.includes(wClean)) return { squadId: 'teamA', squadName: 'Team A (Rotation)', isRotation: true, teamGroup: 'A' };
     if (teamB.includes(wClean)) return { squadId: 'teamB', squadName: 'Team B (Rotation)', isRotation: true, teamGroup: 'B' };
+    if (hindiTeam.includes(wClean)) return { squadId: 'hindi', squadName: 'Hindi Team', isRotation: false, teamGroup: 'Hindi' };
     if (prepTeam.includes(wClean)) return { squadId: 'prep', squadName: 'Exam Prep Team', isRotation: false, teamGroup: 'Prep' };
-    if (newContent.includes(wClean)) return { squadId: 'new_content', squadName: 'New Content Writers', isRotation: false, teamGroup: 'New' };
     return { squadId: 'other', squadName: 'Editorial Staff', isRotation: false, teamGroup: 'Other' };
   }
 
@@ -4683,16 +4686,22 @@
     const squadMeta = getWriterSquadMeta(writerName);
     const activeWk = getActiveWeekInfo();
 
-    // 1. Entire Q4 Roster
-    // News Duty: 30 weekdays * 5.0 pts + 12 Sat * 2.25 pts = 177.0 pts
-    // SEO Optimization / High Intent: 33 days * 9.0 pts = 297.0 pts
-    // Total for Team A & Team B = 177 + 297 = 474.0 pts
+    // 1. Entire Q4 Roster (Oct - Dec: 66 weekdays)
+    // Regular (Team A & B):
+    //   News Duty: 30 weekdays * 5.0 pts + 12 Sat * 2.25 pts = 177.0 pts
+    //   SEO Optimization / High Intent: 33 weekdays * 9.0 pts = 297.0 pts
+    //   Total = 177 + 297 = 474.0 pts
+    // Prep Team:
+    //   66 weekdays * 10.0 pts/day = 660.0 pts
+    // Hindi Team:
+    //   66 weekdays * 9.0 pts/day = 594.0 pts
     if (timeframe === 'q4_total') {
       if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
-        return { targetPoints: 474.0, daysCount: 75, roleLabel: 'Q4 Target (30d News @ 5 + 12 Sat @ 2.25 + 33d SEO @ 9 = 474 pts)', weeklyNewsTarget: 27.25, weeklyContentTarget: 45.0 };
+        return { targetPoints: 474.0, daysCount: 75, roleLabel: 'Regular Target (30d News @ 5 + 12 Sat @ 2.25 + 33d SEO @ 9 = 474 pts)', weeklyNewsTarget: 27.25, weeklyContentTarget: 45.0 };
+      } else if (squadMeta.teamGroup === 'Hindi') {
+        return { targetPoints: 594.0, daysCount: 66, roleLabel: 'Hindi Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
       } else {
-        // Prep / New Content: 65 days * 9.0 pts = 585.0 pts (5 Days / week)
-        return { targetPoints: 585.0, daysCount: 65, roleLabel: 'Exam Prep & Content (65 Days × 9.0 pts = 585 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
+        return { targetPoints: 660.0, daysCount: 66, roleLabel: 'Exam Prep Team (66 Days × 10.0 pts = 660 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 50.0 };
       }
     }
 
@@ -4706,8 +4715,10 @@
         } else {
           return { targetPoints: 45.0, daysCount: 5, roleLabel: '📝 Content Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
         }
+      } else if (squadMeta.teamGroup === 'Hindi') {
+        return { targetPoints: 45.0, daysCount: 5, roleLabel: '🇮🇳 Hindi Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
       } else {
-        return { targetPoints: 45.0, daysCount: 5, roleLabel: '📚 Exam Prep (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
+        return { targetPoints: 50.0, daysCount: 5, roleLabel: '📚 Exam Prep Week (10.0/day × 5 = 50.0 pts)', isNewsWeek: false };
       }
     }
 
@@ -4723,8 +4734,10 @@
         } else {
           return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '📝 Content Duty (Saturday OFF)' : '📝 Content Duty (9.0 pts/day)', isNewsWeek: false };
         }
+      } else if (squadMeta.teamGroup === 'Hindi') {
+        return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '🇮🇳 Hindi Duty (Saturday OFF)' : '🇮🇳 Hindi Duty (9.0 pts/day)', isNewsWeek: false };
       } else {
-        return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '📚 Exam Prep (Saturday OFF)' : '📚 Exam Prep (9.0 pts/day)', isNewsWeek: false };
+        return { targetPoints: isSat ? 0.0 : 10.0, daysCount: 1, roleLabel: isSat ? '📚 Exam Prep (Saturday OFF)' : '📚 Exam Prep (10.0 pts/day)', isNewsWeek: false };
       }
     }
 
@@ -4734,43 +4747,75 @@
   function renderKpiDashboard() {
     if (!els.sectionKpi) return;
 
-    // Master list of writers grouped by squad with calculated targets as per Roster:
-    // News Duty: 30 days @ 5.0 + 12 Sat @ 2.25 = 177 pts
-    // SEO Optimization: 33 days @ 9.0 = 297 pts
-    // Team A & Team B Target = 177 + 297 = 474 pts
-    // Exam Prep & New Content: 65 Days @ 9.0 pts = 585 pts
-    const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "474" },
-      { writer: "Archita", squad: "Team A", target: "474" },
-      { writer: "Shemaila", squad: "Team A", target: "474" },
-      { writer: "Somya", squad: "Team A", target: "474" },
-      { writer: "Mohit", squad: "Team A", target: "474" },
+    const subTab = state.kpiSubTab || 'regular';
 
-      { writer: "Nadeem", squad: "Team B", target: "474" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "474" },
-      { writer: "Aditi", squad: "Team B", target: "474" },
-      { writer: "Atul", squad: "Team B", target: "474" },
-      { writer: "Trishala", squad: "Team B", target: "474" },
+    // Update banner badges dynamically according to selected sub-tab
+    if (els.kpiRuleBadges) {
+      if (subTab === 'prep') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📚 Daily Target: 10.0 pts/day (Mon–Fri)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Total Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Prep Target: 660 pts (66 × 10.0)</span>
+        `;
+      } else if (subTab === 'hindi') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 9.0 pts/day (Mon–Fri)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Total Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 594 pts (66 × 9.0)</span>
+        `;
+      } else {
+        // 'regular' (Team A and B)
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.25 pts/wk (5.0/day Mon–Fri + 2.25 Sat)</span>
+          <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 474 pts (30d News @ 5 + 12 Sat @ 2.25 + 33d SEO @ 9)</span>
+        `;
+      }
+    }
 
-      { writer: "Lehron", squad: "Exam Prep", target: "585" },
-      { writer: "Dhananjay", squad: "Exam Prep", target: "585" },
-      { writer: "Falguni", squad: "Exam Prep", target: "585" },
-      { writer: "Swathi", squad: "Exam Prep", target: "585" },
-      { writer: "Sumit Kumar", squad: "Exam Prep", target: "585" },
-      { writer: "Manicka", squad: "Exam Prep", target: "585" },
+    // Keep sub-tab button active states in sync
+    if (els.kpiSubBtns) {
+      els.kpiSubBtns.forEach(b => b.classList.toggle('active', b.dataset.kpitab === subTab));
+    }
 
-      { writer: "Archana", squad: "New Content", target: "585" },
-      { writer: "Shilpa Singh", squad: "New Content", target: "585" }
-    ];
+    // Define writer roster for each sub-tab
+    let writersListRaw = [];
+
+    if (subTab === 'prep') {
+      writersListRaw = [
+        { writer: "Lehron", squad: "Exam Prep", target: "660" },
+        { writer: "Dhananjay", squad: "Exam Prep", target: "660" },
+        { writer: "Falguni", squad: "Exam Prep", target: "660" },
+        { writer: "Swathi", squad: "Exam Prep", target: "660" },
+        { writer: "Sumit Kumar", squad: "Exam Prep", target: "660" },
+        { writer: "Manicka", squad: "Exam Prep", target: "660" },
+        { writer: "Archana", squad: "Exam Prep", target: "660" },
+        { writer: "Shilpa Singh", squad: "Exam Prep", target: "660" }
+      ];
+    } else if (subTab === 'hindi') {
+      writersListRaw = [
+        { writer: "Anshika", squad: "Hindi Team", target: "594" },
+        { writer: "Vidit", squad: "Hindi Team", target: "594" },
+        { writer: "Prabodh", squad: "Hindi Team", target: "594" }
+      ];
+    } else {
+      // 'regular' - Team A and Team B
+      writersListRaw = [
+        { writer: "Sonika", squad: "Team A", target: "474" },
+        { writer: "Archita", squad: "Team A", target: "474" },
+        { writer: "Shemaila", squad: "Team A", target: "474" },
+        { writer: "Somya", squad: "Team A", target: "474" },
+        { writer: "Mohit", squad: "Team A", target: "474" },
+
+        { writer: "Nadeem", squad: "Team B", target: "474" },
+        { writer: "Shilpa Kohli", squad: "Team B", target: "474" },
+        { writer: "Aditi", squad: "Team B", target: "474" },
+        { writer: "Atul", squad: "Team B", target: "474" },
+        { writer: "Trishala", squad: "Team B", target: "474" }
+      ];
+    }
 
     let filtered = writersListRaw;
-
-    if (state.kpiSquadFilter && state.kpiSquadFilter !== 'all') {
-      if (state.kpiSquadFilter === 'teamA') filtered = filtered.filter(w => w.squad === 'Team A');
-      else if (state.kpiSquadFilter === 'teamB') filtered = filtered.filter(w => w.squad === 'Team B');
-      else if (state.kpiSquadFilter === 'prep') filtered = filtered.filter(w => w.squad === 'Exam Prep');
-      else if (state.kpiSquadFilter === 'new_content') filtered = filtered.filter(w => w.squad === 'New Content');
-    }
 
     if (state.kpiSearch) {
       const q = state.kpiSearch.toLowerCase();
@@ -4851,6 +4896,35 @@
   // Open Writer KPI Drilldown Modal
   function openWriterKpiDrilldown(writerName, writerData) {
     if (!els.modalWriterKpiDrilldown) return;
+
+    if (!writerData) {
+      const allItems = getReviewList();
+      const myItems = allItems.filter(it => (it.writer || '').trim().toLowerCase() === (writerName || '').trim().toLowerCase());
+      let achieved = 0;
+      let appr = 0;
+      const taskItems = myItems.map(it => {
+        const isApproved = getEffectiveReviewStatus(it) === 'Approved';
+        const pt = calculateItemKpiPoints(it);
+        if (isApproved) {
+          achieved += (pt.points || 0);
+          appr++;
+        }
+        return {
+          ...it,
+          isApproved,
+          points: pt.points
+        };
+      });
+      const meta = getWriterSquadMeta(writerName);
+      writerData = {
+        writer: writerName,
+        squadMeta: meta,
+        achievedPoints: achieved,
+        approvedCount: appr,
+        totalTasks: myItems.length,
+        taskItems: taskItems
+      };
+    }
 
     if (els.drilldownWriterTitle) {
       els.drilldownWriterTitle.textContent = `👤 ${writerName} — KPI Task Breakdown`;
@@ -4941,33 +5015,45 @@
   }
 
   function exportKpiCSV() {
-    const filename = `Team_KPI_Dashboard_${Date.now()}.csv`;
+    const subTab = state.kpiSubTab || 'regular';
+    const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : 'Regular_Team');
+    const filename = `Team_KPI_${subTabTitle}_${Date.now()}.csv`;
     const headers = ['#', 'Writer Name', 'Squad', 'Points Scored', 'Target'];
     const csvLines = [headers.join(',')];
 
-    const writersListRaw = [
-      { writer: "Sonika", squad: "Team A", target: "474" },
-      { writer: "Archita", squad: "Team A", target: "474" },
-      { writer: "Shemaila", squad: "Team A", target: "474" },
-      { writer: "Somya", squad: "Team A", target: "474" },
-      { writer: "Mohit", squad: "Team A", target: "474" },
+    let writersListRaw = [];
+    if (subTab === 'prep') {
+      writersListRaw = [
+        { writer: "Lehron", squad: "Exam Prep", target: "660" },
+        { writer: "Dhananjay", squad: "Exam Prep", target: "660" },
+        { writer: "Falguni", squad: "Exam Prep", target: "660" },
+        { writer: "Swathi", squad: "Exam Prep", target: "660" },
+        { writer: "Sumit Kumar", squad: "Exam Prep", target: "660" },
+        { writer: "Manicka", squad: "Exam Prep", target: "660" },
+        { writer: "Archana", squad: "Exam Prep", target: "660" },
+        { writer: "Shilpa Singh", squad: "Exam Prep", target: "660" }
+      ];
+    } else if (subTab === 'hindi') {
+      writersListRaw = [
+        { writer: "Anshika", squad: "Hindi Team", target: "594" },
+        { writer: "Vidit", squad: "Hindi Team", target: "594" },
+        { writer: "Prabodh", squad: "Hindi Team", target: "594" }
+      ];
+    } else {
+      writersListRaw = [
+        { writer: "Sonika", squad: "Team A", target: "474" },
+        { writer: "Archita", squad: "Team A", target: "474" },
+        { writer: "Shemaila", squad: "Team A", target: "474" },
+        { writer: "Somya", squad: "Team A", target: "474" },
+        { writer: "Mohit", squad: "Team A", target: "474" },
 
-      { writer: "Nadeem", squad: "Team B", target: "474" },
-      { writer: "Shilpa Kohli", squad: "Team B", target: "474" },
-      { writer: "Aditi", squad: "Team B", target: "474" },
-      { writer: "Atul", squad: "Team B", target: "474" },
-      { writer: "Trishala", squad: "Team B", target: "474" },
-
-      { writer: "Lehron", squad: "Exam Prep", target: "585" },
-      { writer: "Dhananjay", squad: "Exam Prep", target: "585" },
-      { writer: "Falguni", squad: "Exam Prep", target: "585" },
-      { writer: "Swathi", squad: "Exam Prep", target: "585" },
-      { writer: "Sumit Kumar", squad: "Exam Prep", target: "585" },
-      { writer: "Manicka", squad: "Exam Prep", target: "585" },
-
-      { writer: "Archana", squad: "New Content", target: "585" },
-      { writer: "Shilpa Singh", squad: "New Content", target: "585" }
-    ];
+        { writer: "Nadeem", squad: "Team B", target: "474" },
+        { writer: "Shilpa Kohli", squad: "Team B", target: "474" },
+        { writer: "Aditi", squad: "Team B", target: "474" },
+        { writer: "Atul", squad: "Team B", target: "474" },
+        { writer: "Trishala", squad: "Team B", target: "474" }
+      ];
+    }
 
     const allWorkflowItems = getReviewList();
     const writerScoredMap = {};
