@@ -87,7 +87,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing content item payload.' });
   }
 
-  const apiKey = process.env.LITELLM_API_KEY || process.env.CLASSPLUS_AI_KEY || 'sk-kc_Y5_4LhEaWV5JbE66abg';
+  const apiKey = process.env.LITELLM_API_KEY || process.env.CLASSPLUS_AI_KEY;
+  if (!apiKey) {
+    return res.status(500).json({
+      error: 'LITELLM_API_KEY is not configured in Vercel Environment Variables. Please add LITELLM_API_KEY in Vercel Project Settings > Environment Variables.'
+    });
+  }
   const endpoint = process.env.LITELLM_ENDPOINT || 'https://litellm.classplusapp.com/v1/chat/completions';
   const webAppUrl = process.env.APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbwOtco6sBd8RtiHpaBCCFYjpWE3rU9v5bE4fG9rMui5BYi0-LZNXSatBpvWSye8BRhr/exec';
 

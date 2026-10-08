@@ -158,7 +158,8 @@ class SheetsClient {
 
   // AI Quality & Content Diff Assistant using Classplus LiteLLM API (gemini/gemini-3.8-flash)
   async auditContentWithAI(item) {
-    const apiKey = 'sk-kc_Y5_4LhEaWV5JbE66abg';
+    // API key is securely handled by Vercel Serverless /api/audit backend; never hardcoded in client code
+    const apiKey = (typeof window !== 'undefined' && window.LITELLM_API_KEY) || (typeof localStorage !== 'undefined' ? localStorage.getItem('LITELLM_API_KEY') : '') || '';
     const endpoint = 'https://litellm.classplusapp.com/v1/chat/completions';
 
     const hasNewDocLink = item.newDoc && item.newDoc.startsWith('http');
@@ -332,6 +333,13 @@ ${docExtraction.oldDoc?.text ? `\nOld Document Text Sample:\n${docExtraction.old
 Use these exact extracted word counts in your evaluation.`;
     } else {
       userMessage += `\n\nInspect the content of the document(s), calculate exact word counts for Old Doc and New Doc, calculate the net word difference, audit SEO and syllabus quality, and output the strict JSON.`;
+    }
+
+    if (!apiKey) {
+      return {
+        success: false,
+        error: 'AI Audit requires the Vercel backend /api/audit endpoint with LITELLM_API_KEY configured in Environment Variables.'
+      };
     }
 
     try {

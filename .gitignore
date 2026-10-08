@@ -1,13 +1,20 @@
 # Dependencies
 node_modules/
 
-# Local credentials
+# Local credentials & Environment Secrets
+.env
+.env.*
+!.env.example
 credentials*.json
 *.pem
 *.key
+
+# Vercel Project Metadata
+.vercel/
 
 # OS and Temp Files
 .DS_Store
 Thumbs.db
 *.log
 *.tmp
+
