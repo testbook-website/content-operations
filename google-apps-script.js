@@ -363,8 +363,9 @@ function handlePopulateAllRevisionNotes() {
     }
 
     const headers = data[0];
-    let reviewStatusCol = 16; // Col P
-    let notesCol = 19;        // Col S
+    let reviewStatusCol = 16; // Col P default
+    let notesCol = 19;        // Col S default
+    let writerCol = 5;        // Col E default
 
     for (let c = 0; c < headers.length; c++) {
       const h = String(headers[c] || '').trim().toLowerCase();
@@ -372,6 +373,8 @@ function handlePopulateAllRevisionNotes() {
         reviewStatusCol = c + 1;
       } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
         notesCol = c + 1;
+      } else if (h === 'writer' || h === 'assignee' || h === 'content writer') {
+        writerCol = c + 1;
       }
     }
 
@@ -386,6 +389,7 @@ function handlePopulateAllRevisionNotes() {
 
       if (isRevision && !currentNote) {
         const topic = String(row[1] || '').trim();
+        const writer = String(row[writerCol - 1] || '').trim().toLowerCase();
         const taskType = String(row[6] || '').trim().toLowerCase();
         const type = String(row[7] || '').trim().toLowerCase();
         const wcRaw = String(row[11] || '').replace(/,/g, '').trim();
@@ -395,7 +399,19 @@ function handlePopulateAllRevisionNotes() {
         const hasDoc = newDoc.indexOf('http') !== -1;
         const hasOld = oldDoc.indexOf('http') !== -1;
         const isNews = taskType.indexOf('news') !== -1 || type.indexOf('news') !== -1;
-        const isOpt = taskType.indexOf('optimi') !== -1 || type.indexOf('update') !== -1 || taskType.indexOf('update') !== -1;
+
+        // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content
+        const hindiWriters = ['anshika', 'vidit', 'prabodh'];
+        const isHindiWriter = hindiWriters.some(function(w) { return writer.indexOf(w) !== -1; });
+        const isExplicitNew = type.indexOf('new') !== -1 || taskType.indexOf('new') !== -1;
+        const isOpt = !isHindiWriter && !isExplicitNew && (
+          type === 'update' || 
+          type === 'optimization' || 
+          type === 'optimi' || 
+          type === 'refresh' || 
+          taskType === 'seo optimization' || 
+          taskType === 'content optimization'
+        );
         const isHighIntent = taskType.indexOf('high in') !== -1 || taskType.indexOf('pyp') !== -1;
 
         let note = '';

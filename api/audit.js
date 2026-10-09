@@ -101,9 +101,29 @@ export default async function handler(req, res) {
   const hasPdfLink = (item.pdfLink && item.pdfLink.startsWith('http')) || (item.pdf && item.pdf.startsWith('http'));
   const pdfUrl = item.pdfLink || item.pdf || '';
 
-  const taskTypeLower = (item.taskType || '').toLowerCase();
-  const typeLower = (item.type || '').toLowerCase();
-  const isUpdateTask = taskTypeLower.includes('update') || taskTypeLower.includes('optimi') || taskTypeLower.includes('refresh') || taskTypeLower.includes('revamp') || typeLower.includes('update') || typeLower.includes('optimi') || typeLower.includes('refresh');
+  const taskTypeLower = (item.taskType || '').toLowerCase().trim();
+  const typeLower = (item.type || '').toLowerCase().trim();
+  const writerLower = (item.writer || '').toLowerCase().trim();
+
+  // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content - never require Old Doc
+  const hindiWriters = ['anshika', 'vidit', 'prabodh'];
+  const isHindiWriter = hindiWriters.some(w => writerLower.includes(w));
+
+  // Explicit new article indicators
+  const isExplicitNew = typeLower.includes('new') || taskTypeLower.includes('new');
+
+  // An update task requiring Old Doc is ONLY when:
+  // 1. Not a Hindi team writer
+  // 2. Type is explicitly 'Update' or 'Optimization' or 'Refresh' (and NOT 'New')
+  // 3. Task is an SEO Optimization or Content Refresh on an existing page
+  const isUpdateTask = !isHindiWriter && !isExplicitNew && (
+    typeLower === 'update' || 
+    typeLower === 'optimization' || 
+    typeLower === 'optimi' ||
+    typeLower === 'refresh' ||
+    taskTypeLower === 'seo optimization' ||
+    taskTypeLower === 'content optimization'
+  );
 
   // Strict Rule 1: Every submission requires a New Doc
   if (!hasNewDocLink) {
@@ -200,6 +220,16 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 5. Data-Backed Content Optimization / Complete Rewrite (Net +300w OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
 6. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
 
+📝 ADVANCE PREPARATION & PLACEHOLDER RULES (CRITICAL):
+- Testbook editorial teams routinely create exam articles and syllabus guides IN ADVANCE of official notifications.
+- DO NOT flag placeholders, blank date spaces, or unannounced exam timelines as errors or rejection reasons!
+- The following are 100% VALID, standard editorial practices:
+  • Date placeholders: e.g. "announced on ___ October 2026", "___ November 2026", "Date: ___", "[To be announced]".
+  • Unannounced dates or blank table slots: e.g. "To be announced", "TBA", "Expected soon", "Upcoming".
+  • Advance exam cycles / years: e.g. "CMAT 2027", "UGC NET 2027", "RRB 2026-2027" describing upcoming cycles.
+  • General registration claims or estimated timelines for upcoming cycles.
+- NEVER reject an article or mark it as "Needs Revision" for having "___" placeholders, blank date spaces, unannounced dates, or advance cycle years (e.g. 2027). These are EXPECTED editorial placeholders.
+
 🛡️ ANTI-MANIPULATION & REWRITE EVALUATION RULES:
 - Inspect extracted text and word counts provided.
 - Accurately assess:
@@ -214,19 +244,9 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 - If the draft contains redundant fluff, repeated ideas in different words, or irrelevant filler to pad length: Mark as "Needs Revision" with score < 6 and explicitly call out the filler in rejectionReasons.
 
 🎯 FACTUAL ACCURACY AUDITING (OFFICIAL NOTIFICATION PDF vs DRAFT):
-${hasPdfLink ? `An official Notification PDF link is attached (${pdfUrl}).` : 'Check for factual precision in exam details.'}
-Cross-check all factual parameters mentioned in the draft against standard official notifications for this exam:
-1. Important Dates: Online Application Start Date, Last Date to Apply, Exam Date.
-2. Vacancy Count: Total vacancies and category-wise distribution (UR, OBC, SC, ST, EWS).
-3. Age Limit & Crucial Date: Minimum and maximum age eligibility and cut-off calculation date.
-4. Educational Qualification: Required degree/diploma and cut-off date.
-5. Salary / Pay Scale: Pay Level (7th CPC), Basic Pay, Gross monthly emoluments.
-6. Application Fee: Category-wise fees.
-7. Exam Pattern: Number of tiers/stages, total marks, duration, negative marking.
-
-If any factual discrepancies or obsolete numbers are found in the draft:
-- Flag as a Factual Error in rejectionReasons and set isApproved to false.
-- Populate the "factualAudit" object detailing each checked parameter.
+${hasPdfLink ? `An official Notification PDF link is attached (${pdfUrl}). Cross-check draft against official notification parameters.` : 'Check for general factual consistency in exam pattern and eligibility.'}
+- Only flag a factual discrepancy if an official Notification PDF is attached AND the draft explicitly contradicts confirmed structural parameters from that PDF (e.g., negative marking is 0.50 but draft claims 0.25, or official educational qualification is Graduate but draft says 10th pass).
+- Do NOT penalize advance placeholders, unannounced dates, or upcoming cycle projections (e.g. 2027).
 
 Return a strict JSON evaluation object:
 {

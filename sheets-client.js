@@ -167,9 +167,25 @@ class SheetsClient {
     const hasPdfLink = (item.pdfLink && item.pdfLink.startsWith('http')) || (item.pdf && item.pdf.startsWith('http'));
     const pdfUrl = item.pdfLink || item.pdf || '';
 
-    const taskTypeLower = (item.taskType || '').toLowerCase();
-    const typeLower = (item.type || '').toLowerCase();
-    const isUpdateTask = taskTypeLower.includes('update') || taskTypeLower.includes('optimi') || taskTypeLower.includes('refresh') || taskTypeLower.includes('revamp') || typeLower.includes('update') || typeLower.includes('optimi') || typeLower.includes('refresh');
+    const taskTypeLower = (item.taskType || '').toLowerCase().trim();
+    const typeLower = (item.type || '').toLowerCase().trim();
+    const writerLower = (item.writer || '').toLowerCase().trim();
+
+    // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content - never require Old Doc
+    const hindiWriters = ['anshika', 'vidit', 'prabodh'];
+    const isHindiWriter = hindiWriters.some(w => writerLower.includes(w));
+
+    // Explicit new article indicators
+    const isExplicitNew = typeLower.includes('new') || taskTypeLower.includes('new');
+
+    const isUpdateTask = !isHindiWriter && !isExplicitNew && (
+      typeLower === 'update' || 
+      typeLower === 'optimization' || 
+      typeLower === 'optimi' ||
+      typeLower === 'refresh' ||
+      taskTypeLower === 'seo optimization' ||
+      taskTypeLower === 'content optimization'
+    );
 
     if (!hasNewDocLink) {
       return {
@@ -240,6 +256,16 @@ Evaluate this content submission under the official OND Point-Based Framework:
 4. Data-Backed Content Optimization / Refresh (Net +300 to +800 words): 1.5 Points (Requires meaningful net addition and old/new doc diff; no random minor edits).
 5. Standard Fresh Prep Article (800–1,200 words): 2.0 Points (Deep domain research, original conceptual notes).
 6. Fresh Pillar / Comprehensive Guide (1,500+ words): 3.0 Points (End-to-end curriculum coverage).
+
+📝 ADVANCE PREPARATION & PLACEHOLDER RULES (CRITICAL):
+- Testbook editorial teams create exam articles and syllabus guides IN ADVANCE of official notifications.
+- DO NOT flag placeholders, blank date spaces, or unannounced exam timelines as errors or rejection reasons!
+- The following are 100% VALID, standard editorial practices:
+  • Date placeholders: e.g. "announced on ___ October 2026", "___ November 2026", "Date: ___", "[To be announced]".
+  • Unannounced dates or blank table slots: e.g. "To be announced", "TBA", "Expected soon", "Upcoming".
+  • Advance exam cycles / years: e.g. "CMAT 2027", "UGC NET 2027", "RRB 2026-2027" describing upcoming cycles.
+  • General registration claims or estimated timelines for upcoming cycles.
+- NEVER reject an article or mark it as "Needs Revision" for having "___" placeholders, blank date spaces, unannounced dates, or advance cycle years (e.g. 2027). These are EXPECTED editorial placeholders.
 
 🛡️ ANTI-MANIPULATION & AUDITING RULES:
 - Inspect both documents if Old Doc Link is provided.
