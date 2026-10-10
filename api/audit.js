@@ -395,48 +395,20 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       }
     }
 
-    // --- HARD MATHEMATICAL QUALITY GUARDRAILS ---
+    // --- EXACT 4-TIER MATHEMATICAL QUALITY GUARDRAILS ---
     const effectiveNewWc = parsed.newDocWordCount || (parseInt(item.wordCount, 10) || 0);
-    const effectiveDiff = (parsed.netWordDiff !== undefined && parsed.netWordDiff !== null) ? parsed.netWordDiff : effectiveNewWc;
     const effectiveRewritten = parsed.rewrittenWords || 0;
-    const effectiveOverhaul = parsed.overhaulPercent || 0;
     const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
-    if (isUpdateTask) {
-      // Content Optimization / Update: MUST be at least 700-800 words total length AND have meaningful addition/overhaul
-      const passesWordCount = effectiveNewWc >= 700;
-      const passesOpt = passesWordCount && ((effectiveDiff >= 300) || (effectiveRewritten >= 350 && effectiveOverhaul >= 30));
-      if (!passesOpt) {
-        parsed.isApproved = false;
-        parsed.qualityVerdict = 'Needs Revision';
-        parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
-        parsed.pointsAwarded = 0;
-        let reason = '';
-        if (!passesWordCount) {
-          reason = `Optimization document length shortfall: Found only ${effectiveNewWc} words; Optimization/Update requires at least 700–800 words in the updated document.`;
-        } else {
-          reason = `Optimization update shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${effectiveDiff >= 0 ? '+' : ''}${effectiveDiff}w net, ~${effectiveRewritten}w rewritten [${effectiveOverhaul}%]).`;
-        }
-        if (!parsed.rejectionReasons || parsed.rejectionReasons.length === 0) {
-          parsed.rejectionReasons = [reason];
-        } else if (!parsed.rejectionReasons.some(r => r.includes('Optimization') || r.includes('shortfall') || r.includes('threshold'))) {
-          parsed.rejectionReasons.unshift(reason);
-        }
-        parsed.justificationSummary = `Needs Revision: ${reason}`;
-      } else {
-        parsed.isApproved = true;
-        parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = 1.5;
-      }
-    } else if (isNews) {
-      // News tasks: Absolute minimum 350 words!
+    // Rule 1: News Update (350+ Words)
+    if (isNews && isUpdateTask) {
       if (effectiveNewWc < 350) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
-        parsed.editorialScore = Math.min(parsed.editorialScore || 3, 3);
+        parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `News word count deficit: Found only ${effectiveNewWc} words; minimum 350 words required for News/Alerts.`;
+        const reason = `News Update length shortfall: Found only ${effectiveNewWc} words; minimum 350+ words required.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
@@ -444,100 +416,95 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.qualityVerdict = 'Approved';
         parsed.pointsAwarded = effectiveNewWc >= 500 ? 0.5 : 0.25;
       }
-    } else if (isTargetPillar) {
-      if (effectiveNewWc < 1000) {
+    }
+    // Rule 2: News New (500+ Words)
+    else if (isNews && !isUpdateTask) {
+      if (effectiveNewWc < 500) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
-        parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
+        parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `Target/Pillar page deficit: Delivered ${effectiveNewWc} words; minimum 1,400+ words required for 3.0 points.`;
+        const reason = `New News length shortfall: Found only ${effectiveNewWc} words; minimum 500 words required.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = 3.0;
+        parsed.pointsAwarded = 0.5;
       }
-    } else {
-      // Standard New Content / Child Pages
-      if (effectiveNewWc < 600) {
+    }
+    // Rule 3: Optimization / Update (700 - 800 Words)
+    else if (isUpdateTask) {
+      const passesOpt = (effectiveNewWc >= 700) || (effectiveRewritten >= 700);
+      if (!passesOpt) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
-        parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
+        parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `Word count deficit: Delivered ${effectiveNewWc} words; minimum 700+ words required for New Content.`;
+        const reason = `Optimization length shortfall: Found only ${effectiveNewWc} words; Optimization/Update requires at least 700–800 words.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = 1.0;
+        parsed.pointsAwarded = 1.5;
+      }
+    }
+    // Rule 4: New Prep / New Content (800 - 1200 Words)
+    else {
+      const minPrepWc = isTargetPillar ? 1400 : 800;
+      if (effectiveNewWc < minPrepWc) {
+        parsed.isApproved = false;
+        parsed.qualityVerdict = 'Needs Revision';
+        parsed.editorialScore = 4;
+        parsed.pointsAwarded = 0;
+        const reason = isTargetPillar
+          ? `Target/Pillar page deficit: Delivered ${effectiveNewWc} words; minimum 1,400+ words required.`
+          : `New Prep length shortfall: Delivered ${effectiveNewWc} words; minimum 800–1200 words required.`;
+        parsed.rejectionReasons = [reason];
+        parsed.justificationSummary = `Needs Revision: ${reason}`;
+      } else {
+        parsed.isApproved = true;
+        parsed.qualityVerdict = 'Approved';
+        parsed.pointsAwarded = isTargetPillar ? 3.0 : 1.0;
       }
     }
 
     return res.status(200).json({ success: true, audit: parsed });
   } catch (err) {
     console.warn('AI Audit failed on backend, returning verified fallback:', err);
-    const topicLower = (item.topic || '').toLowerCase();
     const taskTypeLower = (item.taskType || '').toLowerCase();
     const typeLower = (item.type || '').toLowerCase();
-    const writerLower = (item.writer || '').toLowerCase();
-
-    const hindiWriters = ['anshika', 'vidit', 'prabodh'];
-    const isHindiWriter = hindiWriters.some(w => writerLower.includes(w));
-    const isExplicitNew = typeLower.includes('new') || taskTypeLower.includes('new');
-    const isOpt = !isHindiWriter && !isExplicitNew && (
-      typeLower === 'update' || 
-      typeLower === 'optimization' || 
-      typeLower === 'optimi' || 
-      typeLower === 'refresh' || 
-      taskTypeLower === 'seo optimization' || 
-      taskTypeLower === 'content optimization'
-    );
-
+    const isUpdate = typeLower === 'update' || taskTypeLower.includes('optimi') || hasOldDocLink;
     const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
     const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 0);
     const estOld = (docExtraction && docExtraction.oldDoc?.wordCount) ? docExtraction.oldDoc.wordCount : (hasOldDocLink ? (parseInt(item.wordCount, 10) || 0) : 0);
-    const estDiff = isOpt ? (estNew - estOld) : estNew;
-    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isOpt ? Math.round(estNew * 0.5) : estNew);
-    const estOverhaul = diffMetrics ? diffMetrics.overhaulPercent : (isOpt ? 40 : 100);
-    
-    // Strict Approval Conditions:
+    const estDiff = isUpdate ? (estNew - estOld) : estNew;
+    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isUpdate ? Math.round(estNew * 0.5) : estNew);
+
     let isApproved = false;
     let ptsAwarded = 0;
     let rejectReason = '';
 
-    if (isOpt) {
-      const passesWc = estNew >= 700;
-      isApproved = passesWc && ((estDiff >= 300) || (estRewritten >= 350 && estOverhaul >= 30));
-      ptsAwarded = isApproved ? 1.5 : 0;
-      if (!isApproved) {
-        if (!passesWc) {
-          rejectReason = `Optimization document length shortfall: Found only ${estNew} words; Content Optimization/Update requires at least 700–800 words.`;
-        } else {
-          rejectReason = `Optimization shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${estDiff >= 0 ? '+' : ''}${estDiff}w net, ~${estRewritten}w rewritten [${estOverhaul}%]).`;
-        }
-      }
-    } else if (isNews) {
+    if (isNews && isUpdate) {
       isApproved = estNew >= 350;
       ptsAwarded = isApproved ? (estNew >= 500 ? 0.5 : 0.25) : 0;
-      if (!isApproved) {
-        rejectReason = `News word count deficit: Found only ${estNew} words; minimum 350 words required for News/Alerts.`;
-      }
-    } else if (isTargetPillar) {
-      isApproved = estNew >= 1000;
-      ptsAwarded = isApproved ? 3.0 : 0;
-      if (!isApproved) {
-        rejectReason = `Target/Pillar page deficit: Delivered ${estNew} words; minimum 1,400+ words required.`;
-      }
+      if (!isApproved) rejectReason = `News Update shortfall: Found ${estNew}w (minimum 350+ words required).`;
+    } else if (isNews && !isUpdate) {
+      isApproved = estNew >= 500;
+      ptsAwarded = isApproved ? 0.5 : 0;
+      if (!isApproved) rejectReason = `New News shortfall: Found ${estNew}w (minimum 500 words required).`;
+    } else if (isUpdate) {
+      isApproved = estNew >= 700 || estRewritten >= 700;
+      ptsAwarded = isApproved ? 1.5 : 0;
+      if (!isApproved) rejectReason = `Optimization shortfall: Found ${estNew}w (minimum 700–800 words required).`;
     } else {
-      isApproved = estNew >= 600;
-      ptsAwarded = isApproved ? 1.0 : 0;
-      if (!isApproved) {
-        rejectReason = `Word count deficit: Delivered ${estNew} words; minimum 700+ words required for New Content.`;
-      }
+      const minPrepWc = isTargetPillar ? 1400 : 800;
+      isApproved = estNew >= minPrepWc;
+      ptsAwarded = isApproved ? (isTargetPillar ? 3.0 : 1.0) : 0;
+      if (!isApproved) rejectReason = `New Prep shortfall: Found ${estNew}w (minimum 800–1200 words required).`;
     }
 
     return res.status(200).json({
