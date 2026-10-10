@@ -395,6 +395,80 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       }
     }
 
+    // --- HARD MATHEMATICAL QUALITY GUARDRAILS ---
+    const effectiveNewWc = parsed.newDocWordCount || (parseInt(item.wordCount, 10) || 0);
+    const effectiveDiff = (parsed.netWordDiff !== undefined && parsed.netWordDiff !== null) ? parsed.netWordDiff : effectiveNewWc;
+    const effectiveRewritten = parsed.rewrittenWords || 0;
+    const effectiveOverhaul = parsed.overhaulPercent || 0;
+    const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
+    const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
+
+    if (isUpdateTask) {
+      // Content Optimization: MUST have Net >= +300 words OR Rewritten >= 350 words (with >= 30% overhaul)
+      const passesOpt = (effectiveDiff >= 300) || (effectiveRewritten >= 350 && effectiveOverhaul >= 30);
+      if (!passesOpt) {
+        parsed.isApproved = false;
+        parsed.qualityVerdict = 'Needs Revision';
+        parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
+        parsed.pointsAwarded = 0;
+        const reason = `Optimization shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${effectiveDiff >= 0 ? '+' : ''}${effectiveDiff}w net, ~${effectiveRewritten}w rewritten [${effectiveOverhaul}%]).`;
+        if (!parsed.rejectionReasons || parsed.rejectionReasons.length === 0) {
+          parsed.rejectionReasons = [reason];
+        } else if (!parsed.rejectionReasons.some(r => r.includes('Optimization') || r.includes('shortfall') || r.includes('threshold'))) {
+          parsed.rejectionReasons.unshift(reason);
+        }
+        parsed.justificationSummary = `Needs Revision: ${reason}`;
+      } else {
+        parsed.isApproved = true;
+        parsed.qualityVerdict = 'Approved';
+        parsed.pointsAwarded = 1.5;
+      }
+    } else if (isNews) {
+      // News tasks: Absolute minimum 350 words!
+      if (effectiveNewWc < 350) {
+        parsed.isApproved = false;
+        parsed.qualityVerdict = 'Needs Revision';
+        parsed.editorialScore = Math.min(parsed.editorialScore || 3, 3);
+        parsed.pointsAwarded = 0;
+        const reason = `News word count deficit: Found only ${effectiveNewWc} words; minimum 350 words required for News/Alerts.`;
+        parsed.rejectionReasons = [reason];
+        parsed.justificationSummary = `Needs Revision: ${reason}`;
+      } else {
+        parsed.isApproved = true;
+        parsed.qualityVerdict = 'Approved';
+        parsed.pointsAwarded = effectiveNewWc >= 500 ? 0.5 : 0.25;
+      }
+    } else if (isTargetPillar) {
+      if (effectiveNewWc < 1000) {
+        parsed.isApproved = false;
+        parsed.qualityVerdict = 'Needs Revision';
+        parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
+        parsed.pointsAwarded = 0;
+        const reason = `Target/Pillar page deficit: Delivered ${effectiveNewWc} words; minimum 1,400+ words required for 3.0 points.`;
+        parsed.rejectionReasons = [reason];
+        parsed.justificationSummary = `Needs Revision: ${reason}`;
+      } else {
+        parsed.isApproved = true;
+        parsed.qualityVerdict = 'Approved';
+        parsed.pointsAwarded = 3.0;
+      }
+    } else {
+      // Standard New Content / Child Pages
+      if (effectiveNewWc < 600) {
+        parsed.isApproved = false;
+        parsed.qualityVerdict = 'Needs Revision';
+        parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
+        parsed.pointsAwarded = 0;
+        const reason = `Word count deficit: Delivered ${effectiveNewWc} words; minimum 700+ words required for New Content.`;
+        parsed.rejectionReasons = [reason];
+        parsed.justificationSummary = `Needs Revision: ${reason}`;
+      } else {
+        parsed.isApproved = true;
+        parsed.qualityVerdict = 'Approved';
+        parsed.pointsAwarded = 1.0;
+      }
+    }
+
     return res.status(200).json({ success: true, audit: parsed });
   } catch (err) {
     console.warn('AI Audit failed on backend, returning verified fallback:', err);
@@ -415,38 +489,44 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       taskTypeLower === 'content optimization'
     );
 
-    const isNewsOrAlert = taskTypeLower.includes('news') || 
-                          typeLower.includes('news') || 
-                          (item.pageType || '').toLowerCase().includes('blog') ||
-                          topicLower.includes('admit card') || 
-                          topicLower.includes('result') || 
-                          topicLower.includes('answer key') || 
-                          topicLower.includes('cut off') || 
-                          topicLower.includes('exam date') ||
-                          topicLower.includes('merit list') ||
-                          topicLower.includes('colour');
+    const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
+    const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
-    const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 850);
+    const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 0);
     const estOld = (docExtraction && docExtraction.oldDoc?.wordCount) ? docExtraction.oldDoc.wordCount : (hasOldDocLink ? (parseInt(item.wordCount, 10) || 0) : 0);
     const estDiff = isOpt ? (estNew - estOld) : estNew;
-    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isOpt ? Math.round(estNew * 0.6) : estNew);
+    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isOpt ? Math.round(estNew * 0.5) : estNew);
+    const estOverhaul = diffMetrics ? diffMetrics.overhaulPercent : (isOpt ? 40 : 100);
     
-    // Approval: If News/Alert >= 350w, or Fresh >= 450w, or Opt has net diff/rewritten -> APPROVED!
-    const isApproved = isOpt 
-      ? (estDiff >= 300 || estRewritten >= 350 || estNew >= 700) 
-      : (isNewsOrAlert ? estNew >= 350 : estNew >= 450);
+    // Strict Approval Conditions:
+    let isApproved = false;
+    let ptsAwarded = 0;
+    let rejectReason = '';
 
-    let ptsAwarded = 1.0;
     if (isOpt) {
-      ptsAwarded = 1.5;
-    } else if (isNewsOrAlert) {
-      ptsAwarded = estNew >= 500 ? 0.5 : 0.25;
-    } else if (estNew >= 1400) {
-      ptsAwarded = 3.0;
-    } else if (estNew >= 700) {
-      ptsAwarded = 1.0;
+      isApproved = (estDiff >= 300) || (estRewritten >= 350 && estOverhaul >= 30);
+      ptsAwarded = isApproved ? 1.5 : 0;
+      if (!isApproved) {
+        rejectReason = `Optimization shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${estDiff >= 0 ? '+' : ''}${estDiff}w net, ~${estRewritten}w rewritten [${estOverhaul}%]).`;
+      }
+    } else if (isNews) {
+      isApproved = estNew >= 350;
+      ptsAwarded = isApproved ? (estNew >= 500 ? 0.5 : 0.25) : 0;
+      if (!isApproved) {
+        rejectReason = `News word count deficit: Found only ${estNew} words; minimum 350 words required for News/Alerts.`;
+      }
+    } else if (isTargetPillar) {
+      isApproved = estNew >= 1000;
+      ptsAwarded = isApproved ? 3.0 : 0;
+      if (!isApproved) {
+        rejectReason = `Target/Pillar page deficit: Delivered ${estNew} words; minimum 1,400+ words required.`;
+      }
     } else {
-      ptsAwarded = 0.5;
+      isApproved = estNew >= 600;
+      ptsAwarded = isApproved ? 1.0 : 0;
+      if (!isApproved) {
+        rejectReason = `Word count deficit: Delivered ${estNew} words; minimum 700+ words required for New Content.`;
+      }
     }
 
     return res.status(200).json({
@@ -455,20 +535,20 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       audit: {
         isApproved: isApproved,
         qualityVerdict: isApproved ? 'Approved' : 'Needs Revision',
-        editorialScore: isApproved ? 9 : 5,
-        pointsAwarded: isApproved ? ptsAwarded : 0,
+        editorialScore: isApproved ? 9 : 4,
+        pointsAwarded: ptsAwarded,
         oldDocWordCount: estOld,
         newDocWordCount: estNew,
         netWordDiff: estDiff,
         rewrittenWords: estRewritten,
-        overhaulPercent: diffMetrics ? diffMetrics.overhaulPercent : 60,
+        overhaulPercent: estOverhaul,
         docWordCountText: diffMetrics ? diffMetrics.summaryText : (isOpt ? `Old: ${estOld.toLocaleString()}w ➔ New: ${estNew.toLocaleString()}w (+${estDiff}w Net | ~${estRewritten}w Rewritten)` : `${estNew.toLocaleString()} words`),
         justificationSummary: isApproved
-          ? `Verified: Substantial editorial quality delivered with ${estNew.toLocaleString()} words adhering to the Testbook OND Content Framework.`
-          : `Needs Revision: Word count (${estNew}w) is below minimum threshold for this category.`,
-        rejectionReasons: isApproved ? [] : [`Word count (${estNew}w) is below the minimum required threshold.`],
-        keyStrengths: ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
-        improvementAreas: ['Ensure internal linking to parent pillar page'],
+          ? `Verified: Substantial editorial quality delivered with ${estNew.toLocaleString()} words meeting the OND Framework.`
+          : `Needs Revision: ${rejectReason}`,
+        rejectionReasons: isApproved ? [] : [rejectReason],
+        keyStrengths: isApproved ? ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'] : [],
+        improvementAreas: isApproved ? ['Ensure internal linking to parent pillar page'] : ['Expand article length and depth to meet framework minimums.'],
         recommendationNote: isApproved ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'
       }
     });
