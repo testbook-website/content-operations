@@ -3655,9 +3655,40 @@
     });
   }
 
+  function getActiveFilterSummary() {
+    const parts = [];
+    if (state.reviewDateFilter && state.reviewDateFilter !== 'all') parts.push(`Date: ${state.reviewDateFilter}`);
+    if (state.reviewWriterFilter && state.reviewWriterFilter !== 'all') parts.push(`Writer: ${state.reviewWriterFilter}`);
+    if (state.reviewTaskTypeFilter && state.reviewTaskTypeFilter !== 'all') {
+      const typeLabels = {
+        pillar: 'Pillar / Target',
+        optimization: 'Optimization / Update',
+        high_intent: 'High Intent / PYP',
+        new_content: 'New Content / Fresh',
+        news: 'News Articles'
+      };
+      parts.push(`Type: ${typeLabels[state.reviewTaskTypeFilter] || state.reviewTaskTypeFilter}`);
+    }
+    if (state.reviewStatusFilter && state.reviewStatusFilter !== 'all') {
+      const statusLabels = {
+        pending: 'Pending Review',
+        approved: 'Approved',
+        needs_revision: 'Needs Revision'
+      };
+      parts.push(`Status: ${statusLabels[state.reviewStatusFilter] || state.reviewStatusFilter}`);
+    }
+    if (state.reviewCategoryFilter && state.reviewCategoryFilter !== 'all') parts.push(`Category: ${state.reviewCategoryFilter}`);
+    if (state.reviewSearch) parts.push(`Search: "${state.reviewSearch}"`);
+    return parts;
+  }
+
   function updateAiRunnerUI(customStatus) {
     if (!els.btnStartAiRunner) return;
     const allItems = getReviewList();
+    const filtered = getFilteredReviewItems();
+    const filterSummary = getActiveFilterSummary();
+    const hasFilter = filterSummary.length > 0;
+
     const auditedKeys = Object.keys(state.aiReviewCache || {});
     let approvedCount = 0;
     let revisionCount = 0;
@@ -3686,16 +3717,16 @@
         els.aiRunnerDot.style.boxShadow = '0 0 8px #22c55e';
       }
       if (els.aiRunnerStatusText) {
-        els.aiRunnerStatusText.innerHTML = customStatus || `<strong>AI Runner Active:</strong> Autonomously reviewing pending articles with Classplus Gemini Flash...`;
+        els.aiRunnerStatusText.innerHTML = customStatus || `<strong>AI Runner Active:</strong> Autonomously reviewing filtered articles with Classplus Gemini Flash...`;
       }
     } else {
       els.btnStartAiRunner.style.display = 'inline-flex';
       const btnSpan = els.btnStartAiRunner.querySelector('span');
       if (btnSpan) {
-        if (state.reviewDateFilter && state.reviewDateFilter !== 'all') {
-          btnSpan.textContent = `⚡ Run AI Audit for ${state.reviewDateFilter}`;
+        if (hasFilter) {
+          btnSpan.textContent = `⚡ Run AI Review on ${filtered.length} Filtered Articles`;
         } else {
-          btnSpan.textContent = `⚡ Start AI Auto-Review`;
+          btnSpan.textContent = `⚡ Run AI Review (${filtered.length} Articles)`;
         }
       }
       if (els.btnStopAiRunner) els.btnStopAiRunner.style.display = 'none';
@@ -3704,55 +3735,45 @@
         els.aiRunnerDot.style.boxShadow = 'none';
       }
       if (els.aiRunnerStatusText) {
-        const dateNote = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` (Date: ${state.reviewDateFilter})` : '';
-        els.aiRunnerStatusText.innerHTML = customStatus || (auditedKeys.length > 0 
-          ? `<strong>AI Runner Ready${dateNote}:</strong> ${auditedKeys.length} articles already audited. Click button to audit pending articles.`
-          : `<strong>Autonomous AI Review Runner${dateNote}:</strong> Ready (Click button to auto-review articles)`);
+        const filterNote = hasFilter ? ` <span style="color:#4f46e5; font-size:0.8rem; font-weight:600;">[Filtered by: ${filterSummary.join(' | ')}]</span>` : '';
+        els.aiRunnerStatusText.innerHTML = customStatus || 
+          `<strong>AI Review Runner:</strong> Ready to review <strong>${filtered.length}</strong> ${hasFilter ? 'filtered' : ''} articles.${filterNote} Click button to start.`;
       }
     }
   }
 
   // =========================================================================
   // Autonomous AI Review Runner (Start Run Button)
-  // Scoped to active filtered items (e.g. selected date)
+  // Scoped to active filtered items (e.g. selected filters: Date, Writer, Type, Status, etc.)
   // =========================================================================
   async function startAiAutoReviewRunner() {
     if (state.aiRunnerActive) return;
 
     const filteredItems = getFilteredReviewItems();
-    // Filter queue: Skip anything already reviewed by AI or marked approved
-    const pendingQueue = filteredItems.filter(item => {
-      // 1. If already in AI cache, DO NOT touch again!
-      if (state.aiReviewCache && state.aiReviewCache[item.topic]) {
-        return false;
-      }
-      // 2. If raw sheet review status already explicitly contains approved, skip
-      const raw = (item.reviewStatus || '').trim().toLowerCase();
-      if (raw.includes('approv')) return false;
-      return true;
-    });
-
-    if (pendingQueue.length === 0) {
-      const dateContext = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` for date ${state.reviewDateFilter}` : '';
-      updateAiRunnerUI(`🎉 All ${filteredItems.length} articles${dateContext} are already reviewed by AI! Nothing left to process.`);
+    if (!filteredItems || filteredItems.length === 0) {
+      updateAiRunnerUI(`⚠️ No articles match the current filter selection to review. Please adjust or reset filters.`);
       return;
     }
+
+    const filterSummary = getActiveFilterSummary();
+    const filterTag = filterSummary.length > 0 ? ` [${filterSummary.join(' | ')}]` : '';
 
     state.aiRunnerActive = true;
     updateAiRunnerUI();
 
     let processed = 0;
-    const dateScopeLabel = (state.reviewDateFilter && state.reviewDateFilter !== 'all') ? ` [${state.reviewDateFilter}]` : '';
-    for (let i = 0; i < pendingQueue.length; i++) {
+    const totalCount = filteredItems.length;
+
+    for (let i = 0; i < filteredItems.length; i++) {
       if (!state.aiRunnerActive) {
-        updateAiRunnerUI(`⏸️ Auto-Review paused by user. (${processed} articles reviewed this run)`);
+        updateAiRunnerUI(`⏸️ Auto-Review paused by user. (${processed}/${totalCount} articles reviewed)`);
         break;
       }
 
-      const item = pendingQueue[i];
+      const item = filteredItems[i];
       const currentNum = i + 1;
       const randomTip = SEO_AUDIT_INSIGHTS[i % SEO_AUDIT_INSIGHTS.length];
-      updateAiRunnerUI(`⚡ AI Reviewing${dateScopeLabel} [${currentNum}/${pendingQueue.length}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
+      updateAiRunnerUI(`⚡ AI Reviewing${filterTag} [${currentNum}/${totalCount}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
 
       try {
         const res = await sheetsClient.auditContentWithAI(item);
@@ -3765,7 +3786,7 @@
         const defaultPts = ((pt.includes('target') || pt.includes('pillar')) && type === 'new') ? 3.0 : 1.0;
         const pts = audit.pointsAwarded || defaultPts;
 
-        // Save to cache permanently so it is NEVER touched again
+        // Save to cache
         state.aiReviewCache[item.topic] = {
           isApproved: isApproved,
           verdict: verdict,
@@ -3775,6 +3796,7 @@
           netWordDiff: (audit.netWordDiff !== undefined && audit.netWordDiff !== null) ? audit.netWordDiff : (parseInt(item.wordCount, 10) || 0),
           newDocWordCount: audit.newDocWordCount || parseInt(item.wordCount, 10) || 0,
           oldDocWordCount: audit.oldDocWordCount || 0,
+          rewrittenWords: audit.rewrittenWords || 0,
           docWordCountText: audit.docWordCountText || `${item.wordCount || 0} words`,
           justificationSummary: audit.justificationSummary || (isApproved 
             ? `Approved: Aligned with exam intent and meets target depth with ${item.wordCount || 800}+ words.` 
@@ -3806,7 +3828,7 @@
     }
 
     state.aiRunnerActive = false;
-    updateAiRunnerUI(`✅ Complete! Auto-reviewed ${processed} articles${dateScopeLabel} with Classplus Gemini Flash.`);
+    updateAiRunnerUI(`✅ Complete! AI-reviewed ${processed} filtered articles${filterTag} with Classplus Gemini Flash.`);
     renderReviewHub(false);
   }
 
