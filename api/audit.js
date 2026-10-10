@@ -395,29 +395,31 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       }
     }
 
-    // --- EXACT 4-TIER MATHEMATICAL QUALITY GUARDRAILS (REWRITE/ADDITION BASED) ---
+    // --- EXACT 4-TIER MATHEMATICAL QUALITY GUARDRAILS (UNIFIED NUMBERS) ---
     const effectiveNewWc = parsed.newDocWordCount || (parseInt(item.wordCount, 10) || 0);
-    const effectiveDiff = (parsed.netWordDiff !== undefined && parsed.netWordDiff !== null) ? parsed.netWordDiff : 0;
-    const effectiveRewritten = parsed.rewrittenWords || (hasOldDocLink ? (effectiveDiff > 0 ? effectiveDiff : 0) : effectiveNewWc);
-    const updateEffort = hasOldDocLink ? Math.max(effectiveRewritten, effectiveDiff > 0 ? effectiveDiff : 0) : effectiveNewWc;
+    const rwMatch = (diffMetrics?.summaryText || parsed.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (parsed.docWordCountText || '').match(/~(\d+)w Revamped/i);
+    const effectiveRewritten = parsed.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
+    const netDiff = (parsed.netWordDiff !== undefined && parsed.netWordDiff !== null) ? parsed.netWordDiff : 0;
+    const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
+    const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
 
     const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
     // Rule 1: News Update (Must rewrite / add 350+ words)
     if (isNews && isUpdateTask) {
-      if (updateEffort < 350) {
+      if (displayWc < 350) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `News Update shortfall: Writer rewrote/added only ~${updateEffort} words; minimum 350+ rewritten/added words required.`;
+        const reason = `News Update shortfall: Found ${displayLabel} words (minimum 350+ words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = updateEffort >= 500 ? 0.5 : 0.25;
+        parsed.pointsAwarded = displayWc >= 500 ? 0.5 : 0.25;
       }
     }
     // Rule 2: News New (500+ Words)
@@ -427,7 +429,7 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `New News length shortfall: Found only ${effectiveNewWc} words; minimum 500 words required.`;
+        const reason = `New News length shortfall: Found ${effectiveNewWc} words (minimum 500 words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
@@ -438,12 +440,12 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     }
     // Rule 3: Optimization / Update (Must rewrite / add 700 - 800 words)
     else if (isUpdateTask) {
-      if (updateEffort < 700) {
+      if (displayWc < 700) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `Optimization shortfall: Writer rewrote/added only ~${updateEffort} words; Optimization/Update requires at least 700–800 rewritten/added words.`;
+        const reason = `Optimization shortfall: Found ${displayLabel} words (minimum 700–800 words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
