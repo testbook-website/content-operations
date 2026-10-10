@@ -5028,24 +5028,30 @@
     const squadMeta = getWriterSquadMeta(writerName);
     const activeWk = getActiveWeekInfo();
 
-    // 1. Entire Q4 Roster (Oct - Dec: 66 weekdays)
-    // Regular (Team A & B):
-    //   News Duty: 30 weekdays * 5.0 pts + 12 Sat * 2.50 pts = 180.0 pts
-    //   SEO Optimization / High Intent: 33 weekdays * 9.0 pts = 297.0 pts
-    //   Total = 180 + 297 = 477.0 pts
+    // 1. Entire Q4 Roster (Oct - Dec: 66 weekdays, 13 Saturdays)
+    // Team A:
+    //   News Weeks: 6 full weeks (6 * 27.5) + Week 13 (4 days * 5.0) = 185.0 pts
+    //   SEO/High-Intent Weeks: 6 full weeks (6 * 45.0) + Oct 1 & 2 (2 days * 9.0) = 288.0 pts
+    //   Total = 185 + 288 = 473.0 pts
+    // Team B:
+    //   News Weeks: 6 full weeks (6 * 27.5) = 165.0 pts
+    //   SEO/High-Intent Weeks: 6 full weeks (6 * 45.0) + Week 13 (4 days * 9.0) + Oct 1 & 2 (2 days * 9.0) = 324.0 pts
+    //   Total = 165 + 324 = 489.0 pts
     // New Content Team:
     //   66 weekdays * 9.0 pts/day = 594.0 pts
     // Prep Team:
     //   66 weekdays * 10.0 pts/day = 660.0 pts
     // Hindi Team:
-    //   66 weekdays * 9.0 pts/day = 594.0 pts
+    //   66 weekdays * 12.0 pts/day = 792.0 pts
     if (timeframe === 'q4_total') {
-      if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
-        return { targetPoints: 477.0, daysCount: 75, roleLabel: 'Regular Target (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9 = 477 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      if (squadMeta.teamGroup === 'A') {
+        return { targetPoints: 473.0, daysCount: 66, roleLabel: 'Team A Target (7 Wks News @ 185 pts + 6 Wks SEO @ 288 pts = 473 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      } else if (squadMeta.teamGroup === 'B') {
+        return { targetPoints: 489.0, daysCount: 66, roleLabel: 'Team B Target (6 Wks News @ 165 pts + 7 Wks SEO @ 324 pts = 489 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'New Content') {
         return { targetPoints: 594.0, daysCount: 66, roleLabel: 'New Content Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'Hindi') {
-        return { targetPoints: 594.0, daysCount: 66, roleLabel: 'Hindi Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
+        return { targetPoints: 792.0, daysCount: 66, roleLabel: 'Hindi Team (66 Days × 12.0 pts = 792 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 60.0 };
       } else {
         return { targetPoints: 660.0, daysCount: 66, roleLabel: 'Exam Prep Team (66 Days × 10.0 pts = 660 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 50.0 };
       }
@@ -5064,7 +5070,7 @@
       } else if (squadMeta.teamGroup === 'New Content') {
         return { targetPoints: 45.0, daysCount: 5, roleLabel: '📝 New Content Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
       } else if (squadMeta.teamGroup === 'Hindi') {
-        return { targetPoints: 45.0, daysCount: 5, roleLabel: '🇮🇳 Hindi Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
+        return { targetPoints: 60.0, daysCount: 5, roleLabel: '🇮🇳 Hindi Week (12.0/day × 5 = 60.0 pts)', isNewsWeek: false };
       } else {
         return { targetPoints: 50.0, daysCount: 5, roleLabel: '📚 Exam Prep Week (10.0/day × 5 = 50.0 pts)', isNewsWeek: false };
       }
@@ -5085,7 +5091,7 @@
       } else if (squadMeta.teamGroup === 'New Content') {
         return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '📝 New Content Duty (Saturday OFF)' : '📝 New Content Duty (9.0 pts/day)', isNewsWeek: false };
       } else if (squadMeta.teamGroup === 'Hindi') {
-        return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '🇮🇳 Hindi Duty (Saturday OFF)' : '🇮🇳 Hindi Duty (9.0 pts/day)', isNewsWeek: false };
+        return { targetPoints: isSat ? 0.0 : 12.0, daysCount: 1, roleLabel: isSat ? '🇮🇳 Hindi Duty (Saturday OFF)' : '🇮🇳 Hindi Duty (12.0 pts/day)', isNewsWeek: false };
       } else {
         return { targetPoints: isSat ? 0.0 : 10.0, daysCount: 1, roleLabel: isSat ? '📚 Exam Prep (Saturday OFF)' : '📚 Exam Prep (10.0 pts/day)', isNewsWeek: false };
       }
@@ -5165,9 +5171,9 @@
         `;
       } else if (subTab === 'hindi') {
         els.teamDashboardRuleBadges.innerHTML = `
-          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 9.0 pts/day (Mon–Fri)</span>
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 12.0 pts/day (Mon–Fri)</span>
           <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 594 pts (66 × 9.0)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 792 pts (66 × 12.0)</span>
         `;
       } else if (subTab === 'all') {
         els.teamDashboardRuleBadges.innerHTML = `
@@ -5180,7 +5186,7 @@
         els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day Mon–Fri + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 477 pts (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 473 pts (Team A) / 489 pts (Team B)</span>
         `;
       }
     }
@@ -5194,16 +5200,16 @@
     let writersListRaw = [];
 
     const regularList = [
-      { writer: "Sonika", squad: "Team A", target: 477 },
-      { writer: "Archita", squad: "Team A", target: 477 },
-      { writer: "Shemaila", squad: "Team A", target: 477 },
-      { writer: "Somya", squad: "Team A", target: 477 },
-      { writer: "Mohit", squad: "Team A", target: 477 },
-      { writer: "Nadeem", squad: "Team B", target: 477 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
-      { writer: "Aditi", squad: "Team B", target: 477 },
-      { writer: "Atul", squad: "Team B", target: 477 },
-      { writer: "Trishala", squad: "Team B", target: 477 }
+      { writer: "Sonika", squad: "Team A", target: 473 },
+      { writer: "Archita", squad: "Team A", target: 473 },
+      { writer: "Shemaila", squad: "Team A", target: 473 },
+      { writer: "Somya", squad: "Team A", target: 473 },
+      { writer: "Mohit", squad: "Team A", target: 473 },
+      { writer: "Nadeem", squad: "Team B", target: 489 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
+      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Atul", squad: "Team B", target: 489 },
+      { writer: "Trishala", squad: "Team B", target: 489 }
     ];
 
     const newContentList = [
@@ -5221,9 +5227,9 @@
     ];
 
     const hindiList = [
-      { writer: "Anshika", squad: "Hindi Team", target: 594 },
-      { writer: "Vidit", squad: "Hindi Team", target: 594 },
-      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+      { writer: "Anshika", squad: "Hindi Team", target: 792 },
+      { writer: "Vidit", squad: "Hindi Team", target: 792 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 792 }
     ];
 
     if (subTab === 'new_content') {
@@ -5465,9 +5471,9 @@
         `;
       } else if (subTab === 'hindi') {
         els.kpiRuleBadges.innerHTML = `
-          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 9.0 pts/day (Mon–Fri)</span>
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 12.0 pts/day (Mon–Fri)</span>
           <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 594 pts (66 × 9.0)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 792 pts (66 × 12.0)</span>
         `;
       } else if (subTab === 'all') {
         els.kpiRuleBadges.innerHTML = `
@@ -5480,7 +5486,7 @@
         els.kpiRuleBadges.innerHTML = `
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day Mon–Fri + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 477 pts (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 473 pts (Team A) / 489 pts (Team B)</span>
         `;
       }
     }
@@ -5494,16 +5500,16 @@
     let writersListRaw = [];
 
     const regularList = [
-      { writer: "Sonika", squad: "Team A", target: 477 },
-      { writer: "Archita", squad: "Team A", target: 477 },
-      { writer: "Shemaila", squad: "Team A", target: 477 },
-      { writer: "Somya", squad: "Team A", target: 477 },
-      { writer: "Mohit", squad: "Team A", target: 477 },
-      { writer: "Nadeem", squad: "Team B", target: 477 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
-      { writer: "Aditi", squad: "Team B", target: 477 },
-      { writer: "Atul", squad: "Team B", target: 477 },
-      { writer: "Trishala", squad: "Team B", target: 477 }
+      { writer: "Sonika", squad: "Team A", target: 473 },
+      { writer: "Archita", squad: "Team A", target: 473 },
+      { writer: "Shemaila", squad: "Team A", target: 473 },
+      { writer: "Somya", squad: "Team A", target: 473 },
+      { writer: "Mohit", squad: "Team A", target: 473 },
+      { writer: "Nadeem", squad: "Team B", target: 489 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
+      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Atul", squad: "Team B", target: 489 },
+      { writer: "Trishala", squad: "Team B", target: 489 }
     ];
 
     const newContentList = [
@@ -5521,9 +5527,9 @@
     ];
 
     const hindiList = [
-      { writer: "Anshika", squad: "Hindi Team", target: 594 },
-      { writer: "Vidit", squad: "Hindi Team", target: 594 },
-      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+      { writer: "Anshika", squad: "Hindi Team", target: 792 },
+      { writer: "Vidit", squad: "Hindi Team", target: 792 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 792 }
     ];
 
     if (subTab === 'new_content') {
@@ -5849,16 +5855,16 @@
     const csvLines = [headers.join(',')];
 
     const regularList = [
-      { writer: "Sonika", squad: "Team A", target: 477 },
-      { writer: "Archita", squad: "Team A", target: 477 },
-      { writer: "Shemaila", squad: "Team A", target: 477 },
-      { writer: "Somya", squad: "Team A", target: 477 },
-      { writer: "Mohit", squad: "Team A", target: 477 },
-      { writer: "Nadeem", squad: "Team B", target: 477 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
-      { writer: "Aditi", squad: "Team B", target: 477 },
-      { writer: "Atul", squad: "Team B", target: 477 },
-      { writer: "Trishala", squad: "Team B", target: 477 }
+      { writer: "Sonika", squad: "Team A", target: 473 },
+      { writer: "Archita", squad: "Team A", target: 473 },
+      { writer: "Shemaila", squad: "Team A", target: 473 },
+      { writer: "Somya", squad: "Team A", target: 473 },
+      { writer: "Mohit", squad: "Team A", target: 473 },
+      { writer: "Nadeem", squad: "Team B", target: 489 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
+      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Atul", squad: "Team B", target: 489 },
+      { writer: "Trishala", squad: "Team B", target: 489 }
     ];
 
     const newContentList = [
@@ -5876,9 +5882,9 @@
     ];
 
     const hindiList = [
-      { writer: "Anshika", squad: "Hindi Team", target: 594 },
-      { writer: "Vidit", squad: "Hindi Team", target: 594 },
-      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+      { writer: "Anshika", squad: "Hindi Team", target: 792 },
+      { writer: "Vidit", squad: "Hindi Team", target: 792 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 792 }
     ];
 
     let writersListRaw = regularList;
@@ -5962,16 +5968,16 @@
     const csvLines = [headers.join(',')];
 
     const regularList = [
-      { writer: "Sonika", squad: "Team A", target: 477 },
-      { writer: "Archita", squad: "Team A", target: 477 },
-      { writer: "Shemaila", squad: "Team A", target: 477 },
-      { writer: "Somya", squad: "Team A", target: 477 },
-      { writer: "Mohit", squad: "Team A", target: 477 },
-      { writer: "Nadeem", squad: "Team B", target: 477 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
-      { writer: "Aditi", squad: "Team B", target: 477 },
-      { writer: "Atul", squad: "Team B", target: 477 },
-      { writer: "Trishala", squad: "Team B", target: 477 }
+      { writer: "Sonika", squad: "Team A", target: 473 },
+      { writer: "Archita", squad: "Team A", target: 473 },
+      { writer: "Shemaila", squad: "Team A", target: 473 },
+      { writer: "Somya", squad: "Team A", target: 473 },
+      { writer: "Mohit", squad: "Team A", target: 473 },
+      { writer: "Nadeem", squad: "Team B", target: 489 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
+      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Atul", squad: "Team B", target: 489 },
+      { writer: "Trishala", squad: "Team B", target: 489 }
     ];
 
     const newContentList = [
@@ -5989,9 +5995,9 @@
     ];
 
     const hindiList = [
-      { writer: "Anshika", squad: "Hindi Team", target: 594 },
-      { writer: "Vidit", squad: "Hindi Team", target: 594 },
-      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+      { writer: "Anshika", squad: "Hindi Team", target: 792 },
+      { writer: "Vidit", squad: "Hindi Team", target: 792 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 792 }
     ];
 
     let writersListRaw = regularList;
