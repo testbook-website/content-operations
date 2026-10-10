@@ -395,26 +395,29 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       }
     }
 
-    // --- EXACT 4-TIER MATHEMATICAL QUALITY GUARDRAILS ---
+    // --- EXACT 4-TIER MATHEMATICAL QUALITY GUARDRAILS (REWRITE/ADDITION BASED) ---
     const effectiveNewWc = parsed.newDocWordCount || (parseInt(item.wordCount, 10) || 0);
-    const effectiveRewritten = parsed.rewrittenWords || 0;
+    const effectiveDiff = (parsed.netWordDiff !== undefined && parsed.netWordDiff !== null) ? parsed.netWordDiff : 0;
+    const effectiveRewritten = parsed.rewrittenWords || (hasOldDocLink ? (effectiveDiff > 0 ? effectiveDiff : 0) : effectiveNewWc);
+    const updateEffort = hasOldDocLink ? Math.max(effectiveRewritten, effectiveDiff > 0 ? effectiveDiff : 0) : effectiveNewWc;
+
     const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
-    // Rule 1: News Update (350+ Words)
+    // Rule 1: News Update (Must rewrite / add 350+ words)
     if (isNews && isUpdateTask) {
-      if (effectiveNewWc < 350) {
+      if (updateEffort < 350) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `News Update length shortfall: Found only ${effectiveNewWc} words; minimum 350+ words required.`;
+        const reason = `News Update shortfall: Writer rewrote/added only ~${updateEffort} words; minimum 350+ rewritten/added words required.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = effectiveNewWc >= 500 ? 0.5 : 0.25;
+        parsed.pointsAwarded = updateEffort >= 500 ? 0.5 : 0.25;
       }
     }
     // Rule 2: News New (500+ Words)
@@ -433,15 +436,14 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.pointsAwarded = 0.5;
       }
     }
-    // Rule 3: Optimization / Update (700 - 800 Words)
+    // Rule 3: Optimization / Update (Must rewrite / add 700 - 800 words)
     else if (isUpdateTask) {
-      const passesOpt = (effectiveNewWc >= 700) || (effectiveRewritten >= 700);
-      if (!passesOpt) {
+      if (updateEffort < 700) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `Optimization length shortfall: Found only ${effectiveNewWc} words; Optimization/Update requires at least 700–800 words.`;
+        const reason = `Optimization shortfall: Writer rewrote/added only ~${updateEffort} words; Optimization/Update requires at least 700–800 rewritten/added words.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
@@ -482,24 +484,26 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 0);
     const estOld = (docExtraction && docExtraction.oldDoc?.wordCount) ? docExtraction.oldDoc.wordCount : (hasOldDocLink ? (parseInt(item.wordCount, 10) || 0) : 0);
     const estDiff = isUpdate ? (estNew - estOld) : estNew;
-    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isUpdate ? Math.round(estNew * 0.5) : estNew);
+    const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isUpdate ? (estDiff > 0 ? estDiff : 0) : estNew);
+    const estOverhaul = diffMetrics ? diffMetrics.overhaulPercent : 40;
+    const effort = isUpdate ? Math.max(estRewritten, estDiff > 0 ? estDiff : 0) : estNew;
 
     let isApproved = false;
     let ptsAwarded = 0;
     let rejectReason = '';
 
     if (isNews && isUpdate) {
-      isApproved = estNew >= 350;
-      ptsAwarded = isApproved ? (estNew >= 500 ? 0.5 : 0.25) : 0;
-      if (!isApproved) rejectReason = `News Update shortfall: Found ${estNew}w (minimum 350+ words required).`;
+      isApproved = effort >= 350;
+      ptsAwarded = isApproved ? (effort >= 500 ? 0.5 : 0.25) : 0;
+      if (!isApproved) rejectReason = `News Update shortfall: Writer rewrote/added only ~${effort}w (minimum 350+ rewritten/added words required).`;
     } else if (isNews && !isUpdate) {
       isApproved = estNew >= 500;
       ptsAwarded = isApproved ? 0.5 : 0;
       if (!isApproved) rejectReason = `New News shortfall: Found ${estNew}w (minimum 500 words required).`;
     } else if (isUpdate) {
-      isApproved = estNew >= 700 || estRewritten >= 700;
+      isApproved = effort >= 700;
       ptsAwarded = isApproved ? 1.5 : 0;
-      if (!isApproved) rejectReason = `Optimization shortfall: Found ${estNew}w (minimum 700–800 words required).`;
+      if (!isApproved) rejectReason = `Optimization shortfall: Writer rewrote/added only ~${effort}w (minimum 700–800 rewritten/added words required).`;
     } else {
       const minPrepWc = isTargetPillar ? 1400 : 800;
       isApproved = estNew >= minPrepWc;
@@ -520,13 +524,13 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         netWordDiff: estDiff,
         rewrittenWords: estRewritten,
         overhaulPercent: estOverhaul,
-        docWordCountText: diffMetrics ? diffMetrics.summaryText : (isOpt ? `Old: ${estOld.toLocaleString()}w ➔ New: ${estNew.toLocaleString()}w (+${estDiff}w Net | ~${estRewritten}w Rewritten)` : `${estNew.toLocaleString()} words`),
+        docWordCountText: diffMetrics ? diffMetrics.summaryText : (isUpdate ? `Old: ${estOld.toLocaleString()}w ➔ New: ${estNew.toLocaleString()}w (+${estDiff}w Net | ~${estRewritten}w Rewritten)` : `${estNew.toLocaleString()} words`),
         justificationSummary: isApproved
-          ? `Verified: Substantial editorial quality delivered with ${estNew.toLocaleString()} words meeting the OND Framework.`
+          ? `Verified: Substantial editorial quality delivered meeting the OND Framework.`
           : `Needs Revision: ${rejectReason}`,
         rejectionReasons: isApproved ? [] : [rejectReason],
-        keyStrengths: isApproved ? ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'] : [],
-        improvementAreas: isApproved ? ['Ensure internal linking to parent pillar page'] : ['Expand article length and depth to meet framework minimums.'],
+        keyStrengths: isApproved ? ['Accurate exam structure', 'High keyword relevance'] : [],
+        improvementAreas: isApproved ? ['Ensure internal linking'] : ['Expand article length and rewrite depth to meet framework minimums.'],
         recommendationNote: isApproved ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'
       }
     });

@@ -64,46 +64,47 @@
           const effectiveRewritten = item.rewrittenWords || 0;
 
           if (isNews && (isOpt || item.oldDocWordCount > 0)) {
-            // Rule 1: News Update (350+ Words)
-            if (effectiveNewWc > 0 && effectiveNewWc < 350) {
+            // Rule 1: News Update (Must rewrite/add 350+ words)
+            const effort = Math.max(effectiveRewritten, item.netWordDiff > 0 ? item.netWordDiff : 0);
+            if (effort < 350) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
-              item.justificationSummary = `Needs Revision: News Update length shortfall (${effectiveNewWc}w). Minimum 350+ words required.`;
-              item.rejectionReasons = [`News Update length shortfall (${effectiveNewWc}w). Minimum 350+ words required.`];
-            } else if (effectiveNewWc >= 350) {
+              item.justificationSummary = `Needs Revision: News Update shortfall: Writer rewrote/added only ~${effort} words; minimum 350+ rewritten/added words required.`;
+              item.rejectionReasons = [`News Update shortfall: Writer rewrote/added only ~${effort} words; minimum 350+ rewritten/added words required.`];
+            } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              item.points = effectiveNewWc >= 500 ? 0.5 : 0.25;
+              item.points = effort >= 500 ? 0.5 : 0.25;
               item.rejectionReasons = [];
             }
           } else if (isNews && !isOpt) {
             // Rule 2: News New (500 Words)
-            if (effectiveNewWc > 0 && effectiveNewWc < 500) {
+            if (effectiveNewWc < 500) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
               item.justificationSummary = `Needs Revision: New News length shortfall (${effectiveNewWc}w). Minimum 500 words required.`;
               item.rejectionReasons = [`New News length shortfall (${effectiveNewWc}w). Minimum 500 words required.`];
-            } else if (effectiveNewWc >= 500) {
+            } else {
               item.isApproved = true;
               item.verdict = 'Approved';
               item.points = 0.5;
               item.rejectionReasons = [];
             }
           } else if (isOpt) {
-            // Rule 3: Optimization (700 - 800 Words)
-            const passesOpt = (effectiveNewWc >= 700) || (effectiveRewritten >= 700);
-            if (effectiveNewWc > 0 && !passesOpt) {
+            // Rule 3: Optimization (Must rewrite/add 700 - 800 Words)
+            const optEffort = Math.max(effectiveRewritten, item.netWordDiff > 0 ? item.netWordDiff : 0);
+            if (optEffort < 700) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
-              item.justificationSummary = `Needs Revision: Optimization document shortfall (${effectiveNewWc}w). Minimum 700–800 words required.`;
-              item.rejectionReasons = [`Optimization document shortfall (${effectiveNewWc}w). Minimum 700–800 words required.`];
-            } else if (passesOpt) {
+              item.justificationSummary = `Needs Revision: Optimization shortfall: Writer rewrote/added only ~${optEffort} words; minimum 700–800 rewritten/added words required.`;
+              item.rejectionReasons = [`Optimization shortfall: Writer rewrote/added only ~${optEffort} words; minimum 700–800 rewritten/added words required.`];
+            } else {
               item.isApproved = true;
               item.verdict = 'Approved';
               item.points = 1.5;
@@ -111,14 +112,14 @@
             }
           } else {
             // Rule 4: New Prep (800 - 1200 Words)
-            if (effectiveNewWc > 0 && effectiveNewWc < 800) {
+            if (effectiveNewWc < 800) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
               item.justificationSummary = `Needs Revision: New Prep length shortfall (${effectiveNewWc}w). Minimum 800–1200 words required.`;
               item.rejectionReasons = [`New Prep length shortfall (${effectiveNewWc}w). Minimum 800–1200 words required.`];
-            } else if (effectiveNewWc >= 800) {
+            } else {
               item.isApproved = true;
               item.verdict = 'Approved';
               item.points = 1.0;
