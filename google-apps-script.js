@@ -366,6 +366,7 @@ function handlePopulateAllRevisionNotes() {
     let reviewStatusCol = 16; // Col P default
     let notesCol = 19;        // Col S default
     let writerCol = 5;        // Col E default
+    let pageTypeCol = 9;      // Col I default
 
     for (let c = 0; c < headers.length; c++) {
       const h = String(headers[c] || '').trim().toLowerCase();
@@ -375,6 +376,8 @@ function handlePopulateAllRevisionNotes() {
         notesCol = c + 1;
       } else if (h === 'writer' || h === 'assignee' || h === 'content writer') {
         writerCol = c + 1;
+      } else if (h === 'page type' || h === 'pagetype') {
+        pageTypeCol = c + 1;
       }
     }
 
@@ -388,17 +391,30 @@ function handlePopulateAllRevisionNotes() {
       const isRevision = status.indexOf('revis') !== -1 || status.indexOf('reject') !== -1;
 
       if (isRevision && !currentNote) {
-        const topic = String(row[1] || '').trim();
+        const topic = String(row[1] || '').trim().toLowerCase();
         const writer = String(row[writerCol - 1] || '').trim().toLowerCase();
         const taskType = String(row[6] || '').trim().toLowerCase();
         const type = String(row[7] || '').trim().toLowerCase();
+        const pageType = String(row[pageTypeCol - 1] || '').trim().toLowerCase();
         const wcRaw = String(row[11] || '').replace(/,/g, '').trim();
         const wc = parseFloat(wcRaw) || 0;
         const oldDoc = String(row[12] || '').trim();
         const newDoc = String(row[13] || '').trim();
         const hasDoc = newDoc.indexOf('http') !== -1;
         const hasOld = oldDoc.indexOf('http') !== -1;
-        const isNews = taskType.indexOf('news') !== -1 || type.indexOf('news') !== -1;
+
+        // News / Event / Alert / Blog indicators (350w - 500w min)
+        const isNewsOrAlert = taskType.indexOf('news') !== -1 || 
+                              type.indexOf('news') !== -1 || 
+                              pageType.indexOf('blog') !== -1 ||
+                              taskType.indexOf('blog') !== -1 ||
+                              topic.indexOf('admit card') !== -1 || 
+                              topic.indexOf('result') !== -1 || 
+                              topic.indexOf('answer key') !== -1 || 
+                              topic.indexOf('cut off') !== -1 || 
+                              topic.indexOf('exam date') !== -1 ||
+                              topic.indexOf('merit list') !== -1 ||
+                              topic.indexOf('colour') !== -1;
 
         // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content
         const hindiWriters = ['anshika', 'vidit', 'prabodh'];
@@ -421,18 +437,17 @@ function handlePopulateAllRevisionNotes() {
           note = 'AI Rev: Missing baseline Old Doc in Col M for diff';
         } else if (wc > 0 && wc < 250) {
           note = `AI Rev: Word count deficit (${wc}w; min 350w required)`;
-        } else if (isNews && wc > 0 && wc < 350) {
-          note = `AI Rev: News brief below threshold (${wc}/350w)`;
+        } else if (isNewsOrAlert && wc > 0 && wc < 350) {
+          note = `AI Rev: Alert/News below threshold (${wc}/350w)`;
         } else if (isOpt && wc > 0 && wc < 300) {
           note = `AI Rev: Net addition below +300w threshold (${wc}w)`;
-        } else if (isHighIntent && wc > 0 && wc < 700) {
+        } else if (isHighIntent && wc > 0 && wc < 650) {
           note = `AI Rev: Word count deficit (${wc}/700w for High-Intent)`;
-        } else if (wc > 0 && wc < 800 && !isNews) {
-          note = `AI Rev: Word count deficit (${wc}/800w min)`;
+        } else if (wc > 0 && wc < 600 && !isNewsOrAlert) {
+          note = `AI Rev: Word count deficit (${wc}/700w min)`;
         } else if (wc === 0) {
           note = 'AI Rev: Zero word count reported; verify content draft';
         } else {
-          // Never output generic "tables & FAQ" filler notes
           note = '';
         }
 

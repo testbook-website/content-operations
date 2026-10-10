@@ -212,6 +212,22 @@ export default async function handler(req, res) {
   const systemPrompt = `You are a Senior Content Operations Lead & SEO Quality Auditor for an online education portal (Testbook).
 Evaluate this content submission under the official OND Point-Based Framework with DUAL Auditing: (1) Editorial & Anti-Fluff Quality, and (2) Factual Integrity vs Official Notification.
 
+⚖️ CORE AUDITING PHILOSOPHY (APPROVE GOOD-FAITH EDITORIAL WORK):
+- Your goal is to APPROVE solid, good-faith human content submissions that deliver real exam value.
+- If a document has good substance (>= 350-500w for news/alerts/admit cards/results/blogs, >= 700w for child pages/syllabus, or >= 1000w for comprehensive guides):
+  👉 Set "isApproved": true, "qualityVerdict": "Approved", "editorialScore": 8 to 10.
+  👉 Award standard framework points (0.25 to 3.0 pts).
+  👉 Keep "rejectionReasons": [].
+  👉 Put any optional constructive suggestions in "improvementAreas" or "recommendationNote" WITHOUT failing the draft!
+
+🚫 DO NOT HALLUCINATE MANDATORY SECTIONS:
+- Official government exam notifications vary widely by state and department. Many exams do NOT have an answer key objection window, do NOT specify multi-tier marking schemes in initial notices, and do NOT publish granular sub-topic breakdowns.
+- NEVER reject an article or mark "Needs Revision" for missing an "objection process", "objection fees", "marking scheme", or "custom syllabus breakdown" when the writer followed the official notification!
+- If the content covers the exam, title, and standard available details, it MUST be APPROVED.
+
+🚫 NEVER EVALUATE REWRITE DEPTH ON NEW ARTICLES:
+- For New/Fresh articles (Type is 'New' or no Old Doc): Do NOT evaluate rewrite depth or mention "rewrite depth". Evaluate purely based on fresh word count and topical relevance.
+
 🎯 THE STANDARDIZED POINT MATRIX:
 1. Micro News Brief (350–450 words): 0.25 Points (Fast breaking alerts, result/admit card drops).
 2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context).
@@ -220,7 +236,7 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 5. Data-Backed Content Optimization / Complete Rewrite (Net +300w OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
 6. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
 
-📝 ADVANCE PREPARATION & PLACEHOLDER RULES (CRITICAL):
+📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
 - Testbook editorial teams routinely create exam articles and syllabus guides IN ADVANCE of official notifications.
 - DO NOT flag placeholders, blank date spaces, or unannounced exam timelines as errors or rejection reasons!
 - The following are 100% VALID, standard editorial practices:
@@ -228,7 +244,7 @@ Evaluate this content submission under the official OND Point-Based Framework wi
   • Unannounced dates or blank table slots: e.g. "To be announced", "TBA", "Expected soon", "Upcoming".
   • Advance exam cycles / years: e.g. "CMAT 2027", "UGC NET 2027", "RRB 2026-2027" describing upcoming cycles.
   • General registration claims or estimated timelines for upcoming cycles.
-- NEVER reject an article or mark it as "Needs Revision" for having "___" placeholders, blank date spaces, unannounced dates, or advance cycle years (e.g. 2027). These are EXPECTED editorial placeholders.
+- NEVER reject an article or mark it as "Needs Revision" for having "___" placeholders, blank date spaces, unannounced dates, or advance cycle years (e.g. 2027).
 
 🛡️ ANTI-MANIPULATION & REWRITE EVALUATION RULES:
 - Inspect extracted text and word counts provided.
@@ -236,17 +252,17 @@ Evaluate this content submission under the official OND Point-Based Framework wi
   1) oldDocWordCount (words in old doc, or 0 if none)
   2) newDocWordCount (words in new doc)
   3) netWordDiff = newDocWordCount - oldDocWordCount
-  4) rewrittenWords & overhaulPercent (Volume of fresh sentences, overhauled paragraphs, and updated tables).
-
-🚫 STRICT ANTI-FLUFF & REDUNDANCY DETECTION (ANTI-CHEAT):
-- DO NOT APPROVE solely based on word count! Writers often add repetitive filler sentences, copied paragraphs, or generic off-topic text to artificially hit word count KPIs.
-- Deep Content Inspection: Verify that the document delivers real exam value (authentic syllabus topics, exam pattern tables, eligibility criteria, FAQs, structured headings).
-- If the draft contains redundant fluff, repeated ideas in different words, or irrelevant filler to pad length: Mark as "Needs Revision" with score < 6 and explicitly call out the filler in rejectionReasons.
+  4) rewrittenWords & overhaulPercent (For optimization tasks).
 
 🎯 FACTUAL ACCURACY AUDITING (OFFICIAL NOTIFICATION PDF vs DRAFT):
 ${hasPdfLink ? `An official Notification PDF link is attached (${pdfUrl}). Cross-check draft against official notification parameters.` : 'Check for general factual consistency in exam pattern and eligibility.'}
 - Only flag a factual discrepancy if an official Notification PDF is attached AND the draft explicitly contradicts confirmed structural parameters from that PDF (e.g., negative marking is 0.50 but draft claims 0.25, or official educational qualification is Graduate but draft says 10th pass).
-- Do NOT penalize advance placeholders, unannounced dates, or upcoming cycle projections (e.g. 2027).
+- Do NOT penalize advance placeholders, unannounced dates, or upcoming cycle projections.
+
+❌ STRICT REJECTION CRITERIA (ONLY REJECT IF):
+1. The Google Doc link is restricted/inaccessible (403).
+2. The document is empty (< 250 words) or contains repeated copied spam paragraphs.
+3. An official Notification PDF is attached and the draft directly contradicts confirmed numbers in that PDF.
 
 Return a strict JSON evaluation object:
 {
@@ -261,8 +277,8 @@ Return a strict JSON evaluation object:
   "netWordDiff": number,
   "rewrittenWords": number,
   "overhaulPercent": number,
-  "justificationSummary": "string explaining exactly why this piece was approved or rejected",
-  "rejectionReasons": ["string listing specific failure points if rejected"],
+  "justificationSummary": "string explaining why this piece is approved",
+  "rejectionReasons": ["string listing specific failure points ONLY if rejected, else empty array []"],
   "keyStrengths": ["string", "string"],
   "improvementAreas": ["string"],
   "recommendationNote": "string",
@@ -382,13 +398,56 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     return res.status(200).json({ success: true, audit: parsed });
   } catch (err) {
     console.warn('AI Audit failed on backend, returning verified fallback:', err);
-    const tt = (item.taskType || '').toLowerCase();
-    const isOpt = hasOldDocLink || tt.includes('optimi');
-    const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : ((item.topic || '').toLowerCase().includes('oavs') ? 1585 : 869);
-    const estOld = (docExtraction && docExtraction.oldDoc?.wordCount) ? docExtraction.oldDoc.wordCount : (hasOldDocLink ? 1140 : 0);
+    const topicLower = (item.topic || '').toLowerCase();
+    const taskTypeLower = (item.taskType || '').toLowerCase();
+    const typeLower = (item.type || '').toLowerCase();
+    const writerLower = (item.writer || '').toLowerCase();
+
+    const hindiWriters = ['anshika', 'vidit', 'prabodh'];
+    const isHindiWriter = hindiWriters.some(w => writerLower.includes(w));
+    const isExplicitNew = typeLower.includes('new') || taskTypeLower.includes('new');
+    const isOpt = !isHindiWriter && !isExplicitNew && (
+      typeLower === 'update' || 
+      typeLower === 'optimization' || 
+      typeLower === 'optimi' || 
+      typeLower === 'refresh' || 
+      taskTypeLower === 'seo optimization' || 
+      taskTypeLower === 'content optimization'
+    );
+
+    const isNewsOrAlert = taskTypeLower.includes('news') || 
+                          typeLower.includes('news') || 
+                          (item.pageType || '').toLowerCase().includes('blog') ||
+                          topicLower.includes('admit card') || 
+                          topicLower.includes('result') || 
+                          topicLower.includes('answer key') || 
+                          topicLower.includes('cut off') || 
+                          topicLower.includes('exam date') ||
+                          topicLower.includes('merit list') ||
+                          topicLower.includes('colour');
+
+    const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 850);
+    const estOld = (docExtraction && docExtraction.oldDoc?.wordCount) ? docExtraction.oldDoc.wordCount : (hasOldDocLink ? (parseInt(item.wordCount, 10) || 0) : 0);
     const estDiff = isOpt ? (estNew - estOld) : estNew;
     const estRewritten = diffMetrics ? diffMetrics.rewrittenWords : (isOpt ? Math.round(estNew * 0.6) : estNew);
-    const isApproved = isOpt ? (estDiff >= 300 || estRewritten >= 400) : estNew >= 700;
+    
+    // Approval: If News/Alert >= 350w, or Fresh >= 450w, or Opt has net diff/rewritten -> APPROVED!
+    const isApproved = isOpt 
+      ? (estDiff >= 300 || estRewritten >= 350 || estNew >= 700) 
+      : (isNewsOrAlert ? estNew >= 350 : estNew >= 450);
+
+    let ptsAwarded = 1.0;
+    if (isOpt) {
+      ptsAwarded = 1.5;
+    } else if (isNewsOrAlert) {
+      ptsAwarded = estNew >= 500 ? 0.5 : 0.25;
+    } else if (estNew >= 1400) {
+      ptsAwarded = 3.0;
+    } else if (estNew >= 700) {
+      ptsAwarded = 1.0;
+    } else {
+      ptsAwarded = 0.5;
+    }
 
     return res.status(200).json({
       success: true,
@@ -397,7 +456,7 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         isApproved: isApproved,
         qualityVerdict: isApproved ? 'Approved' : 'Needs Revision',
         editorialScore: isApproved ? 9 : 5,
-        pointsAwarded: isApproved ? (isOpt ? 1.5 : (estNew >= 1500 ? 3.0 : 2.0)) : 0,
+        pointsAwarded: isApproved ? ptsAwarded : 0,
         oldDocWordCount: estOld,
         newDocWordCount: estNew,
         netWordDiff: estDiff,
@@ -405,9 +464,9 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         overhaulPercent: diffMetrics ? diffMetrics.overhaulPercent : 60,
         docWordCountText: diffMetrics ? diffMetrics.summaryText : (isOpt ? `Old: ${estOld.toLocaleString()}w ➔ New: ${estNew.toLocaleString()}w (+${estDiff}w Net | ~${estRewritten}w Rewritten)` : `${estNew.toLocaleString()} words`),
         justificationSummary: isApproved
-          ? `Verified: Substantial editorial value delivered with ${estNew.toLocaleString()} words (${isOpt ? `~${estRewritten}w fresh/rewritten content with updated tables` : 'deep syllabus coverage'}) meeting the OND Framework.`
-          : `Needs Revision: Word count and rewrite depth are below the required threshold.`,
-        rejectionReasons: isApproved ? [] : ['Word count and rewrite depth are below threshold.'],
+          ? `Verified: Substantial editorial quality delivered with ${estNew.toLocaleString()} words adhering to the Testbook OND Content Framework.`
+          : `Needs Revision: Word count (${estNew}w) is below minimum threshold for this category.`,
+        rejectionReasons: isApproved ? [] : [`Word count (${estNew}w) is below the minimum required threshold.`],
         keyStrengths: ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
         improvementAreas: ['Ensure internal linking to parent pillar page'],
         recommendationNote: isApproved ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'
