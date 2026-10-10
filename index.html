@@ -50,7 +50,7 @@
 
       <div class="main-tab-btns">
         <button class="tab-btn active" data-tab="roster" id="tabBtnRoster">📅 Roster Plan</button>
-        <button class="tab-btn" data-tab="kpi" id="tabBtnKpi">🏆 Team KPI</button>
+        <button class="tab-btn" data-tab="kpi" id="tabBtnKpi">🏆 Team Dashboard</button>
         <button class="tab-btn" data-tab="news" id="tabBtnNews">🚨 News (N &amp; U Daily)</button>
         <button class="tab-btn" data-tab="review" id="tabBtnReview">📝 Review Hub &amp; Points</button>
         <button class="tab-btn" data-tab="productivity" id="tabBtnProductivity">📊 Productivity</button>
@@ -144,11 +144,11 @@
     </section>
 
     <!-- =====================================================================
-         TAB: TEAM KPI DASHBOARD (Simple & Minimal)
+         TAB 2: TEAM DASHBOARD (Full Writer Accountability & Point Metrics)
          ===================================================================== -->
     <section id="sectionKpi" style="display:none;">
       
-      <!-- Point Rules Strip (Simple & Clean) -->
+      <!-- Point Rules Strip -->
       <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem 1rem; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; font-size:0.78rem;">
         <div style="color:#334155; font-weight:600; display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap;">
           <span style="font-weight:800; color:#0f172a;">⚡ Points:</span>
@@ -156,23 +156,27 @@
           <span>Standard News: <strong>0.50</strong></span> |
           <span>Child Page: <strong>1.00</strong></span> |
           <span>Opt &amp; High-Intent: <strong>1.50</strong></span> |
-          <span>Fresh Prep: <strong>2.00</strong></span> |
+          <span style="color:#15803d; font-weight:800;">Fresh Prep: <strong>2.00</strong></span> |
           <span>Pillar: <strong>3.00</strong></span>
         </div>
         <div id="kpiRuleBadges" style="display:flex; gap:0.4rem; font-size:0.74rem; flex-wrap:wrap;">
-          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.25 pts/wk (5.0/day Mon–Fri + 2.25 Sat)</span>
+          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day Mon–Fri + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 474 pts</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 477 pts (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9)</span>
         </div>
       </div>
 
-      <!-- Controls Sub-Bar with 3 Sub Tabs: Regular | Prep | Hindi -->
+      <!-- Summary KPI Metric Cards -->
+      <div class="kpi-cards" id="teamDashboardKpiCards" style="margin-bottom:1rem;"></div>
+
+      <!-- Controls Sub-Bar with Sub Tabs -->
       <div class="sub-bar" style="margin-bottom:0.75rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
         <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
           <div class="sub-btns" id="kpiSubTabs">
             <button class="sub-btn active" data-kpitab="regular" id="kpiSubtabRegular">Regular (Team A &amp; B)</button>
             <button class="sub-btn" data-kpitab="prep" id="kpiSubtabPrep">Prep Team (10 pts/day)</button>
             <button class="sub-btn" data-kpitab="hindi" id="kpiSubtabHindi">Hindi (9 pts/day)</button>
+            <button class="sub-btn" data-kpitab="all" id="kpiSubtabAll">All Squads (Combined)</button>
           </div>
           <input type="text" class="input-simple" id="kpiSearch" placeholder="Search writer..." style="width:170px;">
         </div>
@@ -180,24 +184,25 @@
         <button class="btn-action" id="btnExportKpiCSV" style="font-size:0.75rem;">Export CSV</button>
       </div>
 
-      <!-- Simple KPI Table: Writer Name | Points Scored | Target -->
-      <div class="table-wrap" style="max-width:960px; margin:0 auto 1.5rem auto; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); border-radius:8px; overflow:hidden; border:1px solid #e2e8f0;">
-        <table class="data-table" id="kpiTable" style="font-size:0.85rem; width:100%; table-layout:fixed;">
-          <colgroup>
-            <col style="width: 8%;">
-            <col style="width: 44%;">
-            <col style="width: 24%;">
-            <col style="width: 24%;">
-          </colgroup>
+      <!-- Team Dashboard Table: Name | Picked | Approved | Doc Missed | Quality/Words | Other | Total Rejected | Points | Target -->
+      <div class="table-wrap" style="margin-bottom:1.5rem; box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1); border-radius:8px; overflow-x:auto; border:1px solid #e2e8f0;">
+        <table class="data-table" id="kpiTable" style="font-size:0.80rem; width:100%; white-space:nowrap;">
           <thead>
-            <tr>
-              <th style="text-align:center; padding:0.75rem 0.5rem;">#</th>
-              <th style="text-align:left; padding:0.75rem 1rem;">WRITER NAME</th>
-              <th style="text-align:center; padding:0.75rem 0.5rem; background:#eff6ff; color:#1e40af;">POINTS SCORED</th>
-              <th style="text-align:center; padding:0.75rem 0.5rem;">TARGET</th>
+            <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+              <th style="text-align:center; width:35px; padding:0.6rem 0.4rem;">#</th>
+              <th style="text-align:left; min-width:140px; padding:0.6rem 0.75rem;">NAME</th>
+              <th style="text-align:center; width:100px; padding:0.6rem 0.5rem; background:#f8fafc;">ARTICLES PICKED</th>
+              <th style="text-align:center; width:90px; padding:0.6rem 0.5rem; background:#f0fdf4; color:#15803d; font-weight:800;">APPROVED</th>
+              <th style="text-align:center; width:125px; padding:0.6rem 0.5rem; background:#fff1f2; color:#9f1239; font-weight:700;">REJECTED (DOC MISSED)</th>
+              <th style="text-align:center; width:130px; padding:0.6rem 0.5rem; background:#fef2f2; color:#991b1b; font-weight:700;">REJECTED (QUALITY / WORDS)</th>
+              <th style="text-align:center; width:120px; padding:0.6rem 0.5rem; background:#fff7ed; color:#9a3412; font-weight:700;">REJECTED (OTHER)</th>
+              <th style="text-align:center; width:105px; padding:0.6rem 0.5rem; background:#fee2e2; color:#b91c1c; font-weight:800;">TOTAL REJECTED</th>
+              <th style="text-align:center; width:110px; padding:0.6rem 0.5rem; background:#eff6ff; color:#1e40af; font-weight:800;">TOTAL POINTS</th>
+              <th style="text-align:center; min-width:130px; padding:0.6rem 0.5rem;">TARGET &amp; PROGRESS</th>
             </tr>
           </thead>
           <tbody id="kpiTableBody"></tbody>
+          <tfoot id="kpiTableFoot" style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;"></tfoot>
         </table>
       </div>
 
@@ -908,14 +913,14 @@
   </main>
 
   <!-- Data & Application Logic -->
-  <script src="roster-data.js?v=3.4"></script>
-  <script src="sheets-data.js?v=3.4"></script>
-  <script src="category-data.js?v=3.4"></script>
-  <script src="upcoming-data.js?v=3.4"></script>
-  <script src="workflow-data.js?v=3.4"></script>
-  <script src="calendar-data.js?v=3.4"></script>
-  <script src="news-data.js?v=3.4"></script>
-  <script src="sheets-client.js?v=3.4"></script>
-  <script src="app.js?v=3.4"></script>
+  <script src="roster-data.js?v=3.5"></script>
+  <script src="sheets-data.js?v=3.5"></script>
+  <script src="category-data.js?v=3.5"></script>
+  <script src="upcoming-data.js?v=3.5"></script>
+  <script src="workflow-data.js?v=3.5"></script>
+  <script src="calendar-data.js?v=3.5"></script>
+  <script src="news-data.js?v=3.5"></script>
+  <script src="sheets-client.js?v=3.5"></script>
+  <script src="app.js?v=3.5"></script>
 </body>
 </html>

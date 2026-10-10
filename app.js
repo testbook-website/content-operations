@@ -112,7 +112,7 @@
               item.rejectionReasons = [];
             }
           } else {
-            // Rule 4: New Prep (800 - 1200 Words)
+            // Rule 4: New Prep (800 - 1200 Words = 2.0 Points) / New Content
             if (effectiveNewWc < 800) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
@@ -123,7 +123,9 @@
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              item.points = 1.0;
+              const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','archana','shilpa singh'].includes(item.writer.toLowerCase()));
+              const isPillarPiece = item.classification?.includes('Pillar') || item.classification?.includes('Target');
+              item.points = isPillarPiece ? 3.0 : (isPrepPiece ? 2.0 : (effectiveNewWc >= 1200 ? 2.0 : 1.0));
               item.rejectionReasons = [];
             }
           }
@@ -315,7 +317,8 @@
     sectionProductivity: document.getElementById('sectionProductivity'),
     sectionCategory: document.getElementById('sectionCategory'),
 
-    // Team KPI Dashboard
+    // Team KPI & Dashboard
+    teamDashboardKpiCards: document.getElementById('teamDashboardKpiCards'),
     kpiOverviewCards: document.getElementById('kpiOverviewCards'),
     kpiSubTabs: document.getElementById('kpiSubTabs'),
     kpiSubBtns: document.querySelectorAll('#kpiSubTabs .sub-btn'),
@@ -323,6 +326,7 @@
     kpiSearch: document.getElementById('kpiSearch'),
     kpiCountLabel: document.getElementById('kpiCountLabel'),
     kpiTableBody: document.getElementById('kpiTableBody'),
+    kpiTableFoot: document.getElementById('kpiTableFoot'),
     btnExportKpiCSV: document.getElementById('btnExportKpiCSV'),
     modalWriterKpiDrilldown: document.getElementById('modalWriterKpiDrilldown'),
     drilldownWriterTitle: document.getElementById('drilldownWriterTitle'),
@@ -4817,16 +4821,16 @@
 
     // 1. Entire Q4 Roster (Oct - Dec: 66 weekdays)
     // Regular (Team A & B):
-    //   News Duty: 30 weekdays * 5.0 pts + 12 Sat * 2.25 pts = 177.0 pts
+    //   News Duty: 30 weekdays * 5.0 pts + 12 Sat * 2.50 pts = 180.0 pts
     //   SEO Optimization / High Intent: 33 weekdays * 9.0 pts = 297.0 pts
-    //   Total = 177 + 297 = 474.0 pts
+    //   Total = 180 + 297 = 477.0 pts
     // Prep Team:
     //   66 weekdays * 10.0 pts/day = 660.0 pts
     // Hindi Team:
     //   66 weekdays * 9.0 pts/day = 594.0 pts
     if (timeframe === 'q4_total') {
       if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
-        return { targetPoints: 474.0, daysCount: 75, roleLabel: 'Regular Target (30d News @ 5 + 12 Sat @ 2.25 + 33d SEO @ 9 = 474 pts)', weeklyNewsTarget: 27.25, weeklyContentTarget: 45.0 };
+        return { targetPoints: 477.0, daysCount: 75, roleLabel: 'Regular Target (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9 = 477 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'Hindi') {
         return { targetPoints: 594.0, daysCount: 66, roleLabel: 'Hindi Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
       } else {
@@ -4840,7 +4844,7 @@
         const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
                                (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
         if (isNewsThisWeek) {
-          return { targetPoints: 27.25, daysCount: 6, roleLabel: '🚨 News Week (5.0/day × 5 + 2.25 Sat = 27.25 pts)', isNewsWeek: true };
+          return { targetPoints: 27.50, daysCount: 6, roleLabel: '🚨 News Week (5.0/day × 5 + 2.50 Sat = 27.50 pts)', isNewsWeek: true };
         } else {
           return { targetPoints: 45.0, daysCount: 5, roleLabel: '📝 Content Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
         }
@@ -4859,7 +4863,7 @@
         const isNewsThisWeek = (squadMeta.teamGroup === 'A' && activeWk.newsTeam === 'Team A') ||
                                (squadMeta.teamGroup === 'B' && activeWk.newsTeam === 'Team B');
         if (isNewsThisWeek) {
-          return { targetPoints: isSat ? 2.25 : 5.0, daysCount: 1, roleLabel: isSat ? '🚨 News Saturday Duty (2.25 pts)' : '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
+          return { targetPoints: isSat ? 2.50 : 5.0, daysCount: 1, roleLabel: isSat ? '🚨 News Saturday Duty (2.50 pts)' : '🚨 News Duty (5.0 pts/day)', isNewsWeek: true };
         } else {
           return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '📝 Content Duty (Saturday OFF)' : '📝 Content Duty (9.0 pts/day)', isNewsWeek: false };
         }
@@ -4870,7 +4874,41 @@
       }
     }
 
-    return { targetPoints: 27.25, daysCount: 6, roleLabel: 'Standard Target' };
+    return { targetPoints: 27.50, daysCount: 6, roleLabel: 'Standard Target' };
+  }
+
+  // Categorize Rejection Reasons into 3 Distinct Buckets: Doc Missed | Quality/Words | Other
+  function categorizeRejection(item) {
+    const status = getEffectiveReviewStatus(item);
+    if (status === 'Approved') return null;
+
+    const rawStatus = (item.reviewStatus || '').toLowerCase();
+    const rawNotes = (item.notes || '').toLowerCase();
+    const ai = state.aiReviewCache ? state.aiReviewCache[item.topic] : null;
+    const aiJust = (ai?.justificationSummary || '').toLowerCase();
+    const aiWcText = (ai?.docWordCountText || '').toLowerCase();
+    const rejReasons = (ai?.rejectionReasons || []).join(' ').toLowerCase();
+
+    // 1. Doc Missed / Inaccessible / Restricted
+    const isDocMissed = (!item.newDoc && !item.url) ||
+                        rawStatus.includes('doc missing') || rawStatus.includes('missing doc') ||
+                        aiJust.includes('doc missing') || aiJust.includes('missing doc') ||
+                        aiJust.includes('403') || aiJust.includes('restricted') ||
+                        aiWcText.includes('403') || aiWcText.includes('restricted') ||
+                        rejReasons.includes('doc missing') || rejReasons.includes('restricted');
+    if (isDocMissed) return 'doc_missed';
+
+    // 2. Quality / Word Count Shortfall
+    const isQualityWords = rejReasons.includes('word') || rejReasons.includes('depth') || rejReasons.includes('shortfall') ||
+                           rejReasons.includes('length') || rejReasons.includes('volume') || rejReasons.includes('expand') ||
+                           rejReasons.includes('350') || rejReasons.includes('500') || rejReasons.includes('700') || rejReasons.includes('800') ||
+                           aiJust.includes('word') || aiJust.includes('depth') || aiJust.includes('shortfall') ||
+                           aiJust.includes('minimum') || aiJust.includes('exceed') ||
+                           rawNotes.includes('shortfall') || rawNotes.includes('word') || rawNotes.includes('depth');
+    if (isQualityWords) return 'quality_words';
+
+    // 3. Other Reasons
+    return 'other';
   }
 
   function renderKpiDashboard() {
@@ -4883,21 +4921,27 @@
       if (subTab === 'prep') {
         els.kpiRuleBadges.innerHTML = `
           <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📚 Daily Target: 10.0 pts/day (Mon–Fri)</span>
-          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Total Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
           <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Prep Target: 660 pts (66 × 10.0)</span>
         `;
       } else if (subTab === 'hindi') {
         els.kpiRuleBadges.innerHTML = `
           <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 9.0 pts/day (Mon–Fri)</span>
-          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Total Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
           <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 594 pts (66 × 9.0)</span>
+        `;
+      } else if (subTab === 'all') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day + 2.5 Sat)</span>
+          <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (21 Writers)</span>
         `;
       } else {
         // 'regular' (Team A and B)
         els.kpiRuleBadges.innerHTML = `
-          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.25 pts/wk (5.0/day Mon–Fri + 2.25 Sat)</span>
+          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day Mon–Fri + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 474 pts (30d News @ 5 + 12 Sat @ 2.25 + 33d SEO @ 9)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 477 pts (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9)</span>
         `;
       }
     }
@@ -4910,101 +4954,213 @@
     // Define writer roster for each sub-tab
     let writersListRaw = [];
 
-    if (subTab === 'prep') {
-      writersListRaw = [
-        { writer: "Lehron", squad: "Exam Prep", target: "660" },
-        { writer: "Dhananjay", squad: "Exam Prep", target: "660" },
-        { writer: "Falguni", squad: "Exam Prep", target: "660" },
-        { writer: "Swathi", squad: "Exam Prep", target: "660" },
-        { writer: "Sumit Kumar", squad: "Exam Prep", target: "660" },
-        { writer: "Manicka", squad: "Exam Prep", target: "660" },
-        { writer: "Archana", squad: "Exam Prep", target: "660" },
-        { writer: "Shilpa Singh", squad: "Exam Prep", target: "660" }
-      ];
-    } else if (subTab === 'hindi') {
-      writersListRaw = [
-        { writer: "Anshika", squad: "Hindi Team", target: "594" },
-        { writer: "Vidit", squad: "Hindi Team", target: "594" },
-        { writer: "Prabodh", squad: "Hindi Team", target: "594" }
-      ];
-    } else {
-      // 'regular' - Team A and Team B
-      writersListRaw = [
-        { writer: "Sonika", squad: "Team A", target: "474" },
-        { writer: "Archita", squad: "Team A", target: "474" },
-        { writer: "Shemaila", squad: "Team A", target: "474" },
-        { writer: "Somya", squad: "Team A", target: "474" },
-        { writer: "Mohit", squad: "Team A", target: "474" },
+    const regularList = [
+      { writer: "Sonika", squad: "Team A", target: 477 },
+      { writer: "Archita", squad: "Team A", target: 477 },
+      { writer: "Shemaila", squad: "Team A", target: 477 },
+      { writer: "Somya", squad: "Team A", target: 477 },
+      { writer: "Mohit", squad: "Team A", target: 477 },
+      { writer: "Nadeem", squad: "Team B", target: 477 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
+      { writer: "Aditi", squad: "Team B", target: 477 },
+      { writer: "Atul", squad: "Team B", target: 477 },
+      { writer: "Trishala", squad: "Team B", target: 477 }
+    ];
 
-        { writer: "Nadeem", squad: "Team B", target: "474" },
-        { writer: "Shilpa Kohli", squad: "Team B", target: "474" },
-        { writer: "Aditi", squad: "Team B", target: "474" },
-        { writer: "Atul", squad: "Team B", target: "474" },
-        { writer: "Trishala", squad: "Team B", target: "474" }
-      ];
+    const prepList = [
+      { writer: "Lehron", squad: "Exam Prep", target: 660 },
+      { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
+      { writer: "Falguni", squad: "Exam Prep", target: 660 },
+      { writer: "Swathi", squad: "Exam Prep", target: 660 },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Archana", squad: "Exam Prep", target: 660 },
+      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+    ];
+
+    const hindiList = [
+      { writer: "Anshika", squad: "Hindi Team", target: 594 },
+      { writer: "Vidit", squad: "Hindi Team", target: 594 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+    ];
+
+    if (subTab === 'prep') {
+      writersListRaw = prepList;
+    } else if (subTab === 'hindi') {
+      writersListRaw = hindiList;
+    } else if (subTab === 'all') {
+      writersListRaw = [...regularList, ...prepList, ...hindiList];
+    } else {
+      writersListRaw = regularList;
     }
 
     let filtered = writersListRaw;
-
     if (state.kpiSearch) {
       const q = state.kpiSearch.toLowerCase();
       filtered = filtered.filter(w => w.writer.toLowerCase().includes(q) || w.squad.toLowerCase().includes(q));
     }
 
-    // Pre-calculate scored points dynamically from workflow
+    // Pre-calculate scored points and rejection breakdown dynamically from review list
     const allWorkflowItems = getReviewList();
-    const writerScoredMap = {};
-    const writerTaskMap = {};
-    const writerApprovedMap = {};
+    const writerItemsMap = {};
 
     allWorkflowItems.forEach(item => {
       const w = (item.writer || '').trim();
       if (!w || w === '-' || w === 'Unassigned') return;
       const key = w.toLowerCase();
-      if (!writerTaskMap[key]) writerTaskMap[key] = [];
-      writerTaskMap[key].push(item);
-
-      const status = getEffectiveReviewStatus(item);
-      if (status === 'Approved') {
-        writerApprovedMap[key] = (writerApprovedMap[key] || 0) + 1;
-        const ptInfo = calculateItemKpiPoints(item);
-        writerScoredMap[key] = (writerScoredMap[key] || 0) + (ptInfo.points || 0);
-      }
+      if (!writerItemsMap[key]) writerItemsMap[key] = [];
+      writerItemsMap[key].push(item);
     });
 
+    // Compute cumulative totals for summary cards & footer
+    let totPicked = 0;
+    let totApproved = 0;
+    let totDocMissed = 0;
+    let totQualityWords = 0;
+    let totOther = 0;
+    let totRejected = 0;
+    let totPoints = 0;
+    let totTarget = 0;
+
+    const writerStatsList = filtered.map((w, idx) => {
+      const key = w.writer.toLowerCase();
+      const myItems = writerItemsMap[key] || [];
+      const picked = myItems.length;
+
+      let approvedCount = 0;
+      let docMissedCount = 0;
+      let qualityWordsCount = 0;
+      let otherCount = 0;
+      let pointsScored = 0;
+
+      myItems.forEach(it => {
+        const status = getEffectiveReviewStatus(it);
+        if (status === 'Approved') {
+          approvedCount++;
+          const ptInfo = calculateItemKpiPoints(it);
+          pointsScored += (ptInfo.points || 0);
+        } else {
+          const rejType = categorizeRejection(it);
+          if (rejType === 'doc_missed') docMissedCount++;
+          else if (rejType === 'quality_words') qualityWordsCount++;
+          else otherCount++;
+        }
+      });
+
+      const totalRej = docMissedCount + qualityWordsCount + otherCount;
+      const progressPct = w.target > 0 ? ((pointsScored / w.target) * 100) : 0;
+
+      totPicked += picked;
+      totApproved += approvedCount;
+      totDocMissed += docMissedCount;
+      totQualityWords += qualityWordsCount;
+      totOther += otherCount;
+      totRejected += totalRej;
+      totPoints += pointsScored;
+      totTarget += w.target;
+
+      return {
+        ...w,
+        idx: idx + 1,
+        picked,
+        approvedCount,
+        docMissedCount,
+        qualityWordsCount,
+        otherCount,
+        totalRej,
+        pointsScored,
+        progressPct,
+        myItems
+      };
+    });
+
+    // 1. Render Summary KPI Cards
+    if (els.teamDashboardKpiCards) {
+      const appPct = totPicked > 0 ? Math.round((totApproved / totPicked) * 100) : 0;
+      const overallProg = totTarget > 0 ? ((totPoints / totTarget) * 100).toFixed(1) : '0.0';
+
+      els.teamDashboardKpiCards.innerHTML = `
+        <div class="kpi-card" style="border-top:3px solid #6366f1;">
+          <div class="kpi-label">👥 Writers In View</div>
+          <div class="kpi-value" style="color:#4f46e5;">${filtered.length} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">writers</span></div>
+          <div class="kpi-subtext">Active Squad Roster</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
+          <div class="kpi-label">📋 Articles Picked</div>
+          <div class="kpi-value" style="color:#0284c7;">${totPicked} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">tasks</span></div>
+          <div class="kpi-subtext">Total Submitted in Workflow</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #10b981;">
+          <div class="kpi-label">✅ Articles Approved</div>
+          <div class="kpi-value" style="color:#15803d;">${totApproved} <span style="font-size:0.85rem; color:#166534; font-weight:normal;">(${appPct}%)</span></div>
+          <div class="kpi-subtext">Met Quality &amp; Word Count Rules</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #ef4444;">
+          <div class="kpi-label">⚠️ Total Rejected</div>
+          <div class="kpi-value" style="color:#b91c1c;">${totRejected} <span style="font-size:0.80rem; color:#991b1b; font-weight:normal;">(${totDocMissed} Doc / ${totQualityWords} Wc)</span></div>
+          <div class="kpi-subtext">Needs Revision across all categories</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #f59e0b;">
+          <div class="kpi-label">🎖️ Total Points Credited</div>
+          <div class="kpi-value" style="color:#d97706;">${totPoints.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts (${overallProg}%)</span></div>
+          <div class="kpi-subtext">Target: ${totTarget.toLocaleString()} pts</div>
+        </div>
+      `;
+    }
+
+    // 2. Render Team Dashboard Table Body
     if (els.kpiTableBody) {
       if (filtered.length === 0) {
         els.kpiTableBody.innerHTML = `
           <tr>
-            <td colspan="4" style="text-align:center; padding:2rem; color:#94a3b8;">
-              No writers found matching current filter.
+            <td colspan="10" style="text-align:center; padding:2.5rem; color:#94a3b8;">
+              <div style="font-weight:700; color:#334155; font-size:0.95rem;">No writers found matching current filter</div>
             </td>
           </tr>
         `;
       } else {
         let html = '';
-        filtered.forEach((w, idx) => {
-          const key = w.writer.toLowerCase();
-          const scoredVal = writerScoredMap[key] !== undefined ? writerScoredMap[key].toFixed(2) : '0.00';
-          const apprCount = writerApprovedMap[key] || 0;
-          const totalTasks = (writerTaskMap[key] || []).length;
-
+        writerStatsList.forEach(w => {
           html += `
-            <tr style="cursor:pointer;" class="kpi-row-item" data-writer="${escapeHtml(w.writer)}" title="Click to view full task breakdown">
-              <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.82rem; padding:0.75rem 0.5rem;">${idx + 1}</td>
-              <td style="padding:0.75rem 1rem;">
-                <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">
-                  ${escapeHtml(w.writer)}
-                </div>
-                <div style="font-size:0.72rem; color:#64748b;">
-                  ${escapeHtml(w.squad)}
-                </div>
+            <tr class="kpi-row-item" data-writer="${escapeHtml(w.writer)}" style="cursor:pointer; border-bottom:1px solid #f1f5f9;" title="Click to view full task receipt for ${escapeHtml(w.writer)}">
+              <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.80rem; padding:0.6rem 0.4rem;">${w.idx}</td>
+              <td style="padding:0.6rem 0.75rem;">
+                <div style="font-weight:700; color:#0f172a; font-size:0.88rem;">${escapeHtml(w.writer)}</div>
+                <div style="font-size:0.70rem; color:#64748b;">${escapeHtml(w.squad)}</div>
               </td>
-              <td style="text-align:center; background:#eff6ff; font-weight:800; color:#1e40af; font-size:0.92rem; padding:0.75rem 0.5rem;">
-                ${scoredVal} <span style="font-size:0.72rem; color:#64748b; font-weight:600;">(${apprCount} appr / ${totalTasks})</span>
+              <td style="text-align:center; font-weight:700; color:#334155; padding:0.6rem 0.5rem; background:#f8fafc;">
+                ${w.picked}
               </td>
-              <td style="text-align:center; font-weight:700; color:#0f172a; font-size:0.88rem; padding:0.75rem 0.5rem;">
-                ${escapeHtml(w.target)}
+              <td style="text-align:center; padding:0.6rem 0.5rem; background:#f0fdf4;">
+                <span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 7px; border-radius:5px; font-size:0.75rem;">${w.approvedCount}</span>
+              </td>
+              <td style="text-align:center; padding:0.6rem 0.5rem; background:#fff1f2;">
+                <span style="color:${w.docMissedCount > 0 ? '#9f1239' : '#94a3b8'}; font-weight:${w.docMissedCount > 0 ? '800' : 'normal'}; font-size:0.75rem;">${w.docMissedCount}</span>
+              </td>
+              <td style="text-align:center; padding:0.6rem 0.5rem; background:#fef2f2;">
+                <span style="color:${w.qualityWordsCount > 0 ? '#991b1b' : '#94a3b8'}; font-weight:${w.qualityWordsCount > 0 ? '800' : 'normal'}; font-size:0.75rem;">${w.qualityWordsCount}</span>
+              </td>
+              <td style="text-align:center; padding:0.6rem 0.5rem; background:#fff7ed;">
+                <span style="color:${w.otherCount > 0 ? '#9a3412' : '#94a3b8'}; font-weight:${w.otherCount > 0 ? '800' : 'normal'}; font-size:0.75rem;">${w.otherCount}</span>
+              </td>
+              <td style="text-align:center; padding:0.6rem 0.5rem; background:#fee2e2;">
+                <span style="background:${w.totalRej > 0 ? '#fecaca' : '#f1f5f9'}; color:${w.totalRej > 0 ? '#991b1b' : '#64748b'}; font-weight:800; padding:2px 7px; border-radius:5px; font-size:0.75rem;">${w.totalRej}</span>
+              </td>
+              <td style="text-align:center; padding:0.6rem 0.5rem; background:#eff6ff;">
+                <div style="font-weight:800; color:#1e40af; font-size:0.90rem;">${w.pointsScored.toFixed(1)} <span style="font-size:0.70rem; color:#64748b; font-weight:normal;">pts</span></div>
+              </td>
+              <td style="text-align:center; padding:0.6rem 0.5rem;">
+                <div style="font-weight:700; color:#0f172a; font-size:0.80rem;">${w.target} pts</div>
+                <div style="display:flex; align-items:center; gap:4px; margin-top:2px;">
+                  <div style="flex:1; background:#e2e8f0; height:6px; border-radius:3px; overflow:hidden;">
+                    <div style="width:${Math.min(100, Math.round(w.progressPct))}%; background:${w.progressPct >= 100 ? '#16a34a' : '#2563eb'}; height:100%;"></div>
+                  </div>
+                  <span style="font-size:0.68rem; font-weight:700; color:#475569; width:30px; text-align:right;">${w.progressPct.toFixed(0)}%</span>
+                </div>
               </td>
             </tr>
           `;
@@ -5020,6 +5176,24 @@
         });
       }
     }
+
+    // 3. Render Table Footer Row (Totals)
+    if (els.kpiTableFoot) {
+      const totProg = totTarget > 0 ? ((totPoints / totTarget) * 100) : 0;
+      els.kpiTableFoot.innerHTML = `
+        <tr style="background:#f1f5f9; border-top:2px solid #cbd5e1;">
+          <td colspan="2" style="padding:0.75rem 0.75rem; font-weight:800; color:#0f172a; font-size:0.85rem;">TOTAL (${filtered.length} WRITERS)</td>
+          <td style="text-align:center; font-weight:800; color:#0f172a; padding:0.75rem 0.5rem; background:#f8fafc;">${totPicked}</td>
+          <td style="text-align:center; font-weight:800; color:#15803d; padding:0.75rem 0.5rem; background:#f0fdf4;">${totApproved}</td>
+          <td style="text-align:center; font-weight:800; color:#9f1239; padding:0.75rem 0.5rem; background:#fff1f2;">${totDocMissed}</td>
+          <td style="text-align:center; font-weight:800; color:#991b1b; padding:0.75rem 0.5rem; background:#fef2f2;">${totQualityWords}</td>
+          <td style="text-align:center; font-weight:800; color:#9a3412; padding:0.75rem 0.5rem; background:#fff7ed;">${totOther}</td>
+          <td style="text-align:center; font-weight:800; color:#b91c1c; padding:0.75rem 0.5rem; background:#fee2e2;">${totRejected}</td>
+          <td style="text-align:center; font-weight:800; color:#1e40af; font-size:0.95rem; padding:0.75rem 0.5rem; background:#eff6ff;">${totPoints.toFixed(1)} pts</td>
+          <td style="text-align:center; font-weight:800; color:#0f172a; padding:0.75rem 0.5rem;">${totTarget.toLocaleString()} pts (${totProg.toFixed(0)}%)</td>
+        </tr>
+      `;
+    }
   }
 
   // Open Writer KPI Drilldown Modal
@@ -5031,36 +5205,58 @@
       const myItems = allItems.filter(it => (it.writer || '').trim().toLowerCase() === (writerName || '').trim().toLowerCase());
       let achieved = 0;
       let appr = 0;
+      let docMissed = 0;
+      let qualWords = 0;
+      let otherRej = 0;
+
       const taskItems = myItems.map(it => {
         const isApproved = getEffectiveReviewStatus(it) === 'Approved';
         const pt = calculateItemKpiPoints(it);
+        const rejType = isApproved ? null : categorizeRejection(it);
+
         if (isApproved) {
           achieved += (pt.points || 0);
           appr++;
+        } else {
+          if (rejType === 'doc_missed') docMissed++;
+          else if (rejType === 'quality_words') qualWords++;
+          else otherRej++;
         }
+
         return {
           ...it,
           isApproved,
+          rejType,
           points: pt.points
         };
       });
+
       const meta = getWriterSquadMeta(writerName);
       writerData = {
         writer: writerName,
         squadMeta: meta,
         achievedPoints: achieved,
         approvedCount: appr,
+        docMissedCount: docMissed,
+        qualityWordsCount: qualWords,
+        otherCount: otherRej,
         totalTasks: myItems.length,
         taskItems: taskItems
       };
     }
 
     if (els.drilldownWriterTitle) {
-      els.drilldownWriterTitle.textContent = `👤 ${writerName} — KPI Task Breakdown`;
+      els.drilldownWriterTitle.textContent = `👤 ${writerName} — Team Dashboard Task Breakdown`;
     }
 
     if (els.drilldownWriterSubtitle && writerData) {
-      els.drilldownWriterSubtitle.textContent = `${writerData.squadMeta.squadName} | Total Points Scored: ${writerData.achievedPoints.toFixed(1)} pts (${writerData.approvedCount} Approved of ${writerData.totalTasks} Tasks)`;
+      const totalRej = writerData.docMissedCount + writerData.qualityWordsCount + writerData.otherCount;
+      els.drilldownWriterSubtitle.innerHTML = `
+        <strong>${writerData.squadMeta.squadName}</strong> | 
+        <span style="color:#16a34a; font-weight:700;">✅ ${writerData.approvedCount} Approved</span> | 
+        <span style="color:#dc2626; font-weight:700;">⚠️ ${totalRej} Rejected (${writerData.docMissedCount} Doc Missed | ${writerData.qualityWordsCount} Quality/Wc | ${writerData.otherCount} Other)</span> | 
+        <span style="color:#2563eb; font-weight:800;">⭐ ${writerData.achievedPoints.toFixed(1)} Points Credited</span>
+      `;
     }
 
     if (els.drilldownContentBody) {
@@ -5076,9 +5272,13 @@
         tasks.forEach((t, idx) => {
           const ptInfo = calculateItemKpiPoints(t);
           const isAppr = t.isApproved;
-          const statusBadge = isAppr
-            ? `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✅ Approved (${ptInfo.points}p)</span>`
-            : `<span style="background:#f1f5f9; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⏳ Pending (0p)</span>`;
+          let statusBadge = '';
+          if (isAppr) {
+            statusBadge = `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✅ Approved (${ptInfo.points}p)</span>`;
+          } else {
+            const rejBadge = t.rejType === 'doc_missed' ? '🚫 Doc Missed' : (t.rejType === 'quality_words' ? '⚠️ Quality/Words' : '⚠️ Other');
+            statusBadge = `<span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${rejBadge}</span>`;
+          }
 
           const docLink = t.newDoc && t.newDoc.startsWith('http')
             ? `<a href="${t.newDoc}" target="_blank" style="color:#2563eb; text-decoration:underline; font-weight:700;">Doc ↗</a>`
@@ -5119,7 +5319,7 @@
                 <th style="width:160px;">KPI Rule &amp; Value</th>
                 <th style="width:75px; text-align:center;">Words</th>
                 <th style="width:60px; text-align:center;">Doc</th>
-                <th style="width:110px; text-align:center;">Status</th>
+                <th style="width:115px; text-align:center;">Status</th>
                 <th style="width:65px; text-align:center;">AI Audit</th>
               </tr>
             </thead>
@@ -5145,68 +5345,111 @@
 
   function exportKpiCSV() {
     const subTab = state.kpiSubTab || 'regular';
-    const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : 'Regular_Team');
-    const filename = `Team_KPI_${subTabTitle}_${Date.now()}.csv`;
-    const headers = ['#', 'Writer Name', 'Squad', 'Points Scored', 'Target'];
+    const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team'));
+    const filename = `Team_Dashboard_${subTabTitle}_${Date.now()}.csv`;
+    const headers = [
+      '#',
+      'Writer Name',
+      'Squad',
+      'Articles Picked',
+      'Approved',
+      'Rejected (Doc Missed)',
+      'Rejected (Quality/Words)',
+      'Rejected (Other)',
+      'Total Rejected',
+      'Total Points',
+      'Target Points',
+      'Progress %'
+    ];
     const csvLines = [headers.join(',')];
 
-    let writersListRaw = [];
-    if (subTab === 'prep') {
-      writersListRaw = [
-        { writer: "Lehron", squad: "Exam Prep", target: "660" },
-        { writer: "Dhananjay", squad: "Exam Prep", target: "660" },
-        { writer: "Falguni", squad: "Exam Prep", target: "660" },
-        { writer: "Swathi", squad: "Exam Prep", target: "660" },
-        { writer: "Sumit Kumar", squad: "Exam Prep", target: "660" },
-        { writer: "Manicka", squad: "Exam Prep", target: "660" },
-        { writer: "Archana", squad: "Exam Prep", target: "660" },
-        { writer: "Shilpa Singh", squad: "Exam Prep", target: "660" }
-      ];
-    } else if (subTab === 'hindi') {
-      writersListRaw = [
-        { writer: "Anshika", squad: "Hindi Team", target: "594" },
-        { writer: "Vidit", squad: "Hindi Team", target: "594" },
-        { writer: "Prabodh", squad: "Hindi Team", target: "594" }
-      ];
-    } else {
-      writersListRaw = [
-        { writer: "Sonika", squad: "Team A", target: "474" },
-        { writer: "Archita", squad: "Team A", target: "474" },
-        { writer: "Shemaila", squad: "Team A", target: "474" },
-        { writer: "Somya", squad: "Team A", target: "474" },
-        { writer: "Mohit", squad: "Team A", target: "474" },
+    const regularList = [
+      { writer: "Sonika", squad: "Team A", target: 477 },
+      { writer: "Archita", squad: "Team A", target: 477 },
+      { writer: "Shemaila", squad: "Team A", target: 477 },
+      { writer: "Somya", squad: "Team A", target: 477 },
+      { writer: "Mohit", squad: "Team A", target: 477 },
+      { writer: "Nadeem", squad: "Team B", target: 477 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
+      { writer: "Aditi", squad: "Team B", target: 477 },
+      { writer: "Atul", squad: "Team B", target: 477 },
+      { writer: "Trishala", squad: "Team B", target: 477 }
+    ];
 
-        { writer: "Nadeem", squad: "Team B", target: "474" },
-        { writer: "Shilpa Kohli", squad: "Team B", target: "474" },
-        { writer: "Aditi", squad: "Team B", target: "474" },
-        { writer: "Atul", squad: "Team B", target: "474" },
-        { writer: "Trishala", squad: "Team B", target: "474" }
-      ];
-    }
+    const prepList = [
+      { writer: "Lehron", squad: "Exam Prep", target: 660 },
+      { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
+      { writer: "Falguni", squad: "Exam Prep", target: 660 },
+      { writer: "Swathi", squad: "Exam Prep", target: 660 },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Archana", squad: "Exam Prep", target: 660 },
+      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+    ];
+
+    const hindiList = [
+      { writer: "Anshika", squad: "Hindi Team", target: 594 },
+      { writer: "Vidit", squad: "Hindi Team", target: 594 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+    ];
+
+    let writersListRaw = regularList;
+    if (subTab === 'prep') writersListRaw = prepList;
+    else if (subTab === 'hindi') writersListRaw = hindiList;
+    else if (subTab === 'all') writersListRaw = [...regularList, ...prepList, ...hindiList];
 
     const allWorkflowItems = getReviewList();
-    const writerScoredMap = {};
+    const writerItemsMap = {};
 
     allWorkflowItems.forEach(item => {
       const w = (item.writer || '').trim();
       if (!w || w === '-' || w === 'Unassigned') return;
       const key = w.toLowerCase();
-      const status = getEffectiveReviewStatus(item);
-      if (status === 'Approved') {
-        const ptInfo = calculateItemKpiPoints(item);
-        writerScoredMap[key] = (writerScoredMap[key] || 0) + (ptInfo.points || 0);
-      }
+      if (!writerItemsMap[key]) writerItemsMap[key] = [];
+      writerItemsMap[key].push(item);
     });
 
     writersListRaw.forEach((w, idx) => {
       const key = w.writer.toLowerCase();
-      const scoredVal = writerScoredMap[key] !== undefined ? writerScoredMap[key].toFixed(2) : '0.00';
+      const myItems = writerItemsMap[key] || [];
+      const picked = myItems.length;
+
+      let approvedCount = 0;
+      let docMissedCount = 0;
+      let qualityWordsCount = 0;
+      let otherCount = 0;
+      let pointsScored = 0;
+
+      myItems.forEach(it => {
+        const status = getEffectiveReviewStatus(it);
+        if (status === 'Approved') {
+          approvedCount++;
+          const ptInfo = calculateItemKpiPoints(it);
+          pointsScored += (ptInfo.points || 0);
+        } else {
+          const rejType = categorizeRejection(it);
+          if (rejType === 'doc_missed') docMissedCount++;
+          else if (rejType === 'quality_words') qualityWordsCount++;
+          else otherCount++;
+        }
+      });
+
+      const totalRej = docMissedCount + qualityWordsCount + otherCount;
+      const progressPct = w.target > 0 ? ((pointsScored / w.target) * 100) : 0;
+
       const row = [
         idx + 1,
         `"${w.writer.replace(/"/g, '""')}"`,
         `"${w.squad.replace(/"/g, '""')}"`,
-        `"${scoredVal}"`,
-        `"${w.target.replace(/"/g, '""')}"`
+        picked,
+        approvedCount,
+        docMissedCount,
+        qualityWordsCount,
+        otherCount,
+        totalRej,
+        `"${pointsScored.toFixed(1)}"`,
+        w.target,
+        `"${progressPct.toFixed(1)}%"`
       ];
       csvLines.push(row.join(','));
     });

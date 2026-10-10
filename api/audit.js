@@ -234,7 +234,8 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 3. Standard New Content / Child Page (Fresh writing): 1.0 Point (Standard fresh article, syllabus notes, child pages, 700+ words).
 4. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
 5. Data-Backed Content Optimization / Update (Must be at least 700–800 words total length AND have Net +300w OR >= 30% / 350+ Rewritten Words): 1.5 Points (Award 1.5 pts if total length is >= 700-800 words and net expansion is +300w OR substantially rewrote sentences/tables).
-6. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
+6. Fresh Exam Prep Article (Category/Task is Prep, Type is 'New', 800–1200 words): 2.0 Points (In-depth subject/exam preparation guides, pedagogical notes).
+7. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
 
 📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
 - Testbook editorial teams routinely create exam articles and syllabus guides IN ADVANCE of official notifications.
