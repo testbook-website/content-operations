@@ -3924,20 +3924,20 @@
           const rawTaskType = item.taskType || (type === 'new' ? 'New Content' : (type === 'update' ? 'SEO Optimization' : 'New Content'));
           const isNews = tt.includes('news') || rawTaskType.toLowerCase().includes('news');
           const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
-          const isHighIntent = tt.includes('high in') || tt.includes('pyp');
-          const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
+          const isHighIntent = (tt.includes('high in') || tt.includes('pyp')) && !isNews;
+          const isOpt = (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))) && !isNews;
           
           let tierBadge = '';
-          if (isHighIntent) {
+          if (isNews) {
+            tierBadge = item.wordCount >= 500
+              ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 ${escapeHtml(rawTaskType)} (0.5p)</span>`
+              : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ ${escapeHtml(rawTaskType)} (0.25p)</span>`;
+          } else if (isHighIntent) {
             tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 ${escapeHtml(rawTaskType)} (1.5p)</span>`;
           } else if (isOpt) {
             tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 ${escapeHtml(rawTaskType)} (1.5p)</span>`;
           } else if (isTargetPillar) {
             tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 ${escapeHtml(rawTaskType)} (3.0p)</span>`;
-          } else if (isNews) {
-            tierBadge = item.wordCount >= 500
-              ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 ${escapeHtml(rawTaskType)} (0.5p)</span>`
-              : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ ${escapeHtml(rawTaskType)} (0.25p)</span>`;
           } else {
             // New Content from Column G
             tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 ${escapeHtml(rawTaskType)} (1.0p)</span>`;

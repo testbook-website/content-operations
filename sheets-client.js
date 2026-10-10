@@ -817,13 +817,7 @@ Use these exact extracted word counts in your evaluation.`;
       let points = 1.0;
       let classification = taskType || 'New Content';
 
-      if (tt.includes('high in') || tt.includes('pyp')) {
-        classification = 'High Intent / PYP';
-        points = 1.5;
-      } else if (tt.includes('optimi') || typeStr === 'update' || tt.includes('update')) {
-        classification = 'SEO Optimization';
-        points = 1.5;
-      } else if (tt.includes('news')) {
+      if (tt.includes('news')) {
         if (wordCount >= 500) {
           classification = 'Standard News';
           points = 0.5;
@@ -831,6 +825,12 @@ Use these exact extracted word counts in your evaluation.`;
           classification = 'Micro News';
           points = 0.25;
         }
+      } else if (tt.includes('high in') || tt.includes('pyp')) {
+        classification = 'High Intent / PYP';
+        points = 1.5;
+      } else if (tt.includes('optimi') || typeStr === 'update' || tt.includes('update')) {
+        classification = 'SEO Optimization';
+        points = 1.5;
       } else if (ptStr.includes('target') || ptStr.includes('pillar')) {
         classification = 'Target Page / Pillar';
         points = 3.0;
