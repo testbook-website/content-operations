@@ -5028,26 +5028,33 @@
     const squadMeta = getWriterSquadMeta(writerName);
     const activeWk = getActiveWeekInfo();
 
-    // 1. Entire Q4 Roster (Oct - Dec: 66 weekdays, 13 Saturdays)
-    // Team A:
-    //   News Weeks: 6 full weeks (6 * 27.5) + Week 13 (4 days * 5.0) = 185.0 pts
-    //   SEO/High-Intent Weeks: 6 full weeks (6 * 45.0) + Oct 1 & 2 (2 days * 9.0) = 288.0 pts
-    //   Total = 185 + 288 = 473.0 pts
-    // Team B:
-    //   News Weeks: 6 full weeks (6 * 27.5) = 165.0 pts
-    //   SEO/High-Intent Weeks: 6 full weeks (6 * 45.0) + Week 13 (4 days * 9.0) + Oct 1 & 2 (2 days * 9.0) = 324.0 pts
-    //   Total = 165 + 324 = 489.0 pts
-    // New Content Team:
-    //   66 weekdays * 9.0 pts/day = 594.0 pts
-    // Prep Team:
-    //   66 weekdays * 10.0 pts/day = 660.0 pts
-    // Hindi Team:
-    //   66 weekdays * 12.0 pts/day = 792.0 pts
+    // 1. Entire Q4 Roster (Oct 1 - Dec 31: 66 weekdays, 13 Saturdays)
+    // Oct 1-3 (Thu, Fri, Sat):
+    //   Content/SEO (Sonika, Archita, Shemaila, Somya, Atul): 2 weekdays @ 9.0 = 18.0 pts
+    //   News (Nadeem, Shilpa Kohli, Aditi, Mohit, Trishala): 2 weekdays @ 5.0 + 1 Sat @ 2.5 = 12.5 pts
+    // Weeks 1-13 (Oct 5 - Dec 31):
+    //   Team A (Weeks 1-13): 6 News (165) + Wk 13 News (20) + 6 Content (270) = 455.0 pts
+    //   Team B (Weeks 1-13): 6 News (165) + 6 Content (270) + Wk 13 Content (36) = 471.0 pts
+    // Combined Individual Targets:
+    //   Sonika, Archita, Shemaila, Somya: 455.0 + 18.0 = 473.0 pts
+    //   Mohit: 455.0 + 12.5 = 467.5 pts
+    //   Atul: 471.0 + 18.0 = 489.0 pts
+    //   Nadeem, Shilpa Kohli, Aditi, Trishala: 471.0 + 12.5 = 483.5 pts
+    //   New Content (Archana, Shilpa Singh): 66 * 9.0 = 594.0 pts
+    //   Exam Prep (Lehron, Dhananjay, etc.): 66 * 10.0 = 660.0 pts
+    //   Hindi Team (Anshika, Vidit, Prabodh): 66 * 12.0 = 792.0 pts
     if (timeframe === 'q4_total') {
-      if (squadMeta.teamGroup === 'A') {
-        return { targetPoints: 473.0, daysCount: 66, roleLabel: 'Team A Target (7 Wks News @ 185 pts + 6 Wks SEO @ 288 pts = 473 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      const normW = normalizeWriterName(writerName);
+      if (normW === 'Mohit') {
+        return { targetPoints: 467.5, daysCount: 66, roleLabel: 'Team A (Oct 1-3 News @ 12.5 + Wks 1-13 @ 455 = 467.5 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      } else if (normW === 'Atul') {
+        return { targetPoints: 489.0, daysCount: 66, roleLabel: 'Team B (Oct 1-3 Content @ 18 + Wks 1-13 @ 471 = 489 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      } else if (['Nadeem', 'Shilpa Kohli', 'Aditi', 'Trishala'].includes(normW)) {
+        return { targetPoints: 483.5, daysCount: 66, roleLabel: 'Team B (Oct 1-3 News @ 12.5 + Wks 1-13 @ 471 = 483.5 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      } else if (squadMeta.teamGroup === 'A') {
+        return { targetPoints: 473.0, daysCount: 66, roleLabel: 'Team A (Oct 1-3 Content @ 18 + Wks 1-13 @ 455 = 473 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'B') {
-        return { targetPoints: 489.0, daysCount: 66, roleLabel: 'Team B Target (6 Wks News @ 165 pts + 7 Wks SEO @ 324 pts = 489 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+        return { targetPoints: 483.5, daysCount: 66, roleLabel: 'Team B Target (483.5 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'New Content') {
         return { targetPoints: 594.0, daysCount: 66, roleLabel: 'New Content Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'Hindi') {
@@ -5204,12 +5211,12 @@
       { writer: "Archita", squad: "Team A", target: 473 },
       { writer: "Shemaila", squad: "Team A", target: 473 },
       { writer: "Somya", squad: "Team A", target: 473 },
-      { writer: "Mohit", squad: "Team A", target: 473 },
-      { writer: "Nadeem", squad: "Team B", target: 489 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
-      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Mohit", squad: "Team A", target: 467.5 },
+      { writer: "Nadeem", squad: "Team B", target: 483.5 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 483.5 },
+      { writer: "Aditi", squad: "Team B", target: 483.5 },
       { writer: "Atul", squad: "Team B", target: 489 },
-      { writer: "Trishala", squad: "Team B", target: 489 }
+      { writer: "Trishala", squad: "Team B", target: 483.5 }
     ];
 
     const newContentList = [
@@ -5504,12 +5511,12 @@
       { writer: "Archita", squad: "Team A", target: 473 },
       { writer: "Shemaila", squad: "Team A", target: 473 },
       { writer: "Somya", squad: "Team A", target: 473 },
-      { writer: "Mohit", squad: "Team A", target: 473 },
-      { writer: "Nadeem", squad: "Team B", target: 489 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
-      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Mohit", squad: "Team A", target: 467.5 },
+      { writer: "Nadeem", squad: "Team B", target: 483.5 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 483.5 },
+      { writer: "Aditi", squad: "Team B", target: 483.5 },
       { writer: "Atul", squad: "Team B", target: 489 },
-      { writer: "Trishala", squad: "Team B", target: 489 }
+      { writer: "Trishala", squad: "Team B", target: 483.5 }
     ];
 
     const newContentList = [
@@ -5859,12 +5866,12 @@
       { writer: "Archita", squad: "Team A", target: 473 },
       { writer: "Shemaila", squad: "Team A", target: 473 },
       { writer: "Somya", squad: "Team A", target: 473 },
-      { writer: "Mohit", squad: "Team A", target: 473 },
-      { writer: "Nadeem", squad: "Team B", target: 489 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
-      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Mohit", squad: "Team A", target: 467.5 },
+      { writer: "Nadeem", squad: "Team B", target: 483.5 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 483.5 },
+      { writer: "Aditi", squad: "Team B", target: 483.5 },
       { writer: "Atul", squad: "Team B", target: 489 },
-      { writer: "Trishala", squad: "Team B", target: 489 }
+      { writer: "Trishala", squad: "Team B", target: 483.5 }
     ];
 
     const newContentList = [
@@ -5972,12 +5979,12 @@
       { writer: "Archita", squad: "Team A", target: 473 },
       { writer: "Shemaila", squad: "Team A", target: 473 },
       { writer: "Somya", squad: "Team A", target: 473 },
-      { writer: "Mohit", squad: "Team A", target: 473 },
-      { writer: "Nadeem", squad: "Team B", target: 489 },
-      { writer: "Shilpa Kohli", squad: "Team B", target: 489 },
-      { writer: "Aditi", squad: "Team B", target: 489 },
+      { writer: "Mohit", squad: "Team A", target: 467.5 },
+      { writer: "Nadeem", squad: "Team B", target: 483.5 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 483.5 },
+      { writer: "Aditi", squad: "Team B", target: 483.5 },
       { writer: "Atul", squad: "Team B", target: 489 },
-      { writer: "Trishala", squad: "Team B", target: 489 }
+      { writer: "Trishala", squad: "Team B", target: 483.5 }
     ];
 
     const newContentList = [
