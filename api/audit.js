@@ -457,21 +457,20 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     }
     // Rule 4: New Prep / New Content (800 - 1200 Words)
     else {
-      const minPrepWc = isTargetPillar ? 1400 : 800;
+      const minPrepWc = 800;
       if (effectiveNewWc < minPrepWc) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = isTargetPillar
-          ? `Target/Pillar page deficit: Delivered ${effectiveNewWc} words; minimum 1,400+ words required.`
-          : `New Prep length shortfall: Delivered ${effectiveNewWc} words; minimum 800–1200 words required.`;
+        const reason = `New Content length shortfall: Delivered ${effectiveNewWc} words; minimum 800–1200 words required.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = isTargetPillar ? 3.0 : 1.0;
+        const isPrepWriter = ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes((item.writer || '').toLowerCase());
+        parsed.pointsAwarded = isPrepWriter ? 2.0 : 1.0;
       }
     }
 
@@ -508,10 +507,11 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       ptsAwarded = isApproved ? 1.5 : 0;
       if (!isApproved) rejectReason = `Optimization shortfall: Writer rewrote/added only ~${effort}w (minimum 700–800 rewritten/added words required).`;
     } else {
-      const minPrepWc = isTargetPillar ? 1400 : 800;
+      const minPrepWc = 800;
       isApproved = estNew >= minPrepWc;
-      ptsAwarded = isApproved ? (isTargetPillar ? 3.0 : 1.0) : 0;
-      if (!isApproved) rejectReason = `New Prep shortfall: Found ${estNew}w (minimum 800–1200 words required).`;
+      const isPrepWriter = ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes((item.writer || '').toLowerCase());
+      ptsAwarded = isApproved ? (isPrepWriter ? 2.0 : 1.0) : 0;
+      if (!isApproved) rejectReason = `New Content shortfall: Found ${estNew}w (minimum 800–1200 words required).`;
     }
 
     return res.status(200).json({

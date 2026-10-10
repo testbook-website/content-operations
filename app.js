@@ -144,9 +144,8 @@
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','archana','shilpa singh'].includes(item.writer.toLowerCase()));
-              const isPillarPiece = item.classification?.includes('Pillar') || item.classification?.includes('Target');
-              item.points = isPillarPiece ? 3.0 : (isPrepPiece ? 2.0 : (effectiveNewWc >= 1200 ? 2.0 : 1.0));
+              const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(item.writer.toLowerCase()));
+              item.points = isPrepPiece ? 2.0 : 1.0;
               item.pointsAwarded = item.points;
               item.rejectionReasons = [];
             }
@@ -4082,9 +4081,8 @@
       const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
                      wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka');
       const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
-      const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
       const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
-      const isFresh = isTargetPillar || (isPrep && !isOpt) || type === 'new' || tt.includes('new');
+      const isFresh = (isPrep && !isOpt) || type === 'new' || tt.includes('new');
 
       let points = item.points;
       if (!points) {
@@ -4093,8 +4091,6 @@
         } else if (isPrep) {
           // Prep Articles: New = 2.0 pts, Update/Opt = 1.5 pts
           points = isOpt ? 1.5 : 2.0;
-        } else if (isTargetPillar) {
-          points = 3.0;
         } else if (isOpt || isHighIntent) {
           points = 1.5;
         } else {
@@ -4265,21 +4261,23 @@
 
           const rawTaskType = item.taskType || (type === 'new' ? 'New Content' : (type === 'update' ? 'SEO Optimization' : 'New Content'));
           const isNews = tt.includes('news') || rawTaskType.toLowerCase().includes('news');
-          const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
           const isHighIntent = (tt.includes('high in') || tt.includes('pyp')) && !isNews;
           const isOpt = (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))) && !isNews;
+          const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(wLower)) && !isNews;
           
           let tierBadge = '';
           if (isNews) {
             tierBadge = item.wordCount >= 500
               ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 ${escapeHtml(rawTaskType)} (0.5p)</span>`
               : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ ${escapeHtml(rawTaskType)} (0.25p)</span>`;
+          } else if (isPrep) {
+            tierBadge = isOpt
+              ? `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Prep Update (1.5p)</span>`
+              : `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Fresh Prep (2.0p)</span>`;
           } else if (isHighIntent) {
             tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 ${escapeHtml(rawTaskType)} (1.5p)</span>`;
           } else if (isOpt) {
             tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 ${escapeHtml(rawTaskType)} (1.5p)</span>`;
-          } else if (isTargetPillar) {
-            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 ${escapeHtml(rawTaskType)} (3.0p)</span>`;
           } else {
             // New Content from Column G
             tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 ${escapeHtml(rawTaskType)} (1.0p)</span>`;
@@ -4985,13 +4983,7 @@
       }
     }
 
-    // Fresh Pillar / Comprehensive Guide (1,500+ words): 3.0 Points (New Exam Page / Master Guide)
-    const isPillar = (pt.includes('target') || pt.includes('pillar') || pt.includes('exam page') || pt.includes('master')) && (type === 'new' || tt.includes('new'));
-    if (isPillar || wc >= 1500) {
-      return { points: 3.00, label: 'Fresh Pillar (New Exam Page)', badgeColor: '#7e22ce', bg: '#faf5ff', typeKey: 'pillar' };
-    }
-
-    // PYP / Mock Test Landing Page: 1.5 Points (High Intent structured Q&A, exam patterns)
+    // High Intent / PYP / Mock Test Landing Page: 1.5 Points (High Intent structured Q&A, exam patterns)
     const isHighIntentPyp = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || cl.includes('high intent') || topic.includes('mock') || topic.includes('previous year');
     if (isHighIntentPyp) {
       return { points: 1.50, label: 'PYP / Mock Test Landing Page', badgeColor: '#1d4ed8', bg: '#eff6ff', typeKey: 'high_intent' };
@@ -5002,8 +4994,8 @@
       return { points: 1.50, label: 'SEO Optimization & Refresh', badgeColor: '#b45309', bg: '#fef3c7', typeKey: 'optimization' };
     }
 
-    // New Child Pages: 1.0 Point
-    return { points: 1.00, label: 'New Child Page', badgeColor: '#15803d', bg: '#f0fdf4', typeKey: 'child_page' };
+    // New Child Pages / New Content: 1.0 Point
+    return { points: 1.00, label: 'New Content / Child Page', badgeColor: '#15803d', bg: '#f0fdf4', typeKey: 'child_page' };
   }
 
   // Get Roster Squad metadata for any writer
