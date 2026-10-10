@@ -62,7 +62,6 @@ const ROSTER_CONFIG = {
     { member: "Falguni", domain: "UGC NET - History, PolSci, Others" },
     { member: "Swathi", domain: "UGC NET - Commerce, Paper1, Maths, Business" },
     { member: "Sumit Kumar", domain: "UGC NET - Geo" },
-    { member: "Archana", domain: "UGC NET - Law" },
     { member: "Manicka", domain: "UPSC - All Subjects" },
     { member: "Aniket", domain: "UPSC - All Arts Subjects" },
     { member: "Pavan", domain: "UPSC" }

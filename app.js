@@ -342,10 +342,10 @@
     reviewOverrides: {},
     aiReviewCache: loadAiReviewCache(),
     aiRunnerActive: false,
-    teamDashboardSubTab: 'regular', // 'regular' | 'prep' | 'hindi' | 'all'
+    teamDashboardSubTab: 'regular', // 'regular' | 'new_content' | 'prep' | 'hindi' | 'all'
     teamDashboardSearch: '',
     kpiTimeframeFilter: 'q4_total', // 'q4_total' | 'current_week' | 'today'
-    kpiSubTab: 'regular', // 'regular' | 'prep' | 'hindi' | 'all'
+    kpiSubTab: 'regular', // 'regular' | 'new_content' | 'prep' | 'hindi' | 'all'
     kpiSearch: '',
     calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
     calendarMonthFilter: 'all',
@@ -5010,13 +5010,15 @@
   function getWriterSquadMeta(writerName) {
     const teamA = ["Sonika", "Archita", "Shemaila", "Somya", "Mohit"];
     const teamB = ["Nadeem", "Shilpa Kohli", "Aditi", "Atul", "Trishala"];
-    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka", "Archana", "Shilpa Singh"];
+    const newContentTeam = ["Archana", "Shilpa Singh"];
+    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka"];
     const hindiTeam = ["Anshika", "Vidit", "Prabodh"];
 
     const norm = normalizeWriterName(writerName);
     const wClean = norm || (writerName || '').trim();
     if (teamA.includes(wClean)) return { squadId: 'teamA', squadName: 'Team A (Rotation)', isRotation: true, teamGroup: 'A' };
     if (teamB.includes(wClean)) return { squadId: 'teamB', squadName: 'Team B (Rotation)', isRotation: true, teamGroup: 'B' };
+    if (newContentTeam.includes(wClean)) return { squadId: 'new_content', squadName: 'New Content Team', isRotation: false, teamGroup: 'New Content' };
     if (hindiTeam.includes(wClean)) return { squadId: 'hindi', squadName: 'Hindi Team', isRotation: false, teamGroup: 'Hindi' };
     if (prepTeam.includes(wClean)) return { squadId: 'prep', squadName: 'Exam Prep Team', isRotation: false, teamGroup: 'Prep' };
     return { squadId: 'other', squadName: 'Editorial Staff', isRotation: false, teamGroup: 'Other' };
@@ -5040,6 +5042,8 @@
     //   News Duty: 30 weekdays * 5.0 pts + 12 Sat * 2.50 pts = 180.0 pts
     //   SEO Optimization / High Intent: 33 weekdays * 9.0 pts = 297.0 pts
     //   Total = 180 + 297 = 477.0 pts
+    // New Content Team:
+    //   66 weekdays * 9.0 pts/day = 594.0 pts
     // Prep Team:
     //   66 weekdays * 10.0 pts/day = 660.0 pts
     // Hindi Team:
@@ -5047,6 +5051,8 @@
     if (timeframe === 'q4_total') {
       if (squadMeta.teamGroup === 'A' || squadMeta.teamGroup === 'B') {
         return { targetPoints: 477.0, daysCount: 75, roleLabel: 'Regular Target (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9 = 477 pts)', weeklyNewsTarget: 27.50, weeklyContentTarget: 45.0 };
+      } else if (squadMeta.teamGroup === 'New Content') {
+        return { targetPoints: 594.0, daysCount: 66, roleLabel: 'New Content Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
       } else if (squadMeta.teamGroup === 'Hindi') {
         return { targetPoints: 594.0, daysCount: 66, roleLabel: 'Hindi Team (66 Days × 9.0 pts = 594 pts)', weeklyNewsTarget: 0, weeklyContentTarget: 45.0 };
       } else {
@@ -5064,6 +5070,8 @@
         } else {
           return { targetPoints: 45.0, daysCount: 5, roleLabel: '📝 Content Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
         }
+      } else if (squadMeta.teamGroup === 'New Content') {
+        return { targetPoints: 45.0, daysCount: 5, roleLabel: '📝 New Content Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
       } else if (squadMeta.teamGroup === 'Hindi') {
         return { targetPoints: 45.0, daysCount: 5, roleLabel: '🇮🇳 Hindi Week (9.0/day × 5 = 45.0 pts)', isNewsWeek: false };
       } else {
@@ -5083,6 +5091,8 @@
         } else {
           return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '📝 Content Duty (Saturday OFF)' : '📝 Content Duty (9.0 pts/day)', isNewsWeek: false };
         }
+      } else if (squadMeta.teamGroup === 'New Content') {
+        return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '📝 New Content Duty (Saturday OFF)' : '📝 New Content Duty (9.0 pts/day)', isNewsWeek: false };
       } else if (squadMeta.teamGroup === 'Hindi') {
         return { targetPoints: isSat ? 0.0 : 9.0, daysCount: 1, roleLabel: isSat ? '🇮🇳 Hindi Duty (Saturday OFF)' : '🇮🇳 Hindi Duty (9.0 pts/day)', isNewsWeek: false };
       } else {
@@ -5150,7 +5160,13 @@
 
     // Update rule badges dynamically according to selected sub-tab
     if (els.teamDashboardRuleBadges) {
-      if (subTab === 'prep') {
+      if (subTab === 'new_content') {
+        els.teamDashboardRuleBadges.innerHTML = `
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📝 Daily Target: 9.0 pts/day (Mon–Fri)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 New Content Target: 594 pts (66 × 9.0)</span>
+        `;
+      } else if (subTab === 'prep') {
         els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📚 Daily Target: 10.0 pts/day (Mon–Fri)</span>
           <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
@@ -5199,15 +5215,18 @@
       { writer: "Trishala", squad: "Team B", target: 477 }
     ];
 
+    const newContentList = [
+      { writer: "Archana", squad: "New Content", target: 594 },
+      { writer: "Shilpa Singh", squad: "New Content", target: 594 }
+    ];
+
     const prepList = [
       { writer: "Lehron", squad: "Exam Prep", target: 660 },
       { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 },
-      { writer: "Archana", squad: "Exam Prep", target: 660 },
-      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5216,12 +5235,14 @@
       { writer: "Prabodh", squad: "Hindi Team", target: 594 }
     ];
 
-    if (subTab === 'prep') {
+    if (subTab === 'new_content') {
+      writersListRaw = newContentList;
+    } else if (subTab === 'prep') {
       writersListRaw = prepList;
     } else if (subTab === 'hindi') {
       writersListRaw = hindiList;
     } else if (subTab === 'all') {
-      writersListRaw = [...regularList, ...prepList, ...hindiList];
+      writersListRaw = [...regularList, ...newContentList, ...prepList, ...hindiList];
     } else {
       writersListRaw = regularList;
     }
@@ -5439,7 +5460,13 @@
 
     // Update banner badges dynamically according to selected sub-tab
     if (els.kpiRuleBadges) {
-      if (subTab === 'prep') {
+      if (subTab === 'new_content') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📝 Daily Target: 9.0 pts/day (Mon–Fri)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 New Content Target: 594 pts (66 × 9.0)</span>
+        `;
+      } else if (subTab === 'prep') {
         els.kpiRuleBadges.innerHTML = `
           <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📚 Daily Target: 10.0 pts/day (Mon–Fri)</span>
           <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
@@ -5488,15 +5515,18 @@
       { writer: "Trishala", squad: "Team B", target: 477 }
     ];
 
+    const newContentList = [
+      { writer: "Archana", squad: "New Content", target: 594 },
+      { writer: "Shilpa Singh", squad: "New Content", target: 594 }
+    ];
+
     const prepList = [
       { writer: "Lehron", squad: "Exam Prep", target: 660 },
       { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 },
-      { writer: "Archana", squad: "Exam Prep", target: 660 },
-      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5505,12 +5535,14 @@
       { writer: "Prabodh", squad: "Hindi Team", target: 594 }
     ];
 
-    if (subTab === 'prep') {
+    if (subTab === 'new_content') {
+      writersListRaw = newContentList;
+    } else if (subTab === 'prep') {
       writersListRaw = prepList;
     } else if (subTab === 'hindi') {
       writersListRaw = hindiList;
     } else if (subTab === 'all') {
-      writersListRaw = [...regularList, ...prepList, ...hindiList];
+      writersListRaw = [...regularList, ...newContentList, ...prepList, ...hindiList];
     } else {
       writersListRaw = regularList;
     }
@@ -5807,7 +5839,7 @@
   // Export 10-Column Team Dashboard CSV
   function exportTeamDashboardCSV() {
     const subTab = state.teamDashboardSubTab || 'regular';
-    const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team'));
+    const subTabTitle = subTab === 'new_content' ? 'New_Content_Team' : (subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team')));
     const filename = `Team_Dashboard_${subTabTitle}_${Date.now()}.csv`;
     const headers = [
       '#',
@@ -5838,15 +5870,18 @@
       { writer: "Trishala", squad: "Team B", target: 477 }
     ];
 
+    const newContentList = [
+      { writer: "Archana", squad: "New Content", target: 594 },
+      { writer: "Shilpa Singh", squad: "New Content", target: 594 }
+    ];
+
     const prepList = [
       { writer: "Lehron", squad: "Exam Prep", target: 660 },
       { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 },
-      { writer: "Archana", squad: "Exam Prep", target: 660 },
-      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5856,9 +5891,10 @@
     ];
 
     let writersListRaw = regularList;
-    if (subTab === 'prep') writersListRaw = prepList;
+    if (subTab === 'new_content') writersListRaw = newContentList;
+    else if (subTab === 'prep') writersListRaw = prepList;
     else if (subTab === 'hindi') writersListRaw = hindiList;
-    else if (subTab === 'all') writersListRaw = [...regularList, ...prepList, ...hindiList];
+    else if (subTab === 'all') writersListRaw = [...regularList, ...newContentList, ...prepList, ...hindiList];
 
     const allWorkflowItems = getReviewList();
     const writerItemsMap = {};
@@ -5922,7 +5958,7 @@
   // Export Dedicated KPI Scorecard CSV
   function exportKpiCSV() {
     const subTab = state.kpiSubTab || 'regular';
-    const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team'));
+    const subTabTitle = subTab === 'new_content' ? 'New_Content_Team' : (subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team')));
     const filename = `Team_KPI_Scorecard_${subTabTitle}_${Date.now()}.csv`;
     const headers = [
       '#',
@@ -5947,15 +5983,18 @@
       { writer: "Trishala", squad: "Team B", target: 477 }
     ];
 
+    const newContentList = [
+      { writer: "Archana", squad: "New Content", target: 594 },
+      { writer: "Shilpa Singh", squad: "New Content", target: 594 }
+    ];
+
     const prepList = [
       { writer: "Lehron", squad: "Exam Prep", target: 660 },
       { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 },
-      { writer: "Archana", squad: "Exam Prep", target: 660 },
-      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5965,9 +6004,10 @@
     ];
 
     let writersListRaw = regularList;
-    if (subTab === 'prep') writersListRaw = prepList;
+    if (subTab === 'new_content') writersListRaw = newContentList;
+    else if (subTab === 'prep') writersListRaw = prepList;
     else if (subTab === 'hindi') writersListRaw = hindiList;
-    else if (subTab === 'all') writersListRaw = [...regularList, ...prepList, ...hindiList];
+    else if (subTab === 'all') writersListRaw = [...regularList, ...newContentList, ...prepList, ...hindiList];
 
     const allWorkflowItems = getReviewList();
     const writerItemsMap = {};
