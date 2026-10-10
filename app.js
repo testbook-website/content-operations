@@ -236,6 +236,18 @@
       if (!state.aiReviewCache[item.topic]) {
         if (hasNote || hasDefinitiveStatus) {
           const isAppr = rawStat.includes('approv');
+          const noteText = item.reviewNotes ? item.reviewNotes.trim() : '';
+          const noteIsApprovalText = noteText.toLowerCase().includes('approv');
+          
+          let cleanRej = [];
+          if (!isAppr) {
+            if (noteText && !noteIsApprovalText) {
+              cleanRej = [noteText];
+            } else {
+              cleanRej = ['Marked for editorial revision in workflow sheet.'];
+            }
+          }
+
           state.aiReviewCache[item.topic] = {
             isApproved: isAppr,
             verdict: isAppr ? 'Approved' : 'Needs Revision',
@@ -246,12 +258,12 @@
             newDocWordCount: item.wordCount || null,
             oldDocWordCount: 0,
             docWordCountText: `${item.wordCount || 0} words (Sheet Synced)`,
-            justificationSummary: item.reviewNotes || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)'),
-            rejectionReasons: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : (isAppr ? [] : ['Marked for revision in workflow sheet']),
+            justificationSummary: (!isAppr && noteIsApprovalText) ? 'Needs Revision (Pending Editorial Review)' : (noteText || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)')),
+            rejectionReasons: cleanRej,
             wordCountAssessment: `${item.wordCount || 0} words reported`,
             keyStrengths: ['Exam syllabus alignment', 'Tracked in Q4 OND Content Workflow'],
-            improvementAreas: (!isAppr && item.reviewNotes) ? [item.reviewNotes] : ['Review content depth against syllabus standards'],
-            recommendationNote: item.reviewNotes || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.'),
+            improvementAreas: cleanRej.length > 0 ? cleanRej : ['Review content depth against syllabus standards'],
+            recommendationNote: (!isAppr && noteIsApprovalText) ? 'Draft marked for revision.' : (noteText || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.')),
             reviewedAt: item.date || new Date().toISOString(),
             fromSheetSync: true
           };
@@ -265,7 +277,8 @@
           if (cur.justificationSummary !== item.reviewNotes) {
             cur.justificationSummary = item.reviewNotes;
             if (!cur.isApproved) {
-              cur.rejectionReasons = [item.reviewNotes];
+              const noteText = (item.reviewNotes || '').trim();
+              cur.rejectionReasons = (noteText && !noteText.toLowerCase().includes('approv')) ? [noteText] : ['Marked for editorial revision in workflow sheet.'];
             }
             cacheChanged = true;
           }
