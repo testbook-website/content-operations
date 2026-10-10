@@ -3599,6 +3599,9 @@
     if (lower === 'manickavalli' || lower === 'manicka valli' || lower === 'manickavalli ') {
       return 'Manicka';
     }
+    if (lower === 'mahasetha' || lower === 'mahasweta' || lower === 'mahsetha' || lower === 'mahaseta') {
+      return 'Mahasetha';
+    }
 
     // Direct and single-name mappings (Shilpa -> Shilpa Kohli)
     if (lower === 'shilpa' || lower === 'shilpa kohli' || lower === 'shilpakohli' || lower === 'shilpa k' || lower === 'shilpa.k') {
@@ -4981,7 +4984,7 @@
 
     // Prep check: Category/task/domain contains 'prep' (e.g. IAS Prep, Exam Prep), or assigned to Prep Writer
     const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                   writer === 'lehron' || writer === 'dhananjay' || writer === 'falguni' || writer === 'swathi' || writer === 'sumit kumar' || writer.includes('manicka');
+                   writer === 'lehron' || writer === 'dhananjay' || writer === 'falguni' || writer === 'swathi' || writer === 'sumit kumar' || writer.includes('manicka') || writer === 'mahasetha';
 
     const isOpt = type === 'update' || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || (item.oldDoc && item.oldDoc.startsWith('http'));
 
@@ -5015,7 +5018,7 @@
     const teamA = ["Sonika", "Archita", "Shemaila", "Somya", "Mohit"];
     const teamB = ["Nadeem", "Shilpa Kohli", "Aditi", "Atul", "Trishala"];
     const newContentTeam = ["Archana", "Shilpa Singh"];
-    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka"];
+    const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka", "Mahasetha"];
     const hindiTeam = ["Anshika", "Vidit", "Prabodh"];
 
     const norm = normalizeWriterName(writerName);
@@ -5186,7 +5189,7 @@
         els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (21 Writers)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (22 Writers)</span>
         `;
       } else {
         // 'regular' (Team A and B)
@@ -5230,7 +5233,8 @@
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Mahasetha", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5486,7 +5490,7 @@
         els.kpiRuleBadges.innerHTML = `
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk</span>
-          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (21 Writers)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (22 Writers)</span>
         `;
       } else {
         // 'regular' (Team A and B)
@@ -5530,7 +5534,8 @@
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Mahasetha", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5885,7 +5890,8 @@
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Mahasetha", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [
@@ -5998,7 +6004,8 @@
       { writer: "Falguni", squad: "Exam Prep", target: 660 },
       { writer: "Swathi", squad: "Exam Prep", target: 660 },
       { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
-      { writer: "Manicka", squad: "Exam Prep", target: 660 }
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Mahasetha", squad: "Exam Prep", target: 660 }
     ];
 
     const hindiList = [

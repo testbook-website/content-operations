@@ -64,7 +64,8 @@ const ROSTER_CONFIG = {
     { member: "Sumit Kumar", domain: "UGC NET - Geo" },
     { member: "Manicka", domain: "UPSC - All Subjects" },
     { member: "Aniket", domain: "UPSC - All Arts Subjects" },
-    { member: "Pavan", domain: "UPSC" }
+    { member: "Pavan", domain: "UPSC" },
+    { member: "Mahasetha", domain: "Exam Prep" }
   ],
 
   publishing: [
