@@ -2142,7 +2142,7 @@
     } else if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && Array.isArray(BASELINE_WORKFLOW_DATA)) {
       raw = BASELINE_WORKFLOW_DATA;
     }
-    // Filter out rows without a topic, and strictly enforce Q4 OND (October, November, December 2026)
+    // Filter out rows without a topic, strictly enforce Q4 OND, and normalize writer names
     return raw.filter(item => {
       const topic = (item.topic || '').trim();
       if (!topic || topic === '-' || topic.toLowerCase() === 'topic') return false;
@@ -2154,6 +2154,12 @@
         }
       }
       return true;
+    }).map(item => {
+      const normW = normalizeWriterName(item.writer);
+      if (normW && normW !== item.writer) {
+        return { ...item, writer: normW };
+      }
+      return item;
     });
   }
 
@@ -3561,14 +3567,106 @@
     return clean;
   }
 
+  function normalizeWriterName(rawName) {
+    if (!rawName) return '';
+    const clean = String(rawName).trim();
+    const lower = clean.toLowerCase();
+    if (!clean || clean === '-' || lower === 'unassigned' || lower === 'na' || lower === 'n/a') {
+      return '';
+    }
+    // Specific compound/full name checks first
+    if (lower === 'shilpa singh' || lower === 'shilpasingh' || lower === 'shilpa s' || lower === 'shilpa.s') {
+      return 'Shilpa Singh';
+    }
+    if (lower === 'archana singh' || lower === 'archanasingh' || lower === 'archana s') {
+      return 'Archana';
+    }
+    if (lower === 'sumit kumar' || lower === 'sumitkumar' || lower === 'sumit k') {
+      return 'Sumit Kumar';
+    }
+    if (lower === 'manickavalli' || lower === 'manicka valli' || lower === 'manickavalli ') {
+      return 'Manicka';
+    }
+
+    // Direct and single-name mappings (Shilpa -> Shilpa Kohli)
+    if (lower === 'shilpa' || lower === 'shilpa kohli' || lower === 'shilpakohli' || lower === 'shilpa k' || lower === 'shilpa.k') {
+      return 'Shilpa Kohli';
+    }
+    if (lower === 'archana') {
+      return 'Archana';
+    }
+    if (lower === 'manicka') {
+      return 'Manicka';
+    }
+    if (lower === 'sumit') {
+      return 'Sumit Kumar';
+    }
+    if (lower === 'shemaila' || lower === 'samaila' || lower === 'shem' || lower === 'shemail') {
+      return 'Shemaila';
+    }
+    if (lower === 'sonika' || lower === 'sonika sharma') {
+      return 'Sonika';
+    }
+    if (lower === 'archita' || lower === 'archita ray') {
+      return 'Archita';
+    }
+    if (lower === 'somya' || lower === 'saumya' || lower === 'somya mishra') {
+      return 'Somya';
+    }
+    if (lower === 'mohit' || lower === 'mohit kumar') {
+      return 'Mohit';
+    }
+    if (lower === 'nadeem' || lower === 'nadeem khan') {
+      return 'Nadeem';
+    }
+    if (lower === 'aditi' || lower === 'aditi sharma') {
+      return 'Aditi';
+    }
+    if (lower === 'atul' || lower === 'atul kumar') {
+      return 'Atul';
+    }
+    if (lower === 'trishala' || lower === 'trishla') {
+      return 'Trishala';
+    }
+    if (lower === 'lehron' || lower === 'lehran') {
+      return 'Lehron';
+    }
+    if (lower === 'dhananjay' || lower === 'dhananjay kumar') {
+      return 'Dhananjay';
+    }
+    if (lower === 'falguni' || lower === 'falguni goswami') {
+      return 'Falguni';
+    }
+    if (lower === 'swathi' || lower === 'swati') {
+      return 'Swathi';
+    }
+    if (lower === 'anshika' || lower === 'anshika verma') {
+      return 'Anshika';
+    }
+    if (lower === 'vidit' || lower === 'vidit sharma') {
+      return 'Vidit';
+    }
+    if (lower === 'prabodh' || lower === 'prabodh kumar') {
+      return 'Prabodh';
+    }
+
+    return clean;
+  }
+
   function getReviewList() {
+    let list = [];
     if (state.sheetsData && state.sheetsData.workflow_ond && state.sheetsData.workflow_ond.length > 0) {
-      return state.sheetsData.workflow_ond;
+      list = state.sheetsData.workflow_ond;
+    } else if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && BASELINE_WORKFLOW_DATA.length > 0) {
+      list = BASELINE_WORKFLOW_DATA;
     }
-    if (typeof BASELINE_WORKFLOW_DATA !== 'undefined' && BASELINE_WORKFLOW_DATA.length > 0) {
-      return BASELINE_WORKFLOW_DATA;
-    }
-    return [];
+    return list.map(item => {
+      const normW = normalizeWriterName(item.writer);
+      if (normW && normW !== item.writer) {
+        return { ...item, writer: normW };
+      }
+      return item;
+    });
   }
 
   let lastReviewItemCount = 0;
@@ -3586,8 +3684,9 @@
     const datesSet = new Set();
 
     items.forEach(item => {
-      if (item.writer && item.writer !== '-' && item.writer !== 'Unassigned') {
-        writersSet.add(item.writer);
+      const normW = normalizeWriterName(item.writer);
+      if (normW && normW !== '-' && normW !== 'Unassigned') {
+        writersSet.add(normW);
       }
       if (item.category && item.category !== '-') {
         categoriesSet.add(item.category);
@@ -3746,7 +3845,11 @@
       if (state.reviewStatusFilter === 'needs_revision' && status !== 'Needs Revision') return false;
 
       // Writer Filter
-      if (state.reviewWriterFilter !== 'all' && item.writer !== state.reviewWriterFilter) return false;
+      if (state.reviewWriterFilter !== 'all') {
+        const itemW = normalizeWriterName(item.writer);
+        const filterW = normalizeWriterName(state.reviewWriterFilter);
+        if (itemW.toLowerCase() !== filterW.toLowerCase()) return false;
+      }
       // Category Filter
       if (state.reviewCategoryFilter !== 'all' && item.category !== state.reviewCategoryFilter) return false;
 
@@ -4910,7 +5013,8 @@
     const prepTeam = ["Lehron", "Dhananjay", "Falguni", "Swathi", "Sumit Kumar", "Manicka", "Archana", "Shilpa Singh"];
     const hindiTeam = ["Anshika", "Vidit", "Prabodh"];
 
-    const wClean = (writerName || '').trim();
+    const norm = normalizeWriterName(writerName);
+    const wClean = norm || (writerName || '').trim();
     if (teamA.includes(wClean)) return { squadId: 'teamA', squadName: 'Team A (Rotation)', isRotation: true, teamGroup: 'A' };
     if (teamB.includes(wClean)) return { squadId: 'teamB', squadName: 'Team B (Rotation)', isRotation: true, teamGroup: 'B' };
     if (hindiTeam.includes(wClean)) return { squadId: 'hindi', squadName: 'Hindi Team', isRotation: false, teamGroup: 'Hindi' };
@@ -5133,7 +5237,7 @@
     const writerItemsMap = {};
 
     allWorkflowItems.forEach(item => {
-      const w = (item.writer || '').trim();
+      const w = normalizeWriterName(item.writer);
       if (!w || w === '-' || w === 'Unassigned') return;
       const key = w.toLowerCase();
       if (!writerItemsMap[key]) writerItemsMap[key] = [];
@@ -5151,7 +5255,7 @@
     let totTarget = 0;
 
     const writerStatsList = filtered.map((w, idx) => {
-      const key = w.writer.toLowerCase();
+      const key = normalizeWriterName(w.writer).toLowerCase();
       const myItems = writerItemsMap[key] || [];
       const picked = myItems.length;
 
@@ -5422,7 +5526,7 @@
     const writerItemsMap = {};
 
     allWorkflowItems.forEach(item => {
-      const w = (item.writer || '').trim();
+      const w = normalizeWriterName(item.writer);
       if (!w || w === '-' || w === 'Unassigned') return;
       const key = w.toLowerCase();
       if (!writerItemsMap[key]) writerItemsMap[key] = [];
@@ -5433,7 +5537,7 @@
     let totTarget = 0;
 
     const writerStatsList = filtered.map((w, idx) => {
-      const key = w.writer.toLowerCase();
+      const key = normalizeWriterName(w.writer).toLowerCase();
       const myItems = writerItemsMap[key] || [];
 
       let pointsScored = 0;
@@ -5558,7 +5662,8 @@
 
     if (!writerData) {
       const allItems = getReviewList();
-      const myItems = allItems.filter(it => (it.writer || '').trim().toLowerCase() === (writerName || '').trim().toLowerCase());
+      const targetNorm = normalizeWriterName(writerName).toLowerCase();
+      const myItems = allItems.filter(it => normalizeWriterName(it.writer).toLowerCase() === targetNorm);
       let achieved = 0;
       let appr = 0;
       let docMissed = 0;
@@ -5759,7 +5864,7 @@
     const writerItemsMap = {};
 
     allWorkflowItems.forEach(item => {
-      const w = (item.writer || '').trim();
+      const w = normalizeWriterName(item.writer);
       if (!w || w === '-' || w === 'Unassigned') return;
       const key = w.toLowerCase();
       if (!writerItemsMap[key]) writerItemsMap[key] = [];
@@ -5767,7 +5872,7 @@
     });
 
     writersListRaw.forEach((w, idx) => {
-      const key = w.writer.toLowerCase();
+      const key = normalizeWriterName(w.writer).toLowerCase();
       const myItems = writerItemsMap[key] || [];
       const picked = myItems.length;
 
@@ -5868,7 +5973,7 @@
     const writerItemsMap = {};
 
     allWorkflowItems.forEach(item => {
-      const w = (item.writer || '').trim();
+      const w = normalizeWriterName(item.writer);
       if (!w || w === '-' || w === 'Unassigned') return;
       const key = w.toLowerCase();
       if (!writerItemsMap[key]) writerItemsMap[key] = [];
@@ -5876,7 +5981,7 @@
     });
 
     writersListRaw.forEach((w, idx) => {
-      const key = w.writer.toLowerCase();
+      const key = normalizeWriterName(w.writer).toLowerCase();
       const myItems = writerItemsMap[key] || [];
 
       let pointsScored = 0;
