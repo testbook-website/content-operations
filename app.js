@@ -3778,8 +3778,11 @@
       return state.reviewOverrides[item.topic];
     }
     
-    // Check AI cache first if present
+    // 1. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
     const ai = (state.aiReviewCache && state.aiReviewCache[item.topic]) ? state.aiReviewCache[item.topic] : null;
+    if (ai && ai.verdict && !ai.running) {
+      return ai.verdict;
+    }
     
     const raw = (item.reviewStatus || '').trim();
     if (raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc') || (!item.newDoc && !item.url)) {
@@ -3817,9 +3820,6 @@
       if (effort < 800) return 'Needs Revision';
     }
 
-    if (ai) {
-      return ai.verdict;
-    }
     if (raw.toLowerCase().includes('approv')) {
       return 'Approved';
     }
@@ -4376,47 +4376,27 @@
 
           // Verdict / AI Status Column
           let verdictHtml = '';
-          if (!hasValidDoc) {
+          if (aiRecord && aiRecord.running) {
+            verdictHtml = `<span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ In Progress...</span>`;
+          } else if (status === 'Approved' || (aiRecord && aiRecord.isApproved !== false && aiRecord.verdict === 'Approved')) {
+            const noteText = (!aiRecord?.fromSheetSync && aiRecord?.justificationSummary) ? aiRecord.justificationSummary : (item.reviewNotes || 'Passed Quality & Word Count Review');
+            verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">${escapeHtml(noteText)}</span></div>`;
+          } else if (!hasValidDoc) {
             verdictHtml = `<span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">🚫 No Doc Attached</span>`;
-          } else if (isOpt && !hasOldDoc) {
+          } else if (isOpt && !hasOldDoc && (!aiRecord || aiRecord.verdict !== 'Approved')) {
             verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25;">Missing Old Doc (Compulsory for Update)</span></div>`;
-          } else if (aiRecord) {
-            if (aiRecord.running) {
-              verdictHtml = `<span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ In Progress...</span>`;
-            } else if (aiRecord.verdict === 'Doc Missing' || aiRecord.qualityVerdict === 'Doc Missing') {
-              verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">Old Doc required for update</span></div>`;
-            } else {
-              const isAppr = (status === 'Approved');
-              if (isAppr) {
-                const noteText = item.reviewNotes || 'Passed';
-                verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">${escapeHtml(noteText)}</span></div>`;
-              } else {
-                let reason = (aiRecord && aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || (!aiRecord?.fromSheetSync && aiRecord?.justificationSummary ? aiRecord.justificationSummary : '');
-                if (!reason || /tables?\s*(&|and)?\s*faqs?/i.test(reason) || reason.includes('syllabus tables')) {
-                  const effortNum = (aiRecord?.rewrittenWords || parseInt(item.wordCount, 10) || 0);
-                  if (isNews && isOpt) reason = `News Update shortfall: Found ~${effortNum} rewritten words (minimum 350+ words required).`;
-                  else if (isNews) reason = `New News shortfall: Found ${effortNum} words (minimum 500 words required).`;
-                  else if (isOpt) reason = `Optimization shortfall: Found ~${effortNum} rewritten words (minimum 700–800 words required).`;
-                  else reason = `New Prep shortfall: Found ${effortNum} words (minimum 800–1200 words required).`;
-                }
-                verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(reason)}">${escapeHtml(reason)}</span></div>`;
-              }
+          } else if (status === 'Doc Missing' || aiRecord?.verdict === 'Doc Missing') {
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">Old Doc required for update</span></div>`;
+          } else if (status === 'Needs Revision' || (aiRecord && aiRecord.verdict === 'Needs Revision')) {
+            let reason = (aiRecord && aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || (!aiRecord?.fromSheetSync && aiRecord?.justificationSummary ? aiRecord.justificationSummary : '') || item.reviewNotes || '';
+            if (!reason || /tables?\s*(&|and)?\s*faqs?/i.test(reason) || reason.includes('syllabus tables') || reason.includes('Sheet Synced')) {
+              const effortNum = (aiRecord?.rewrittenWords || parseInt(item.wordCount, 10) || 0);
+              if (isNews && isOpt) reason = `News Update shortfall: Found ~${effortNum} rewritten words (minimum 350+ words required).`;
+              else if (isNews) reason = `New News shortfall: Found ${effortNum} words (minimum 500 words required).`;
+              else if (isOpt) reason = `Optimization shortfall: Found ~${effortNum} rewritten words (minimum 700–800 words required).`;
+              else reason = `New Prep shortfall: Found ${effortNum} words (minimum 800–1200 words required).`;
             }
-          } else if (status === 'Doc Missing') {
-            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
-          } else if (status === 'Approved') {
-            const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Passed (Sheet Synced)';
-            verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">${noteText}</span></div>`;
-          } else if (status === 'Needs Revision') {
-            const effortNum = parseInt(item.wordCount, 10) || 0;
-            let noteText = item.reviewNotes || '';
-            if (!noteText || /tables?\s*(&|and)?\s*faqs?/i.test(noteText) || noteText.includes('syllabus tables') || noteText.includes('Sheet Synced')) {
-              if (isNews && isOpt) noteText = `News Update shortfall: Found ~${effortNum} rewritten words (minimum 350+ required)`;
-              else if (isNews) noteText = `New News shortfall: Found ${effortNum} words (minimum 500 required)`;
-              else if (isOpt) noteText = `Optimization shortfall: Found ~${effortNum} rewritten words (minimum 700–800 required)`;
-              else noteText = `New Prep shortfall: Found ${effortNum} words (minimum 800–1200 required)`;
-            }
-            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(noteText)}">${escapeHtml(noteText)}</span></div>`;
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(reason)}">${escapeHtml(reason)}</span></div>`;
           } else {
             verdictHtml = `<span style="background:#f1f5f9; color:#64748b; font-weight:600; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ Pending Run</span>`;
           }
@@ -4551,19 +4531,27 @@
     if (!state.reviewOverrides) state.reviewOverrides = {};
     state.reviewOverrides[topic] = 'Approved';
     if (!state.aiReviewCache) state.aiReviewCache = {};
-    if (!state.aiReviewCache[topic]) {
-      state.aiReviewCache[topic] = {
-        isApproved: true,
-        verdict: 'Approved',
-        score: 9,
-        points: 2.0,
-        justificationSummary: 'Manually approved by editorial manager.',
-        rejectionReasons: [],
-        reviewedAt: new Date().toISOString()
-      };
-      saveAiReviewCache(state.aiReviewCache);
+    state.aiReviewCache[topic] = {
+      isApproved: true,
+      verdict: 'Approved',
+      score: 9,
+      pointsAwarded: 2.0,
+      justificationSummary: 'Manually approved by editorial manager.',
+      rejectionReasons: [],
+      reviewedAt: new Date().toISOString()
+    };
+    saveAiReviewCache(state.aiReviewCache);
+
+    const allItems = getReviewList();
+    const targetItem = allItems.find(it => it.topic === topic);
+    if (targetItem) {
+      targetItem.reviewStatus = 'Approved';
+      targetItem.reviewNotes = 'Approved by Editor';
     }
+
     renderReviewHub(false);
+    renderTeamDashboard();
+    renderKpiDashboard();
 
     if (typeof sheetsClient !== 'undefined') {
       await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Approved', 'Approved by Editor');
@@ -4584,13 +4572,23 @@
       isApproved: false,
       verdict: 'Needs Revision',
       score: 5,
-      points: 0,
+      pointsAwarded: 0,
       justificationSummary: `Needs Revision: ${note}`,
       rejectionReasons: [note],
       reviewedAt: new Date().toISOString()
     };
     saveAiReviewCache(state.aiReviewCache);
+
+    const allItems = getReviewList();
+    const targetItem = allItems.find(it => it.topic === topic);
+    if (targetItem) {
+      targetItem.reviewStatus = 'Needs Revision';
+      targetItem.reviewNotes = note;
+    }
+
     renderReviewHub(false);
+    renderTeamDashboard();
+    renderKpiDashboard();
 
     if (typeof sheetsClient !== 'undefined') {
       await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Needs Revision', note);
@@ -4634,43 +4632,14 @@
 
     els.modalAiAudit.style.display = 'flex';
 
-    // Check if existing audit is cached and we are NOT forcing a re-audit
+    // Check if existing audit is cached and has genuine AI results
     let cached = (!forceReAudit && state.aiReviewCache) ? state.aiReviewCache[item.topic] : null;
 
-    // If not cached, but item has reviewStatus or reviewNotes from live Google Sheet (Column S), hydrate auditData
-    const cleanSheetNote = (item.reviewNotes && !/tables?\s*(&|and)?\s*faqs?/i.test(item.reviewNotes) && !item.reviewNotes.includes('syllabus tables'))
-      ? item.reviewNotes
-      : '';
-
-    if (!cached && !forceReAudit && (cleanSheetNote || (item.reviewStatus && item.reviewStatus !== 'Pending Review'))) {
-      const isAppr = (item.reviewStatus || '').toLowerCase().includes('approv');
-      cached = {
-        isApproved: isAppr,
-        verdict: isAppr ? 'Approved' : 'Needs Revision',
-        score: isAppr ? 9 : 5,
-        suggestedClassification: item.classification || 'Standard Fresh',
-        pointsAwarded: isAppr ? (item.points || 2.0) : 0,
-        netWordDiff: null,
-        newDocWordCount: item.wordCount || null,
-        oldDocWordCount: 0,
-        docWordCountText: `${item.wordCount || 0} words (Sheet Synced)`,
-        justificationSummary: cleanSheetNote || (isAppr ? 'Approved (Synced from Google Sheet)' : 'Revision Required (Synced from Google Sheet)'),
-        rejectionReasons: (!isAppr && cleanSheetNote) ? [cleanSheetNote] : (isAppr ? [] : ['Marked for revision in workflow sheet']),
-        wordCountAssessment: `${item.wordCount || 0} words reported`,
-        keyStrengths: ['Exam syllabus alignment', 'Tracked in Q4 OND Content Workflow'],
-        improvementAreas: (!isAppr && cleanSheetNote) ? [cleanSheetNote] : ['Review content depth against syllabus standards'],
-        recommendationNote: cleanSheetNote || (isAppr ? 'Approved in Google Sheet.' : 'Draft marked for revision.'),
-        reviewedAt: item.date || new Date().toISOString(),
-        fromSheetSync: true
-      };
-      if (!state.aiReviewCache) state.aiReviewCache = {};
-      state.aiReviewCache[item.topic] = cached;
-      saveAiReviewCache(state.aiReviewCache);
-    }
+    const hasRealAiAudit = cached && !cached.fromSheetSync && !cached.running && cached.isApproved !== undefined;
 
     let auditData = null;
 
-    if (cached && !cached.running && cached.isApproved !== undefined) {
+    if (hasRealAiAudit && !forceReAudit) {
       auditData = cached;
     } else {
       // Immediately reflect running state in table & modal
@@ -4750,20 +4719,32 @@
         keyStrengths: (a.keyStrengths && a.keyStrengths.length > 0) ? a.keyStrengths : ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
         improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Ensure internal linking to main category hub'],
         recommendationNote: a.recommendationNote || (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'),
-        factualAudit: a.factualAudit || null
+        factualAudit: a.factualAudit || null,
+        reviewedAt: new Date().toISOString()
       };
 
-      // Save to cache
+      // 1. Update in-memory item
+      item.reviewStatus = auditData.verdict;
+      const shortNote = formatShortReviewNote(isAppr, auditData.score, auditData.rejectionReasons, auditData.justificationSummary);
+      item.reviewNotes = shortNote;
+
+      // 2. Set review override
+      if (!state.reviewOverrides) state.reviewOverrides = {};
+      state.reviewOverrides[item.topic] = auditData.verdict;
+
+      // 3. Save to cache
       state.aiReviewCache[item.topic] = auditData;
       saveAiReviewCache(state.aiReviewCache);
 
-      // Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status) & Col R (Notes)
+      // 4. Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status) & Col R (Notes)
       if (typeof sheetsClient !== 'undefined') {
-        const notes = formatShortReviewNote(isAppr, auditData.score, auditData.rejectionReasons);
-        sheetsClient.updateWorkflowReviewStatus(item.rowIndex, item.topic, auditData.verdict, notes).catch(e => console.warn('Sheet sync error:', e));
+        sheetsClient.updateWorkflowReviewStatus(item.rowIndex, item.topic, auditData.verdict, shortNote).catch(e => console.warn('Sheet sync error:', e));
       }
 
+      // 5. Re-render all relevant dashboards
       renderReviewHub(false);
+      renderTeamDashboard();
+      renderKpiDashboard();
     }
 
     const a = auditData;
@@ -4908,14 +4889,34 @@
 
     if (els.modalAiAuditFooter) {
       els.modalAiAuditFooter.innerHTML = `
-        <button type="button" class="btn-action" id="btnCloseAuditFooter">Close</button>
-        <button type="button" class="btn-action" id="btnReRunAuditModal" style="background:#4f46e5; color:#ffffff; font-weight:700;">
-          🔄 Re-Run AI Audit
-        </button>
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:0.5rem; flex-wrap:wrap;">
+          <button type="button" class="btn-action" id="btnCloseAuditFooter">Close</button>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" class="btn-action" id="btnManualApproveModal" style="background:#15803d; color:#ffffff; font-weight:700;">
+              ✅ Mark Approved
+            </button>
+            <button type="button" class="btn-action" id="btnManualRevisionModal" style="background:#dc2626; color:#ffffff; font-weight:700;">
+              ⚠️ Request Revision
+            </button>
+            <button type="button" class="btn-action" id="btnReRunAuditModal" style="background:#4f46e5; color:#ffffff; font-weight:700;">
+              🔄 Re-Run AI Audit
+            </button>
+          </div>
+        </div>
       `;
 
       document.getElementById('btnCloseAuditFooter').addEventListener('click', () => {
         els.modalAiAudit.style.display = 'none';
+      });
+
+      document.getElementById('btnManualApproveModal').addEventListener('click', async () => {
+        await approveReviewItem(item.topic, item.rowIndex);
+        openAiAuditModal(item, false);
+      });
+
+      document.getElementById('btnManualRevisionModal').addEventListener('click', async () => {
+        await requestRevisionItem(item.topic, item.rowIndex);
+        openAiAuditModal(item, false);
       });
 
       document.getElementById('btnReRunAuditModal').addEventListener('click', () => {
