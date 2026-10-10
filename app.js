@@ -416,7 +416,6 @@
     reviewKpiCards: document.getElementById('reviewKpiCards'),
     btnStartAiRunner: document.getElementById('btnStartAiRunner'),
     btnStopAiRunner: document.getElementById('btnStopAiRunner'),
-    btnResetAiAudits: document.getElementById('btnResetAiAudits'),
     aiRunnerStatusText: document.getElementById('aiRunnerStatusText'),
     aiRunnerDot: document.getElementById('aiRunnerDot'),
     aiAuditedCountPill: document.getElementById('aiAuditedCountPill'),
@@ -992,18 +991,6 @@
 
     if (els.btnStopAiRunner) {
       els.btnStopAiRunner.addEventListener('click', stopAiAutoReviewRunner);
-    }
-
-    if (els.btnResetAiAudits) {
-      els.btnResetAiAudits.addEventListener('click', () => {
-        if (confirm('Are you sure you want to reset all AI review cache and re-run fresh?')) {
-          state.aiReviewCache = {};
-          saveAiReviewCache(state.aiReviewCache);
-          if (state.reviewOverrides) state.reviewOverrides = {};
-          renderReviewHub(false);
-          updateAiRunnerUI('AI Audits reset. Click "⚡ Start AI Auto-Review Runner" to run fresh.');
-        }
-      });
     }
 
     // TAB 2: Team Dashboard Controls
