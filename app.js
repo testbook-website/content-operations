@@ -3736,13 +3736,13 @@
       const wLower = (item.writer || '').toLowerCase();
       const domain = (item.domain || '').toLowerCase();
 
-      const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
+      const isNews = tt.includes('news');
       const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
                      wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka');
-      const isOpt = type === 'update' || tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'));
+      const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
       const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
-      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || item.classification === 'High Intent / PYP';
-      const isFresh = isTargetPillar || (isPrep && !isOpt) || type === 'new' || tt.includes('new content');
+      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
+      const isFresh = isTargetPillar || (isPrep && !isOpt) || type === 'new' || tt.includes('new');
 
       let points = item.points;
       if (!points) {
@@ -3921,34 +3921,26 @@
           const wLower = (item.writer || '').toLowerCase();
           const domain = (item.domain || '').toLowerCase();
 
-          const isNews = tt.includes('news') || item.classification === 'Standard News' || item.classification === 'Micro News';
-          const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                         wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka');
-          const isOpt = type === 'update' || tt.includes('optimi') || item.classification === 'Deep Optimization' || (item.oldDoc && item.oldDoc.startsWith('http'));
+          const rawTaskType = item.taskType || (type === 'new' ? 'New Content' : (type === 'update' ? 'SEO Optimization' : 'New Content'));
+          const isNews = tt.includes('news') || rawTaskType.toLowerCase().includes('news');
           const isTargetPillar = (pt.includes('target') || pt.includes('pillar')) && type === 'new';
-          const isHighIntent = tt.includes('high in') || tt.includes('pyp') || item.classification === 'High Intent / PYP';
+          const isHighIntent = tt.includes('high in') || tt.includes('pyp');
+          const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
           
           let tierBadge = '';
-          if (isNews) {
-            tierBadge = item.wordCount >= 500
-              ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 News (0.5p)</span>`
-              : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ Micro (0.25p)</span>`;
-          } else if (isPrep) {
-            if (isOpt) {
-              tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
-            } else {
-              tierBadge = `<span style="background:#f0fdf4; color:#166534; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📚 Prep (2.0p)</span>`;
-            }
-          } else if (isTargetPillar) {
-            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 Target/Pillar (3.0p)</span>`;
+          if (isHighIntent) {
+            tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 ${escapeHtml(rawTaskType)} (1.5p)</span>`;
           } else if (isOpt) {
-            tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 Opt (1.5p)</span>`;
-          } else if (isHighIntent) {
-            tierBadge = `<span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🎯 High-Intent (1.5p)</span>`;
-          } else if (type === 'new' || tt.includes('new content')) {
-            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 New (1.0p)</span>`;
+            tierBadge = `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🔄 ${escapeHtml(rawTaskType)} (1.5p)</span>`;
+          } else if (isTargetPillar) {
+            tierBadge = `<span style="background:#f3e8ff; color:#7e22ce; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🌟 ${escapeHtml(rawTaskType)} (3.0p)</span>`;
+          } else if (isNews) {
+            tierBadge = item.wordCount >= 500
+              ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 ${escapeHtml(rawTaskType)} (0.5p)</span>`
+              : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ ${escapeHtml(rawTaskType)} (0.25p)</span>`;
           } else {
-            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 New (1.0p)</span>`;
+            // New Content from Column G
+            tierBadge = `<span style="background:#f0fdf4; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">📝 ${escapeHtml(rawTaskType)} (1.0p)</span>`;
           }
 
           let statusBadge = '';

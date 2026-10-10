@@ -809,17 +809,19 @@ Use these exact extracted word counts in your evaluation.`;
       const rawNotes = getVal(18);
       const reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables'))) ? '' : rawNotes;
 
-      // OND Framework Standard Point Matrix
-      const tt = String(taskType).toLowerCase();
-      const isNew = String(type).toLowerCase().includes('new');
-      let points = 2.0;
-      let classification = 'Standard Fresh';
+      // OND Framework Standard Point Matrix based directly on Column G (Task Type) & Column H (Type)
+      const tt = String(taskType || '').trim().toLowerCase();
+      const typeStr = String(type || '').trim().toLowerCase();
+      const ptStr = String(pageType || '').trim().toLowerCase();
+      const isNew = typeStr.includes('new') || tt.includes('new');
+      let points = 1.0;
+      let classification = taskType || 'New Content';
 
-      if (tt.includes('optimi')) {
-        classification = 'Deep Optimization';
-        points = 1.5;
-      } else if (tt.includes('high in') || tt.includes('pyp') || String(pageType).toLowerCase().includes('child')) {
+      if (tt.includes('high in') || tt.includes('pyp')) {
         classification = 'High Intent / PYP';
+        points = 1.5;
+      } else if (tt.includes('optimi') || typeStr === 'update' || tt.includes('update')) {
+        classification = 'SEO Optimization';
         points = 1.5;
       } else if (tt.includes('news')) {
         if (wordCount >= 500) {
@@ -829,21 +831,15 @@ Use these exact extracted word counts in your evaluation.`;
           classification = 'Micro News';
           points = 0.25;
         }
-      } else if (isNew && wordCount >= 1500) {
-        classification = 'Fresh Pillar';
+      } else if (ptStr.includes('target') || ptStr.includes('pillar')) {
+        classification = 'Target Page / Pillar';
         points = 3.0;
-      } else if (isNew && wordCount >= 800) {
-        classification = 'Standard Fresh';
-        points = 2.0;
       } else if (isNew) {
-        classification = 'Standard Fresh';
-        points = 2.0;
-      } else if (wordCount >= 300) {
-        classification = 'Deep Refresh';
-        points = 1.5;
+        classification = 'New Content';
+        points = 1.0;
       } else {
-        classification = 'Light Optimization';
-        points = 0.5;
+        classification = taskType || 'New Content';
+        points = 1.0;
       }
 
       items.push({
