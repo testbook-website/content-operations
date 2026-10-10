@@ -269,8 +269,8 @@ Evaluate this content submission under the official OND Point-Based Framework:
 2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context).
 3. High-Intent Child Page / PYP / Mock Test Landing Page (700+ words): 1.5 Points (Structured Q&A, exam patterns, direct resources).
 4. Data-Backed Content Optimization / Refresh (Net +300w OR >= 35% overhaul): 1.5 Points.
-5. Standard Fresh Prep Article (700–1,200 words): 1.0 to 2.0 Points (Deep domain research, original conceptual notes).
-6. Fresh Pillar / Comprehensive Guide (1,400+ words): 3.0 Points (End-to-end curriculum coverage).
+5. Standard Fresh Prep Article (700–1,200 words): 2.0 Points (Deep domain research, original conceptual notes).
+6. Standard New Content / Child Page (700+ words): 1.0 Point.
 
 📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
 - Testbook editorial teams create exam articles and syllabus guides IN ADVANCE of official notifications.
@@ -296,8 +296,8 @@ Return a strict JSON evaluation object:
   "isApproved": boolean,
   "qualityVerdict": "Approved" | "Needs Revision",
   "editorialScore": number (1 to 10),
-  "suggestedClassification": "Fresh Pillar" | "Standard Fresh" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
-  "pointsAwarded": 3.0 | 2.0 | 1.5 | 1.0 | 0.5 | 0.25 | 0,
+  "suggestedClassification": "New Content" | "Standard Fresh" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
+  "pointsAwarded": 2.0 | 1.5 | 1.0 | 0.5 | 0.25 | 0,
   "docWordCountText": "string (e.g. 'Old: 1,140w ➔ New: 1,585w (+445w Net)' or 'New Doc: 1,250 words')",
   "oldDocWordCount": number,
   "newDocWordCount": number,
@@ -831,9 +831,9 @@ Use these exact extracted word counts in your evaluation.`;
       } else if (tt.includes('optimi') || typeStr === 'update' || tt.includes('update')) {
         classification = 'SEO Optimization';
         points = 1.5;
-      } else if (ptStr.includes('target') || ptStr.includes('pillar')) {
-        classification = 'Target Page / Pillar';
-        points = 3.0;
+      } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar')) {
+        classification = 'New Content';
+        points = 1.0;
       } else if (isNew) {
         classification = 'New Content';
         points = 1.0;

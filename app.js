@@ -333,7 +333,7 @@
     newsCustomAlerts: [],
     newsOverrides: {},
     reviewDateFilter: 'all', // 'all' (default) | specific date (e.g. '10/05/2026')
-    reviewTaskTypeFilter: 'all', // 'all' (default) | 'pillar' | 'optimization' | 'high_intent' | 'new_content' | 'news'
+    reviewTaskTypeFilter: 'all', // 'all' (default) | 'prep' | 'new_content' | 'optimization' | 'high_intent' | 'news'
     reviewStatusFilter: 'all', // 'all' (default) | 'pending' | 'approved' | 'needs_revision'
     reviewWriterFilter: 'all',
     reviewCategoryFilter: 'all',
@@ -3828,10 +3828,10 @@
         if (itemDate !== state.reviewDateFilter) return false;
       }
 
-      // Task Type Filter (Pillar, Optimization, High Intent, New Content, News)
+      // Task Type Filter (Prep, Optimization, High Intent, New Content, News)
       if (state.reviewTaskTypeFilter !== 'all') {
         const tf = state.reviewTaskTypeFilter;
-        if (tf === 'pillar' && !((pt.includes('target') || pt.includes('pillar')) && type === 'new')) return false;
+        if (tf === 'prep' && !cat.includes('prep') && !tt.includes('prep') && !domain.includes('prep') && !['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(wLower)) return false;
         if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh') && !(item.oldDoc && item.oldDoc.startsWith('http'))) return false;
         if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('ts') && !cl.includes('high intent')) return false;
         if (tf === 'new_content' && (type !== 'new' && !tt.includes('new content'))) return false;
@@ -3872,7 +3872,7 @@
     if (state.reviewWriterFilter && state.reviewWriterFilter !== 'all') parts.push(`Writer: ${state.reviewWriterFilter}`);
     if (state.reviewTaskTypeFilter && state.reviewTaskTypeFilter !== 'all') {
       const typeLabels = {
-        pillar: 'Pillar / Target',
+        prep: 'Exam Prep',
         optimization: 'Optimization / Update',
         high_intent: 'High Intent / PYP',
         new_content: 'New Content / Fresh',
@@ -3992,9 +3992,8 @@
         const isApproved = audit.isApproved !== false && (audit.qualityVerdict || '').toLowerCase().includes('approv');
         const verdict = isApproved ? 'Approved' : 'Needs Revision';
         const score = audit.editorialScore || (isApproved ? 8 : 5);
-        const pt = (item.pageType || '').toLowerCase();
-        const type = (item.type || '').toLowerCase();
-        const defaultPts = ((pt.includes('target') || pt.includes('pillar')) && type === 'new') ? 3.0 : 1.0;
+        const isPrepWriter = ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(wLower);
+        const defaultPts = isPrepWriter ? 2.0 : 1.0;
         const pts = audit.pointsAwarded || defaultPts;
 
         // Save to cache
@@ -4169,9 +4168,9 @@
         </div>
 
         <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
-          <div class="kpi-label">🌟 Fresh Prep &amp; Pillars</div>
+          <div class="kpi-label">🌟 Fresh Prep &amp; New Content</div>
           <div class="kpi-value" style="color:#0284c7;">${freshPointsTotal.toFixed(1)} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts (${freshPct}%)</span></div>
-          <div class="kpi-subtext">3.0pt Target/Pillars &amp; 1.0pt Fresh Articles</div>
+          <div class="kpi-subtext">2.0pt Prep &amp; 1.0pt New Content Articles</div>
         </div>
 
         <div class="kpi-card" style="border-top:3px solid #f59e0b;">
@@ -4723,8 +4722,8 @@
         isApproved: isAppr,
         verdict: isAppr ? 'Approved' : 'Needs Revision',
         score: a.editorialScore || (isAppr ? 9 : 5),
-        suggestedClassification: a.suggestedClassification || item.classification || 'Standard Fresh',
-        pointsAwarded: a.pointsAwarded || (isAppr ? (item.classification === 'Fresh Pillar' ? 3.0 : (item.classification === 'Standard Fresh' ? 2.0 : 1.5)) : 0),
+        suggestedClassification: a.suggestedClassification || item.classification || 'New Content',
+        pointsAwarded: a.pointsAwarded || (isAppr ? (item.classification === 'Standard Fresh' ? 2.0 : 1.0) : 0),
         netWordDiff: (a.netWordDiff !== undefined && a.netWordDiff !== null) ? a.netWordDiff : null,
         newDocWordCount: a.newDocWordCount !== undefined ? a.newDocWordCount : null,
         oldDocWordCount: a.oldDocWordCount || 0,
@@ -4733,7 +4732,7 @@
         rejectionReasons: a.rejectionReasons || [],
         wordCountAssessment: a.wordCountAssessment || a.docWordCountText || '',
         keyStrengths: (a.keyStrengths && a.keyStrengths.length > 0) ? a.keyStrengths : ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
-        improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Ensure internal linking to parent pillar page'],
+        improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Ensure internal linking to main category hub'],
         recommendationNote: a.recommendationNote || (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'),
         factualAudit: a.factualAudit || null
       };
@@ -4754,8 +4753,8 @@
     const a = auditData;
     const score = a.score || a.editorialScore || 8;
     const scoreColor = score >= 8 ? '#15803d' : (score >= 6 ? '#d97706' : '#dc2626');
-    const classification = a.suggestedClassification || item.classification || 'Standard Fresh';
-    const points = a.pointsAwarded || (classification === 'Fresh Pillar' ? 3.0 : (classification === 'Standard Fresh' ? 2.0 : 1.5));
+    const classification = a.suggestedClassification || item.classification || 'New Content';
+    const points = a.pointsAwarded || (classification === 'Standard Fresh' ? 2.0 : 1.0);
     const isAppr = a.isApproved !== false && a.verdict !== 'Needs Revision';
 
     const strengthsList = (a.keyStrengths && Array.isArray(a.keyStrengths) && a.keyStrengths.length > 0)
@@ -4764,7 +4763,7 @@
 
     const improvementsList = (a.improvementAreas && Array.isArray(a.improvementAreas) && a.improvementAreas.length > 0)
       ? a.improvementAreas.map(i => `<li>${escapeHtml(i)}</li>`).join('')
-      : `<li>Ensure internal links to exam pillar page</li>`;
+      : `<li>Ensure internal links to main category hub</li>`;
 
     let rejectionsBlock = '';
     if (!isAppr && a.rejectionReasons && a.rejectionReasons.length > 0) {

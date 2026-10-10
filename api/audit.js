@@ -235,7 +235,6 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 4. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
 5. Data-Backed Content Optimization / Update (Must be at least 700–800 words total length AND have Net +300w OR >= 30% / 350+ Rewritten Words): 1.5 Points (Award 1.5 pts if total length is >= 700-800 words and net expansion is +300w OR substantially rewrote sentences/tables).
 6. Fresh Exam Prep Article (Category/Task is Prep, Type is 'New', 800–1200 words): 2.0 Points (In-depth subject/exam preparation guides, pedagogical notes).
-7. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
 
 📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
 - Testbook editorial teams routinely create exam articles and syllabus guides IN ADVANCE of official notifications.
@@ -270,8 +269,8 @@ Return a strict JSON evaluation object:
   "isApproved": boolean,
   "qualityVerdict": "Approved" | "Needs Revision",
   "editorialScore": number (1 to 10),
-  "suggestedClassification": "Target Page / Pillar" | "New Content" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
-  "pointsAwarded": 3.0 | 1.5 | 1.0 | 0.5 | 0.25 | 0,
+  "suggestedClassification": "New Content" | "High Intent / PYP" | "Deep Optimization" | "Standard News" | "Micro News",
+  "pointsAwarded": 2.0 | 1.5 | 1.0 | 0.5 | 0.25 | 0,
   "docWordCountText": "string",
   "oldDocWordCount": number,
   "newDocWordCount": number,

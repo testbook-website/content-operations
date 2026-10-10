@@ -103,14 +103,15 @@
 
     if (!isApproved) return 0;
 
-    // 1. Target Page / Pillar with New Type = Pillar Page (3.0 Points)
-    if ((pt.includes('target') || pt.includes('pillar')) && type === 'new') {
-      return 3.0;
-    }
-
-    // 2. News & Updates
+    // 1. News & Updates
     if (tt.includes('news')) {
       return words < 500 ? 0.25 : 0.5;
+    }
+
+    // 2. Prep Team Articles
+    if (tt.includes('prep') || (item.category || '').toLowerCase().includes('prep')) {
+      const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
+      return isOpt ? 1.5 : 2.0;
     }
 
     // 3. High Intent / PYP / Mock Tests
