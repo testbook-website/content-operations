@@ -36,7 +36,7 @@
       const saved = localStorage.getItem('testbook_ai_reviews_v4');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Automatically prune stale timeout/error states so fresh audits can run cleanly
+        // Automatically prune stale timeout/error states and enforce strict mathematical criteria
         Object.keys(parsed).forEach(k => {
           const item = parsed[k];
           if (!item) {
@@ -46,12 +46,33 @@
           const reasonsStr = JSON.stringify(item.rejectionReasons || []);
           const summaryStr = ((item.justificationSummary || '') + (item.docWordCountText || '') + reasonsStr).toLowerCase();
           if (
-            item.score === 4 ||
             summaryStr.includes('timed out') ||
             summaryStr.includes('timeout') ||
             summaryStr.includes('inaccessible')
           ) {
             delete parsed[k];
+            return;
+          }
+
+          // Enforce 700-800w Optimization & 350w News quality guardrail on cached entries
+          const isOpt = item.classification === 'Deep Optimization' || summaryStr.includes('optimization') || summaryStr.includes('rewritten') || (item.oldDocWordCount > 0);
+          const isNews = item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news');
+          const effectiveNewWc = item.newDocWordCount || 0;
+
+          if (isOpt && effectiveNewWc > 0 && effectiveNewWc < 700) {
+            item.isApproved = false;
+            item.verdict = 'Needs Revision';
+            item.score = 4;
+            item.points = 0;
+            item.justificationSummary = `Needs Revision: Optimization document shortfall (${effectiveNewWc}w). Minimum 700–800 words required.`;
+            item.rejectionReasons = [`Optimization document shortfall (${effectiveNewWc}w). Minimum 700–800 words required.`];
+          } else if (isNews && effectiveNewWc > 0 && effectiveNewWc < 350) {
+            item.isApproved = false;
+            item.verdict = 'Needs Revision';
+            item.score = 4;
+            item.points = 0;
+            item.justificationSummary = `Needs Revision: News length shortfall (${effectiveNewWc}w). Minimum 350 words required.`;
+            item.rejectionReasons = [`News length shortfall (${effectiveNewWc}w). Minimum 350 words required.`];
           }
         });
         return parsed;
@@ -3485,17 +3506,38 @@
   }
 
   function getEffectiveReviewStatus(item) {
+    let rawStatus = '';
     if (state.reviewOverrides && state.reviewOverrides[item.topic]) {
-      return state.reviewOverrides[item.topic];
+      rawStatus = state.reviewOverrides[item.topic];
+    } else if (state.aiReviewCache && state.aiReviewCache[item.topic]) {
+      rawStatus = state.aiReviewCache[item.topic].verdict;
+    } else {
+      const raw = (item.reviewStatus || '').trim();
+      if (raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc')) rawStatus = 'Doc Missing';
+      else if (raw.toLowerCase().includes('approv')) rawStatus = 'Approved';
+      else if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) rawStatus = 'Needs Revision';
+      else rawStatus = 'Pending Review';
     }
-    if (state.aiReviewCache && state.aiReviewCache[item.topic]) {
-      return state.aiReviewCache[item.topic].verdict;
+
+    // Strict Mathematical Quality Guardrail on all items:
+    const ai = state.aiReviewCache ? state.aiReviewCache[item.topic] : null;
+    const wc = (ai && ai.newDocWordCount) ? ai.newDocWordCount : (parseInt(item.wordCount, 10) || 0);
+    const hasOld = (ai && ai.oldDocWordCount > 0) || (item.oldDoc && item.oldDoc.startsWith('http'));
+    const tt = (item.taskType || '').toLowerCase();
+    const type = (item.type || '').toLowerCase();
+    const isNews = tt.includes('news') || (item.classification || '').toLowerCase().includes('news');
+    const isOpt = (hasOld || type === 'update' || tt.includes('optimi')) && !isNews;
+
+    if (rawStatus === 'Approved') {
+      if (isOpt && wc > 0 && wc < 700) {
+        return 'Needs Revision';
+      }
+      if (isNews && wc > 0 && wc < 350) {
+        return 'Needs Revision';
+      }
     }
-    const raw = (item.reviewStatus || '').trim();
-    if (raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc')) return 'Doc Missing';
-    if (raw.toLowerCase().includes('approv')) return 'Approved';
-    if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) return 'Needs Revision';
-    return 'Pending Review';
+
+    return rawStatus;
   }
 
   function getFilteredReviewItems() {
@@ -4024,15 +4066,25 @@
             } else if (aiRecord.verdict === 'Doc Missing' || aiRecord.qualityVerdict === 'Doc Missing') {
               verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">Old Doc required for update</span></div>`;
             } else {
-              const isAppr = aiRecord.isApproved;
+              const isWcFailedOpt = isOpt && ((aiRecord.newDocWordCount > 0 && aiRecord.newDocWordCount < 700) || (aiRecord.netWordDiff !== undefined && aiRecord.netWordDiff < 0) || (aiRecord.rewrittenWords > 0 && aiRecord.rewrittenWords < 350 && (aiRecord.overhaulPercent || 0) < 30));
+              const isWcFailedNews = isNews && (aiRecord.newDocWordCount > 0 && aiRecord.newDocWordCount < 350);
+              const isAppr = aiRecord.isApproved && !isWcFailedOpt && !isWcFailedNews;
+
               if (isAppr) {
                 const noteText = item.reviewNotes || 'Passed';
                 verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">${escapeHtml(noteText)}</span></div>`;
               } else {
-                const genuineReason = (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || (!aiRecord.fromSheetSync && aiRecord.justificationSummary ? aiRecord.justificationSummary : '');
-                let reason = genuineReason || item.reviewNotes || aiRecord.justificationSummary || 'Needs revision';
-                if (/tables?\s*(&|and)?\s*faqs?/i.test(reason) || reason.includes('syllabus tables')) {
-                  reason = genuineReason || 'Needs revision';
+                let reason = '';
+                if (isWcFailedOpt) {
+                  reason = `Optimization length shortfall: ~${aiRecord.rewrittenWords || aiRecord.newDocWordCount || 0}w (minimum 700–800w required)`;
+                } else if (isWcFailedNews) {
+                  reason = `News length shortfall: ${aiRecord.newDocWordCount || 0}w (minimum 350w required)`;
+                } else {
+                  const genuineReason = (aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || (!aiRecord.fromSheetSync && aiRecord.justificationSummary ? aiRecord.justificationSummary : '');
+                  reason = genuineReason || item.reviewNotes || aiRecord.justificationSummary || 'Needs revision';
+                  if (/tables?\s*(&|and)?\s*faqs?/i.test(reason) || reason.includes('syllabus tables')) {
+                    reason = genuineReason || 'Needs revision';
+                  }
                 }
                 verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(reason)}">${escapeHtml(reason)}</span></div>`;
               }
@@ -4040,8 +4092,18 @@
           } else if (status === 'Doc Missing') {
             verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">(Sheet Synced)</span></div>`;
           } else if (status === 'Approved') {
-            const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Passed (Sheet Synced)';
-            verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">${noteText}</span></div>`;
+            const rawWc = parseInt(item.wordCount, 10) || 0;
+            const isWcFailedOpt = isOpt && (rawWc > 0 && rawWc < 700);
+            const isWcFailedNews = isNews && (rawWc > 0 && rawWc < 350);
+            if (isWcFailedOpt || isWcFailedNews) {
+              const reason = isWcFailedOpt 
+                ? `Optimization length shortfall: ${rawWc}w (minimum 700–800w required)` 
+                : `News length shortfall: ${rawWc}w (minimum 350w required)`;
+              verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25; max-width:240px; word-break:break-word;" title="${escapeHtml(reason)}">${escapeHtml(reason)}</span></div>`;
+            } else {
+              const noteText = item.reviewNotes ? escapeHtml(item.reviewNotes) : 'Passed (Sheet Synced)';
+              verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.72rem; font-weight:600;">${noteText}</span></div>`;
+            }
           } else if (status === 'Needs Revision') {
             let noteText = item.reviewNotes || 'Needs revision (Sheet Synced)';
             if (/tables?\s*(&|and)?\s*faqs?/i.test(noteText) || noteText.includes('syllabus tables')) {
