@@ -36,11 +36,12 @@
       const saved = localStorage.getItem('testbook_ai_reviews_v5');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Automatically enforce user's exact 4 rules:
-        // 1. News Update: 350+ Words
-        // 2. News New: 500 Words
-        // 3. Optimization: 700 - 800 Words
-        // 4. New Prep: 800 - 1200 Words
+        // Automatically enforce user's exact rules:
+        // 1. Updates & Optimizations MUST have an Old Doc baseline. If missing Old Doc, CANNOT be approved!
+        // 2. News Update: 350+ Words
+        // 3. News New: 500 Words
+        // 4. Optimization: 700 - 800 Words
+        // 5. New Prep: 800 - 1200 Words
         Object.keys(parsed).forEach(k => {
           const item = parsed[k];
           if (!item) {
@@ -58,11 +59,24 @@
             return;
           }
 
+          // Strict Rule: If marked Missing Old Doc or Update without Old Doc
+          if (item.docWordCountText === '🚫 Missing Old Doc' || summaryStr.includes('missing old doc') || summaryStr.includes('missing baseline old doc')) {
+            item.isApproved = false;
+            item.verdict = 'Needs Revision';
+            item.score = 0;
+            item.points = 0;
+            item.pointsAwarded = 0;
+            item.rejectionReasons = ['Missing baseline Old Doc link for Update task in Column M.'];
+            item.justificationSummary = 'Needs Revision: Missing baseline Old Doc link. For Update/Optimization tasks, Old Doc is compulsory to verify rewritten content.';
+            return;
+          }
+
           const isNews = item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news');
           const isOpt = item.classification === 'Deep Optimization' || summaryStr.includes('optimization') || (item.oldDocWordCount > 0);
           const rwMatch = (item.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (item.docWordCountText || '').match(/~(\d+)w Revamped/i);
           const effectiveRewritten = item.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
           const netDiff = item.netWordDiff !== undefined ? item.netWordDiff : 0;
+          const effectiveNewWc = item.newDocWordCount || 0;
           const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
           const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
 
@@ -73,12 +87,14 @@
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
+              item.pointsAwarded = 0;
               item.justificationSummary = `Needs Revision: News Update shortfall: Found ${displayLabel} words (minimum 350+ words required).`;
               item.rejectionReasons = [`News Update shortfall: Found ${displayLabel} words (minimum 350+ words required).`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
               item.points = displayWc >= 500 ? 0.5 : 0.25;
+              item.pointsAwarded = item.points;
               item.rejectionReasons = [];
             }
           } else if (isNews && !isOpt) {
@@ -88,12 +104,14 @@
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
+              item.pointsAwarded = 0;
               item.justificationSummary = `Needs Revision: New News length shortfall (${effectiveNewWc}w). Minimum 500 words required.`;
               item.rejectionReasons = [`New News length shortfall (${effectiveNewWc}w). Minimum 500 words required.`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
               item.points = 0.5;
+              item.pointsAwarded = 0.5;
               item.rejectionReasons = [];
             }
           } else if (isOpt) {
@@ -103,12 +121,14 @@
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
+              item.pointsAwarded = 0;
               item.justificationSummary = `Needs Revision: Optimization shortfall: Found ${displayLabel} words (minimum 700–800 words required).`;
               item.rejectionReasons = [`Optimization shortfall: Found ${displayLabel} words (minimum 700–800 words required).`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
               item.points = 1.5;
+              item.pointsAwarded = 1.5;
               item.rejectionReasons = [];
             }
           } else {
@@ -118,6 +138,7 @@
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
+              item.pointsAwarded = 0;
               item.justificationSummary = `Needs Revision: New Prep length shortfall (${effectiveNewWc}w). Minimum 800–1200 words required.`;
               item.rejectionReasons = [`New Prep length shortfall (${effectiveNewWc}w). Minimum 800–1200 words required.`];
             } else {
@@ -126,6 +147,7 @@
               const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','archana','shilpa singh'].includes(item.writer.toLowerCase()));
               const isPillarPiece = item.classification?.includes('Pillar') || item.classification?.includes('Target');
               item.points = isPillarPiece ? 3.0 : (isPrepPiece ? 2.0 : (effectiveNewWc >= 1200 ? 2.0 : 1.0));
+              item.pointsAwarded = item.points;
               item.rejectionReasons = [];
             }
           }
@@ -172,6 +194,37 @@
     workflowItems.forEach(item => {
       if (!item || !item.topic) return;
       const rawStat = (item.reviewStatus || '').trim().toLowerCase();
+      const tt = (item.taskType || '').toLowerCase();
+      const type = (item.type || '').toLowerCase();
+      const isUpdateOrOpt = type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
+                            tt.includes('update') || tt.includes('optimi') || tt.includes('refresh');
+      const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
+      const hasNewDoc = item.newDoc && item.newDoc.startsWith('http');
+
+      // MANDATORY RULE: If task is an Update/Optimization, Old Doc is compulsory! If missing, reject!
+      if (isUpdateOrOpt && !hasOldDoc) {
+        state.aiReviewCache[item.topic] = {
+          isApproved: false,
+          verdict: 'Needs Revision',
+          score: 0,
+          suggestedClassification: item.classification || 'Optimization',
+          pointsAwarded: 0,
+          netWordDiff: null,
+          newDocWordCount: item.wordCount || null,
+          oldDocWordCount: null,
+          docWordCountText: '🚫 Missing Old Doc',
+          justificationSummary: 'Needs Revision: Task Type is "Update/Optimization", but no baseline Old Doc link was provided in Column M. Baseline Old Doc is compulsory to audit rewritten content.',
+          rejectionReasons: ['Missing baseline Old Doc link for Update task in Column M.'],
+          wordCountAssessment: 'Missing Old Doc baseline',
+          keyStrengths: [],
+          improvementAreas: ['Attach baseline Old Doc in Column M so rewritten content (350+ words for News Update, 700+ words for Optimization) can be audited.'],
+          recommendationNote: 'Needs Revision: Missing Old Doc link in Column M.',
+          reviewedAt: item.date || new Date().toISOString(),
+          fromSheetSync: false
+        };
+        cacheChanged = true;
+        return;
+      }
 
       // Sanitize: Purge generic "tables & FAQ" filler from sheet notes
       if (item.reviewNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(item.reviewNotes) || item.reviewNotes.includes('syllabus tables'))) {
@@ -3619,11 +3672,20 @@
       return 'Doc Missing';
     }
     
-    // User's 4 Rules on Sheet Synced & AI data:
+    // User's exact rules on Sheet Synced & AI data:
     const tt = (item.taskType || '').toLowerCase();
     const type = (item.type || '').toLowerCase();
+    const isUpdateOrOpt = type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
+                          tt.includes('update') || tt.includes('optimi') || tt.includes('refresh');
+    const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
+
+    // MANDATORY RULE: If task is an Update or Optimization, Old Doc is compulsory! If missing, reject!
+    if (isUpdateOrOpt && !hasOldDoc) {
+      return 'Needs Revision';
+    }
+
     const isNews = tt.includes('news') || (item.classification || '').toLowerCase().includes('news');
-    const isOpt = (item.oldDoc && item.oldDoc.startsWith('http')) || type === 'update' || tt.includes('optimi');
+    const isOpt = hasOldDoc || isUpdateOrOpt;
     
     const rwMatch = (ai?.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (ai?.docWordCountText || '').match(/~(\d+)w Revamped/i);
     const rewritten = ai?.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
@@ -4150,6 +4212,11 @@
 
           if (!hasValidDoc) {
             docWordCountColHtml = `<div style="color:#dc2626; font-size:0.72rem; font-weight:700; text-align:center;">🚫 No Doc</div>`;
+          } else if (isOpt && !hasOldDoc) {
+            docWordCountColHtml = `
+              <div style="color:#b91c1c; font-size:0.78rem; font-weight:800; text-align:center;">🚫 Missing Old Doc</div>
+              <div style="color:#991b1b; font-size:0.68rem; font-weight:600; text-align:center;">Required for Update</div>
+            `;
           } else if (aiRecord) {
             if (aiRecord.running) {
               docWordCountColHtml = `<div style="color:#2563eb; font-size:0.75rem; font-weight:700; text-align:center;">🔄 Auditing...</div>`;
@@ -4195,6 +4262,8 @@
           let verdictHtml = '';
           if (!hasValidDoc) {
             verdictHtml = `<span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">🚫 No Doc Attached</span>`;
+          } else if (isOpt && !hasOldDoc) {
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25;">Missing Old Doc (Compulsory for Update)</span></div>`;
           } else if (aiRecord) {
             if (aiRecord.running) {
               verdictHtml = `<span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ In Progress...</span>`;
@@ -4927,18 +4996,30 @@
 
     const rawStatus = (item.reviewStatus || '').toLowerCase();
     const rawNotes = (item.notes || '').toLowerCase();
+    const tt = (item.taskType || '').toLowerCase();
+    const type = (item.type || '').toLowerCase();
+    const isUpdateOrOpt = type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
+                          tt.includes('update') || tt.includes('optimi') || tt.includes('refresh');
+    const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
+    const hasNewDoc = item.newDoc && item.newDoc.startsWith('http');
+
     const ai = state.aiReviewCache ? state.aiReviewCache[item.topic] : null;
     const aiJust = (ai?.justificationSummary || '').toLowerCase();
     const aiWcText = (ai?.docWordCountText || '').toLowerCase();
     const rejReasons = (ai?.rejectionReasons || []).join(' ').toLowerCase();
 
-    // 1. Doc Missed / Inaccessible / Restricted
-    const isDocMissed = (!item.newDoc && !item.url) ||
+    // 1. Doc Missed / Inaccessible / Restricted / Missing Old Doc for Update
+    const isDocMissed = (!hasNewDoc && !item.url) ||
+                        (isUpdateOrOpt && !hasOldDoc) ||
                         rawStatus.includes('doc missing') || rawStatus.includes('missing doc') ||
+                        rawStatus.includes('old doc') ||
                         aiJust.includes('doc missing') || aiJust.includes('missing doc') ||
+                        aiJust.includes('old doc') ||
                         aiJust.includes('403') || aiJust.includes('restricted') ||
                         aiWcText.includes('403') || aiWcText.includes('restricted') ||
-                        rejReasons.includes('doc missing') || rejReasons.includes('restricted');
+                        aiWcText.includes('missing old doc') ||
+                        rejReasons.includes('doc missing') || rejReasons.includes('restricted') ||
+                        rejReasons.includes('old doc');
     if (isDocMissed) return 'doc_missed';
 
     // 2. Quality / Word Count Shortfall
