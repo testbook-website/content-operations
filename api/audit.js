@@ -233,7 +233,7 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context).
 3. Standard New Content / Child Page (Fresh writing): 1.0 Point (Standard fresh article, syllabus notes, child pages, 700+ words).
 4. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
-5. Data-Backed Content Optimization / Complete Rewrite (Net +300w OR >= 35% / 400+ Rewritten & Added Words): 1.5 Points (Award 1.5 pts if net expansion is +300w OR if writer substantially rewrote sentences, restructured syllabus notes, or updated tables).
+5. Data-Backed Content Optimization / Update (Must be at least 700–800 words total length AND have Net +300w OR >= 30% / 350+ Rewritten Words): 1.5 Points (Award 1.5 pts if total length is >= 700-800 words and net expansion is +300w OR substantially rewrote sentences/tables).
 6. Target Page / Pillar Page (Page Type is 'Target Page' or 'Pillar' and Type is 'New'): 3.0 Points (End-to-end curriculum coverage or parent target pillar landing page).
 
 📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
@@ -404,14 +404,20 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
     if (isUpdateTask) {
-      // Content Optimization: MUST have Net >= +300 words OR Rewritten >= 350 words (with >= 30% overhaul)
-      const passesOpt = (effectiveDiff >= 300) || (effectiveRewritten >= 350 && effectiveOverhaul >= 30);
+      // Content Optimization / Update: MUST be at least 700-800 words total length AND have meaningful addition/overhaul
+      const passesWordCount = effectiveNewWc >= 700;
+      const passesOpt = passesWordCount && ((effectiveDiff >= 300) || (effectiveRewritten >= 350 && effectiveOverhaul >= 30));
       if (!passesOpt) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = Math.min(parsed.editorialScore || 4, 4);
         parsed.pointsAwarded = 0;
-        const reason = `Optimization shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${effectiveDiff >= 0 ? '+' : ''}${effectiveDiff}w net, ~${effectiveRewritten}w rewritten [${effectiveOverhaul}%]).`;
+        let reason = '';
+        if (!passesWordCount) {
+          reason = `Optimization document length shortfall: Found only ${effectiveNewWc} words; Optimization/Update requires at least 700–800 words in the updated document.`;
+        } else {
+          reason = `Optimization update shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${effectiveDiff >= 0 ? '+' : ''}${effectiveDiff}w net, ~${effectiveRewritten}w rewritten [${effectiveOverhaul}%]).`;
+        }
         if (!parsed.rejectionReasons || parsed.rejectionReasons.length === 0) {
           parsed.rejectionReasons = [reason];
         } else if (!parsed.rejectionReasons.some(r => r.includes('Optimization') || r.includes('shortfall') || r.includes('threshold'))) {
@@ -504,10 +510,15 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     let rejectReason = '';
 
     if (isOpt) {
-      isApproved = (estDiff >= 300) || (estRewritten >= 350 && estOverhaul >= 30);
+      const passesWc = estNew >= 700;
+      isApproved = passesWc && ((estDiff >= 300) || (estRewritten >= 350 && estOverhaul >= 30));
       ptsAwarded = isApproved ? 1.5 : 0;
       if (!isApproved) {
-        rejectReason = `Optimization shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${estDiff >= 0 ? '+' : ''}${estDiff}w net, ~${estRewritten}w rewritten [${estOverhaul}%]).`;
+        if (!passesWc) {
+          rejectReason = `Optimization document length shortfall: Found only ${estNew} words; Content Optimization/Update requires at least 700–800 words.`;
+        } else {
+          rejectReason = `Optimization shortfall: Requires at least +300 net words OR >=350 rewritten words with 30%+ overhaul (delivered: ${estDiff >= 0 ? '+' : ''}${estDiff}w net, ~${estRewritten}w rewritten [${estOverhaul}%]).`;
+        }
       }
     } else if (isNews) {
       isApproved = estNew >= 350;

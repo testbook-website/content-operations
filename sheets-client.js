@@ -457,7 +457,7 @@ Use these exact extracted word counts in your evaluation.`;
       const estNew = (item.topic || '').toLowerCase().includes('oavs') ? 1585 : 1200;
       const estOld = hasOldDocLink ? 1140 : 0;
       const estDiff = isOpt ? (estNew - estOld) : estNew;
-      const isApproved = isOpt ? estDiff >= 300 : estNew >= 700;
+      const isApproved = isOpt ? (estNew >= 700 && estDiff >= 300) : estNew >= 700;
 
       return {
         success: true,
