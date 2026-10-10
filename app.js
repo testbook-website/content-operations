@@ -289,8 +289,10 @@
     reviewOverrides: {},
     aiReviewCache: loadAiReviewCache(),
     aiRunnerActive: false,
+    teamDashboardSubTab: 'regular', // 'regular' | 'prep' | 'hindi' | 'all'
+    teamDashboardSearch: '',
     kpiTimeframeFilter: 'q4_total', // 'q4_total' | 'current_week' | 'today'
-    kpiSubTab: 'regular', // 'regular' | 'prep' | 'hindi'
+    kpiSubTab: 'regular', // 'regular' | 'prep' | 'hindi' | 'all'
     kpiSearch: '',
     calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
     calendarMonthFilter: 'all',
@@ -311,14 +313,24 @@
     // Main Nav
     navTabs: document.querySelectorAll('.tab-btn'),
     sectionRoster: document.getElementById('sectionRoster'),
+    sectionTeamDashboard: document.getElementById('sectionTeamDashboard'),
     sectionKpi: document.getElementById('sectionKpi'),
     sectionNews: document.getElementById('sectionNews'),
     sectionReview: document.getElementById('sectionReview'),
     sectionProductivity: document.getElementById('sectionProductivity'),
     sectionCategory: document.getElementById('sectionCategory'),
 
-    // Team KPI & Dashboard
+    // TAB 2: Team Dashboard (10-Column Accountability Matrix)
     teamDashboardKpiCards: document.getElementById('teamDashboardKpiCards'),
+    teamDashboardSubTabs: document.getElementById('teamDashboardSubTabs'),
+    teamDashboardSubBtns: document.querySelectorAll('#teamDashboardSubTabs .sub-btn'),
+    teamDashboardRuleBadges: document.getElementById('teamDashboardRuleBadges'),
+    teamDashboardSearch: document.getElementById('teamDashboardSearch'),
+    teamDashboardTableBody: document.getElementById('teamDashboardTableBody'),
+    teamDashboardTableFoot: document.getElementById('teamDashboardTableFoot'),
+    btnExportTeamDashboardCSV: document.getElementById('btnExportTeamDashboardCSV'),
+
+    // TAB 3: Team KPI (Targets, Pacing & Squad Overview)
     kpiOverviewCards: document.getElementById('kpiOverviewCards'),
     kpiSubTabs: document.getElementById('kpiSubTabs'),
     kpiSubBtns: document.querySelectorAll('#kpiSubTabs .sub-btn'),
@@ -594,6 +606,7 @@
           pushAuthenticAiCacheToSheet(data.workflow_ond);
         }
         if (state.isAuthenticated) {
+          if (state.activeNavTab === 'team_dashboard') renderTeamDashboard();
           if (state.activeNavTab === 'kpi') renderKpiDashboard();
           if (state.activeNavTab === 'news') renderNews();
           if (state.activeNavTab === 'review') renderReviewHub();
@@ -928,7 +941,27 @@
       });
     }
 
-    // Team KPI Controls
+    // TAB 2: Team Dashboard Controls
+    if (els.teamDashboardSubBtns) {
+      els.teamDashboardSubBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchTeamDashboardSubTab(btn.dataset.tdtab);
+        });
+      });
+    }
+
+    if (els.teamDashboardSearch) {
+      els.teamDashboardSearch.addEventListener('input', (e) => {
+        state.teamDashboardSearch = e.target.value.toLowerCase().trim();
+        renderTeamDashboard();
+      });
+    }
+
+    if (els.btnExportTeamDashboardCSV) {
+      els.btnExportTeamDashboardCSV.addEventListener('click', exportTeamDashboardCSV);
+    }
+
+    // TAB 3: Team KPI Controls
     if (els.kpiSubBtns) {
       els.kpiSubBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -978,6 +1011,7 @@
     els.navTabs.forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
 
     if (els.sectionRoster) els.sectionRoster.style.display = tab === 'roster' ? 'block' : 'none';
+    if (els.sectionTeamDashboard) els.sectionTeamDashboard.style.display = tab === 'team_dashboard' ? 'block' : 'none';
     if (els.sectionKpi) els.sectionKpi.style.display = tab === 'kpi' ? 'block' : 'none';
     if (els.sectionNews) els.sectionNews.style.display = tab === 'news' ? 'block' : 'none';
     if (els.sectionReview) els.sectionReview.style.display = tab === 'review' ? 'block' : 'none';
@@ -988,6 +1022,7 @@
     if (els.sectionCalendar) els.sectionCalendar.style.display = tab === 'calendar' ? 'block' : 'none';
 
     if (tab === 'roster') renderRoster();
+    if (tab === 'team_dashboard') renderTeamDashboard();
     if (tab === 'kpi') renderKpiDashboard();
     if (tab === 'news') renderNews();
     if (tab === 'review') renderReviewHub();
@@ -1002,6 +1037,14 @@
     state.activeProdSubTab = subtab;
     els.prodSubBtns.forEach(b => b.classList.toggle('active', b.dataset.subtab === subtab));
     renderProductivity();
+  }
+
+  function switchTeamDashboardSubTab(subtab) {
+    state.teamDashboardSubTab = subtab;
+    if (els.teamDashboardSubBtns) {
+      els.teamDashboardSubBtns.forEach(b => b.classList.toggle('active', b.dataset.tdtab === subtab));
+    }
+    renderTeamDashboard();
   }
 
   function switchKpiSubTab(subtab) {
@@ -4911,34 +4954,38 @@
     return 'other';
   }
 
-  function renderKpiDashboard() {
-    if (!els.sectionKpi) return;
+  // =========================================================================
+  // TAB 2: TEAM DASHBOARD (Full 10-Column Writer Accountability Matrix)
+  // Name | Articles Picked | Approved | Rejected (Doc Missed) | Rejected (Quality/Words) | Rejected (Other) | Total Rejected | Total Points | Target & Progress
+  // =========================================================================
+  function renderTeamDashboard() {
+    if (!els.sectionTeamDashboard) return;
 
-    const subTab = state.kpiSubTab || 'regular';
+    const subTab = state.teamDashboardSubTab || 'regular';
 
-    // Update banner badges dynamically according to selected sub-tab
-    if (els.kpiRuleBadges) {
+    // Update rule badges dynamically according to selected sub-tab
+    if (els.teamDashboardRuleBadges) {
       if (subTab === 'prep') {
-        els.kpiRuleBadges.innerHTML = `
+        els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📚 Daily Target: 10.0 pts/day (Mon–Fri)</span>
           <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
           <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Prep Target: 660 pts (66 × 10.0)</span>
         `;
       } else if (subTab === 'hindi') {
-        els.kpiRuleBadges.innerHTML = `
+        els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 9.0 pts/day (Mon–Fri)</span>
           <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
           <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 594 pts (66 × 9.0)</span>
         `;
       } else if (subTab === 'all') {
-        els.kpiRuleBadges.innerHTML = `
+        els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk</span>
           <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (21 Writers)</span>
         `;
       } else {
         // 'regular' (Team A and B)
-        els.kpiRuleBadges.innerHTML = `
+        els.teamDashboardRuleBadges.innerHTML = `
           <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day Mon–Fri + 2.5 Sat)</span>
           <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
           <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 477 pts (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9)</span>
@@ -4947,8 +4994,8 @@
     }
 
     // Keep sub-tab button active states in sync
-    if (els.kpiSubBtns) {
-      els.kpiSubBtns.forEach(b => b.classList.toggle('active', b.dataset.kpitab === subTab));
+    if (els.teamDashboardSubBtns) {
+      els.teamDashboardSubBtns.forEach(b => b.classList.toggle('active', b.dataset.tdtab === subTab));
     }
 
     // Define writer roster for each sub-tab
@@ -4995,8 +5042,8 @@
     }
 
     let filtered = writersListRaw;
-    if (state.kpiSearch) {
-      const q = state.kpiSearch.toLowerCase();
+    if (state.teamDashboardSearch) {
+      const q = state.teamDashboardSearch.toLowerCase();
       filtered = filtered.filter(w => w.writer.toLowerCase().includes(q) || w.squad.toLowerCase().includes(q));
     }
 
@@ -5113,9 +5160,9 @@
     }
 
     // 2. Render Team Dashboard Table Body
-    if (els.kpiTableBody) {
+    if (els.teamDashboardTableBody) {
       if (filtered.length === 0) {
-        els.kpiTableBody.innerHTML = `
+        els.teamDashboardTableBody.innerHTML = `
           <tr>
             <td colspan="10" style="text-align:center; padding:2.5rem; color:#94a3b8;">
               <div style="font-weight:700; color:#334155; font-size:0.95rem;">No writers found matching current filter</div>
@@ -5165,6 +5212,239 @@
             </tr>
           `;
         });
+        els.teamDashboardTableBody.innerHTML = html;
+
+        // Attach click handlers to open drilldown modal for that writer
+        els.teamDashboardTableBody.querySelectorAll('.kpi-row-item').forEach(tr => {
+          tr.addEventListener('click', () => {
+            const writerName = tr.dataset.writer;
+            if (writerName) openWriterKpiDrilldown(writerName);
+          });
+        });
+      }
+    }
+
+    // 3. Render Table Footer Row (Totals)
+    if (els.teamDashboardTableFoot) {
+      const totProg = totTarget > 0 ? ((totPoints / totTarget) * 100) : 0;
+      els.teamDashboardTableFoot.innerHTML = `
+        <tr style="background:#f1f5f9; border-top:2px solid #cbd5e1;">
+          <td colspan="2" style="padding:0.75rem 0.75rem; font-weight:800; color:#0f172a; font-size:0.85rem;">TOTAL (${filtered.length} WRITERS)</td>
+          <td style="text-align:center; font-weight:800; color:#0f172a; padding:0.75rem 0.5rem; background:#f8fafc;">${totPicked}</td>
+          <td style="text-align:center; font-weight:800; color:#15803d; padding:0.75rem 0.5rem; background:#f0fdf4;">${totApproved}</td>
+          <td style="text-align:center; font-weight:800; color:#9f1239; padding:0.75rem 0.5rem; background:#fff1f2;">${totDocMissed}</td>
+          <td style="text-align:center; font-weight:800; color:#991b1b; padding:0.75rem 0.5rem; background:#fef2f2;">${totQualityWords}</td>
+          <td style="text-align:center; font-weight:800; color:#9a3412; padding:0.75rem 0.5rem; background:#fff7ed;">${totOther}</td>
+          <td style="text-align:center; font-weight:800; color:#b91c1c; padding:0.75rem 0.5rem; background:#fee2e2;">${totRejected}</td>
+          <td style="text-align:center; font-weight:800; color:#1e40af; font-size:0.95rem; padding:0.75rem 0.5rem; background:#eff6ff;">${totPoints.toFixed(1)} pts</td>
+          <td style="text-align:center; font-weight:800; color:#0f172a; padding:0.75rem 0.5rem;">${totTarget.toLocaleString()} pts (${totProg.toFixed(0)}%)</td>
+        </tr>
+      `;
+    }
+  }
+
+  // =========================================================================
+  // TAB 3: TEAM KPI (Scorecard, Targets & Timeframe Performance)
+  // Writer Name & Squad | Points Scored | Target | Pacing & Progress
+  // =========================================================================
+  function renderKpiDashboard() {
+    if (!els.sectionKpi) return;
+
+    const subTab = state.kpiSubTab || 'regular';
+
+    // Update banner badges dynamically according to selected sub-tab
+    if (els.kpiRuleBadges) {
+      if (subTab === 'prep') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">📚 Daily Target: 10.0 pts/day (Mon–Fri)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Prep Target: 660 pts (66 × 10.0)</span>
+        `;
+      } else if (subTab === 'hindi') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fef3c7; color:#92400e; font-weight:700; padding:2px 7px; border-radius:5px;">🇮🇳 Daily Target: 9.0 pts/day (Mon–Fri)</span>
+          <span style="background:#f3e8ff; color:#6b21a8; font-weight:700; padding:2px 7px; border-radius:5px;">📅 Working Days: 66 Days (Oct–Dec)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Hindi Target: 594 pts (66 × 9.0)</span>
+        `;
+      } else if (subTab === 'all') {
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day + 2.5 Sat)</span>
+          <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">👥 Total Content Ops Team (21 Writers)</span>
+        `;
+      } else {
+        // 'regular' (Team A and B)
+        els.kpiRuleBadges.innerHTML = `
+          <span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 7px; border-radius:5px;">🚨 News: 27.5 pts/wk (5.0/day Mon–Fri + 2.5 Sat)</span>
+          <span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 7px; border-radius:5px;">📝 SEO / High Intent: 45.0 pts/wk (9.0/day × 5 Days)</span>
+          <span style="background:#e0f2fe; color:#0369a1; font-weight:700; padding:2px 7px; border-radius:5px;">🎯 Regular Target: 477 pts (30d News @ 5 + 12 Sat @ 2.5 + 33d SEO @ 9)</span>
+        `;
+      }
+    }
+
+    // Keep sub-tab button active states in sync
+    if (els.kpiSubBtns) {
+      els.kpiSubBtns.forEach(b => b.classList.toggle('active', b.dataset.kpitab === subTab));
+    }
+
+    // Define writer roster for each sub-tab
+    let writersListRaw = [];
+
+    const regularList = [
+      { writer: "Sonika", squad: "Team A", target: 477 },
+      { writer: "Archita", squad: "Team A", target: 477 },
+      { writer: "Shemaila", squad: "Team A", target: 477 },
+      { writer: "Somya", squad: "Team A", target: 477 },
+      { writer: "Mohit", squad: "Team A", target: 477 },
+      { writer: "Nadeem", squad: "Team B", target: 477 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
+      { writer: "Aditi", squad: "Team B", target: 477 },
+      { writer: "Atul", squad: "Team B", target: 477 },
+      { writer: "Trishala", squad: "Team B", target: 477 }
+    ];
+
+    const prepList = [
+      { writer: "Lehron", squad: "Exam Prep", target: 660 },
+      { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
+      { writer: "Falguni", squad: "Exam Prep", target: 660 },
+      { writer: "Swathi", squad: "Exam Prep", target: 660 },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Archana", squad: "Exam Prep", target: 660 },
+      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+    ];
+
+    const hindiList = [
+      { writer: "Anshika", squad: "Hindi Team", target: 594 },
+      { writer: "Vidit", squad: "Hindi Team", target: 594 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+    ];
+
+    if (subTab === 'prep') {
+      writersListRaw = prepList;
+    } else if (subTab === 'hindi') {
+      writersListRaw = hindiList;
+    } else if (subTab === 'all') {
+      writersListRaw = [...regularList, ...prepList, ...hindiList];
+    } else {
+      writersListRaw = regularList;
+    }
+
+    let filtered = writersListRaw;
+    if (state.kpiSearch) {
+      const q = state.kpiSearch.toLowerCase();
+      filtered = filtered.filter(w => w.writer.toLowerCase().includes(q) || w.squad.toLowerCase().includes(q));
+    }
+
+    // Pre-calculate scored points dynamically from review list
+    const allWorkflowItems = getReviewList();
+    const writerItemsMap = {};
+
+    allWorkflowItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (!w || w === '-' || w === 'Unassigned') return;
+      const key = w.toLowerCase();
+      if (!writerItemsMap[key]) writerItemsMap[key] = [];
+      writerItemsMap[key].push(item);
+    });
+
+    let totPoints = 0;
+    let totTarget = 0;
+
+    const writerStatsList = filtered.map((w, idx) => {
+      const key = w.writer.toLowerCase();
+      const myItems = writerItemsMap[key] || [];
+
+      let pointsScored = 0;
+      myItems.forEach(it => {
+        const status = getEffectiveReviewStatus(it);
+        if (status === 'Approved') {
+          const ptInfo = calculateItemKpiPoints(it);
+          pointsScored += (ptInfo.points || 0);
+        }
+      });
+
+      const progressPct = w.target > 0 ? ((pointsScored / w.target) * 100) : 0;
+      totPoints += pointsScored;
+      totTarget += w.target;
+
+      return {
+        ...w,
+        idx: idx + 1,
+        pointsScored,
+        progressPct,
+        myItems
+      };
+    });
+
+    // 1. Render KPI Overview Cards
+    if (els.kpiOverviewCards) {
+      const overallProg = totTarget > 0 ? ((totPoints / totTarget) * 100).toFixed(1) : '0.0';
+
+      els.kpiOverviewCards.innerHTML = `
+        <div class="kpi-card" style="border-top:3px solid #6366f1;">
+          <div class="kpi-label">👥 Squad Size</div>
+          <div class="kpi-value" style="color:#4f46e5;">${filtered.length} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">writers</span></div>
+          <div class="kpi-subtext">Active Squad Roster</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #10b981;">
+          <div class="kpi-label">🎖️ Total Points Credited</div>
+          <div class="kpi-value" style="color:#15803d;">${totPoints.toFixed(1)} <span style="font-size:0.85rem; color:#166534; font-weight:normal;">pts</span></div>
+          <div class="kpi-subtext">Cumulative Verified Output</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #0ea5e9;">
+          <div class="kpi-label">🎯 Target Baseline</div>
+          <div class="kpi-value" style="color:#0284c7;">${totTarget.toLocaleString()} <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">pts</span></div>
+          <div class="kpi-subtext">Q4 2026 Total Target</div>
+        </div>
+
+        <div class="kpi-card" style="border-top:3px solid #f59e0b;">
+          <div class="kpi-label">📈 Target Pacing</div>
+          <div class="kpi-value" style="color:#d97706;">${overallProg}% <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">achieved</span></div>
+          <div class="kpi-subtext">Progress to quarterly benchmark</div>
+        </div>
+      `;
+    }
+
+    // 2. Render KPI Table Body
+    if (els.kpiTableBody) {
+      if (filtered.length === 0) {
+        els.kpiTableBody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align:center; padding:2.5rem; color:#94a3b8;">
+              <div style="font-weight:700; color:#334155; font-size:0.95rem;">No writers found matching current filter</div>
+            </td>
+          </tr>
+        `;
+      } else {
+        let html = '';
+        writerStatsList.forEach(w => {
+          html += `
+            <tr class="kpi-row-item" data-writer="${escapeHtml(w.writer)}" style="cursor:pointer; border-bottom:1px solid #f1f5f9;" title="Click to view task breakdown for ${escapeHtml(w.writer)}">
+              <td style="text-align:center; font-weight:700; color:#64748b; font-size:0.85rem; padding:0.75rem 0.5rem;">${w.idx}</td>
+              <td style="padding:0.75rem 1rem;">
+                <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">${escapeHtml(w.writer)}</div>
+                <div style="font-size:0.72rem; color:#64748b;">${escapeHtml(w.squad)}</div>
+              </td>
+              <td style="text-align:center; padding:0.75rem 0.5rem; background:#eff6ff;">
+                <div style="font-weight:800; color:#1e40af; font-size:1.0rem;">${w.pointsScored.toFixed(1)} <span style="font-size:0.75rem; color:#64748b; font-weight:normal;">pts</span></div>
+              </td>
+              <td style="text-align:center; padding:0.75rem 0.5rem;">
+                <div style="font-weight:700; color:#0f172a; font-size:0.88rem;">${w.target} pts</div>
+              </td>
+              <td style="text-align:center; padding:0.75rem 1rem;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div style="flex:1; background:#e2e8f0; height:8px; border-radius:4px; overflow:hidden;">
+                    <div style="width:${Math.min(100, Math.round(w.progressPct))}%; background:${w.progressPct >= 100 ? '#16a34a' : '#2563eb'}; height:100%;"></div>
+                  </div>
+                  <span style="font-size:0.80rem; font-weight:800; color:${w.progressPct >= 100 ? '#15803d' : '#1e40af'}; width:42px; text-align:right;">${w.progressPct.toFixed(1)}%</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
         els.kpiTableBody.innerHTML = html;
 
         // Attach click handlers to open drilldown modal for that writer
@@ -5177,20 +5457,15 @@
       }
     }
 
-    // 3. Render Table Footer Row (Totals)
+    // 3. Render KPI Table Footer Row (Totals)
     if (els.kpiTableFoot) {
       const totProg = totTarget > 0 ? ((totPoints / totTarget) * 100) : 0;
       els.kpiTableFoot.innerHTML = `
         <tr style="background:#f1f5f9; border-top:2px solid #cbd5e1;">
-          <td colspan="2" style="padding:0.75rem 0.75rem; font-weight:800; color:#0f172a; font-size:0.85rem;">TOTAL (${filtered.length} WRITERS)</td>
-          <td style="text-align:center; font-weight:800; color:#0f172a; padding:0.75rem 0.5rem; background:#f8fafc;">${totPicked}</td>
-          <td style="text-align:center; font-weight:800; color:#15803d; padding:0.75rem 0.5rem; background:#f0fdf4;">${totApproved}</td>
-          <td style="text-align:center; font-weight:800; color:#9f1239; padding:0.75rem 0.5rem; background:#fff1f2;">${totDocMissed}</td>
-          <td style="text-align:center; font-weight:800; color:#991b1b; padding:0.75rem 0.5rem; background:#fef2f2;">${totQualityWords}</td>
-          <td style="text-align:center; font-weight:800; color:#9a3412; padding:0.75rem 0.5rem; background:#fff7ed;">${totOther}</td>
-          <td style="text-align:center; font-weight:800; color:#b91c1c; padding:0.75rem 0.5rem; background:#fee2e2;">${totRejected}</td>
-          <td style="text-align:center; font-weight:800; color:#1e40af; font-size:0.95rem; padding:0.75rem 0.5rem; background:#eff6ff;">${totPoints.toFixed(1)} pts</td>
-          <td style="text-align:center; font-weight:800; color:#0f172a; padding:0.75rem 0.5rem;">${totTarget.toLocaleString()} pts (${totProg.toFixed(0)}%)</td>
+          <td colspan="2" style="padding:0.85rem 1rem; font-weight:800; color:#0f172a; font-size:0.90rem;">TOTAL (${filtered.length} WRITERS)</td>
+          <td style="text-align:center; font-weight:800; color:#1e40af; font-size:1.05rem; padding:0.85rem 0.5rem; background:#eff6ff;">${totPoints.toFixed(1)} pts</td>
+          <td style="text-align:center; font-weight:800; color:#0f172a; font-size:0.90rem; padding:0.85rem 0.5rem;">${totTarget.toLocaleString()} pts</td>
+          <td style="text-align:center; font-weight:800; color:#0f172a; font-size:0.90rem; padding:0.85rem 1rem;">${totProg.toFixed(1)}% Completed</td>
         </tr>
       `;
     }
@@ -5246,7 +5521,7 @@
     }
 
     if (els.drilldownWriterTitle) {
-      els.drilldownWriterTitle.textContent = `👤 ${writerName} — Team Dashboard Task Breakdown`;
+      els.drilldownWriterTitle.textContent = `👤 ${writerName} — Task & Point Drilldown`;
     }
 
     if (els.drilldownWriterSubtitle && writerData) {
@@ -5343,8 +5618,9 @@
     els.modalWriterKpiDrilldown.style.display = 'flex';
   }
 
-  function exportKpiCSV() {
-    const subTab = state.kpiSubTab || 'regular';
+  // Export 10-Column Team Dashboard CSV
+  function exportTeamDashboardCSV() {
+    const subTab = state.teamDashboardSubTab || 'regular';
     const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team'));
     const filename = `Team_Dashboard_${subTabTitle}_${Date.now()}.csv`;
     const headers = [
@@ -5457,11 +5733,102 @@
     downloadCSV(csvLines.join('\n'), filename);
   }
 
+  // Export Dedicated KPI Scorecard CSV
+  function exportKpiCSV() {
+    const subTab = state.kpiSubTab || 'regular';
+    const subTabTitle = subTab === 'prep' ? 'Prep_Team' : (subTab === 'hindi' ? 'Hindi_Team' : (subTab === 'all' ? 'All_Squads' : 'Regular_Team'));
+    const filename = `Team_KPI_Scorecard_${subTabTitle}_${Date.now()}.csv`;
+    const headers = [
+      '#',
+      'Writer Name',
+      'Squad',
+      'Points Scored',
+      'Target Points',
+      'Progress %'
+    ];
+    const csvLines = [headers.join(',')];
+
+    const regularList = [
+      { writer: "Sonika", squad: "Team A", target: 477 },
+      { writer: "Archita", squad: "Team A", target: 477 },
+      { writer: "Shemaila", squad: "Team A", target: 477 },
+      { writer: "Somya", squad: "Team A", target: 477 },
+      { writer: "Mohit", squad: "Team A", target: 477 },
+      { writer: "Nadeem", squad: "Team B", target: 477 },
+      { writer: "Shilpa Kohli", squad: "Team B", target: 477 },
+      { writer: "Aditi", squad: "Team B", target: 477 },
+      { writer: "Atul", squad: "Team B", target: 477 },
+      { writer: "Trishala", squad: "Team B", target: 477 }
+    ];
+
+    const prepList = [
+      { writer: "Lehron", squad: "Exam Prep", target: 660 },
+      { writer: "Dhananjay", squad: "Exam Prep", target: 660 },
+      { writer: "Falguni", squad: "Exam Prep", target: 660 },
+      { writer: "Swathi", squad: "Exam Prep", target: 660 },
+      { writer: "Sumit Kumar", squad: "Exam Prep", target: 660 },
+      { writer: "Manicka", squad: "Exam Prep", target: 660 },
+      { writer: "Archana", squad: "Exam Prep", target: 660 },
+      { writer: "Shilpa Singh", squad: "Exam Prep", target: 660 }
+    ];
+
+    const hindiList = [
+      { writer: "Anshika", squad: "Hindi Team", target: 594 },
+      { writer: "Vidit", squad: "Hindi Team", target: 594 },
+      { writer: "Prabodh", squad: "Hindi Team", target: 594 }
+    ];
+
+    let writersListRaw = regularList;
+    if (subTab === 'prep') writersListRaw = prepList;
+    else if (subTab === 'hindi') writersListRaw = hindiList;
+    else if (subTab === 'all') writersListRaw = [...regularList, ...prepList, ...hindiList];
+
+    const allWorkflowItems = getReviewList();
+    const writerItemsMap = {};
+
+    allWorkflowItems.forEach(item => {
+      const w = (item.writer || '').trim();
+      if (!w || w === '-' || w === 'Unassigned') return;
+      const key = w.toLowerCase();
+      if (!writerItemsMap[key]) writerItemsMap[key] = [];
+      writerItemsMap[key].push(item);
+    });
+
+    writersListRaw.forEach((w, idx) => {
+      const key = w.writer.toLowerCase();
+      const myItems = writerItemsMap[key] || [];
+
+      let pointsScored = 0;
+      myItems.forEach(it => {
+        const status = getEffectiveReviewStatus(it);
+        if (status === 'Approved') {
+          const ptInfo = calculateItemKpiPoints(it);
+          pointsScored += (ptInfo.points || 0);
+        }
+      });
+
+      const progressPct = w.target > 0 ? ((pointsScored / w.target) * 100) : 0;
+
+      const row = [
+        idx + 1,
+        `"${w.writer.replace(/"/g, '""')}"`,
+        `"${w.squad.replace(/"/g, '""')}"`,
+        `"${pointsScored.toFixed(1)}"`,
+        w.target,
+        `"${progressPct.toFixed(1)}%"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
   // =========================================================================
   // Master Initialization
   // =========================================================================
   function renderApp() {
     renderRoster();
+    renderTeamDashboard();
     renderKpiDashboard();
     renderNews();
     renderReviewHub();
