@@ -1236,6 +1236,295 @@ body {
   padding: 1.5rem;
 }
 
+/* ==========================================================================
+   Comprehensive Mobile & Touch Responsiveness (Zero Logic Change)
+   ========================================================================== */
+
+/* Touch optimization & fluid container constraints */
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Custom horizontal scroll bar helper */
+.scrollable-touch-bar {
+  display: flex;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollable-touch-bar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tablet & Mobile Breakpoint (<= 768px) */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: 3rem;
+  }
+
+  .page-container {
+    padding: 0 0.65rem;
+    margin: 0.65rem auto;
+  }
+
+  /* Header & Navigation */
+  .top-nav {
+    padding: 0.5rem 0.65rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .top-nav-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .brand-title {
+    font-size: 0.95rem;
+  }
+
+  .main-tab-btns {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 0.3rem;
+    padding-bottom: 3px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+  }
+  .main-tab-btns::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Sub Bars & Sub Tabs */
+  .sub-bar {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+
+  .sub-bar > div {
+    width: 100%;
+  }
+
+  .sub-btns {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 0.3rem;
+    padding-bottom: 3px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    width: 100%;
+  }
+  .sub-btns::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sub-btn {
+    flex-shrink: 0;
+    padding: 0.38rem 0.65rem;
+    font-size: 0.76rem;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .sub-bar input.input-simple,
+  .sub-bar select.select-simple,
+  #teamDashboardSearch,
+  #kpiSearch,
+  #filterSearch {
+    width: 100% !important;
+    min-height: 38px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+
+  .btn-action {
+    min-height: 36px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* KPI Metric Cards Grid */
+  .kpi-cards {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  .kpi-card {
+    padding: 0.65rem 0.5rem !important;
+  }
+
+  .kpi-card .kpi-num,
+  .kpi-card .num {
+    font-size: 1.25rem !important;
+  }
+
+  .kpi-card .kpi-lbl,
+  .kpi-card .lbl {
+    font-size: 0.68rem !important;
+  }
+
+  /* Tables & Horizontal Scrolling */
+  .table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-radius: 8px !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+  }
+
+  .data-table {
+    min-width: 620px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .data-table th, 
+  .data-table td {
+    padding: 0.45rem 0.4rem !important;
+  }
+
+  /* Night Schedule & Presence Grids */
+  .night-days-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem !important;
+  }
+
+  .writer-presence-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+  }
+
+  .writer-presence-card {
+    padding: 0.65rem !important;
+  }
+
+  .writer-presence-card .status-pill-group {
+    scale: 0.95;
+  }
+
+  /* Modals on Mobile */
+  .modal-overlay {
+    padding: 0.5rem !important;
+    align-items: flex-end !important;
+  }
+
+  .modal-card,
+  #modalWriterDrilldown .modal-card,
+  #modalBulkStatus .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 14px 14px 0 0 !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  #drilldownContentBody {
+    overflow-y: auto !important;
+    flex: 1 !important;
+    max-height: 65vh !important;
+  }
+
+  /* Simple Banner */
+  .simple-banner {
+    padding: 0.65rem 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .banner-tags {
+    gap: 0.35rem !important;
+  }
+
+  .simple-tag {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+}
+
+/* Small Smartphone Screen Breakpoint (<= 480px) */
+@media (max-width: 480px) {
+  .brand-title {
+    font-size: 0.88rem;
+  }
+
+  .tab-btn {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.76rem;
+    min-height: 34px;
+  }
+
+  .sub-btn {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.72rem;
+  }
+
+  .kpi-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem !important;
+  }
+
+  .kpi-card .kpi-num,
+  .kpi-card .num {
+    font-size: 1.15rem !important;
+  }
+
+  .night-days-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lock-box {
+    padding: 1.25rem 1rem;
+  }
+
+  .key-btn {
+    padding: 0.55rem 0;
+    font-size: 1.05rem;
+  }
+}
+
+
 
 
 
