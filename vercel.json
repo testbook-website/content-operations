@@ -2,6 +2,11 @@
   "version": 2,
   "name": "content-team-dashboard",
   "cleanUrls": true,
+  "functions": {
+    "api/audit.js": {
+      "maxDuration": 30
+    }
+  },
   "routes": [
     {
       "src": "/(.*)",

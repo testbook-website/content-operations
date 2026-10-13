@@ -144,7 +144,7 @@
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(item.writer.toLowerCase()));
+              const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => item.writer.toLowerCase().includes(p)));
               item.points = isPrepPiece ? 2.0 : 1.0;
               item.pointsAwarded = item.points;
               item.rejectionReasons = [];
@@ -3824,6 +3824,9 @@
       const type = (item.type || '').toLowerCase();
       const pt = (item.pageType || '').toLowerCase();
       const cl = (item.classification || '').toLowerCase();
+      const cat = (item.category || '').toLowerCase();
+      const domain = (item.domain || '').toLowerCase();
+      const wLower = (item.writer || '').toLowerCase();
 
       // Date Filter
       if (state.reviewDateFilter && state.reviewDateFilter !== 'all') {
@@ -3834,7 +3837,7 @@
       // Task Type Filter (Prep, Optimization, High Intent, New Content, News)
       if (state.reviewTaskTypeFilter !== 'all') {
         const tf = state.reviewTaskTypeFilter;
-        if (tf === 'prep' && !cat.includes('prep') && !tt.includes('prep') && !domain.includes('prep') && !['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(wLower)) return false;
+        if (tf === 'prep' && !cat.includes('prep') && !tt.includes('prep') && !domain.includes('prep') && !['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) return false;
         if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh') && !(item.oldDoc && item.oldDoc.startsWith('http'))) return false;
         if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('ts') && !cl.includes('high intent')) return false;
         if (tf === 'new_content' && (type !== 'new' && !tt.includes('new content'))) return false;
@@ -3957,6 +3960,38 @@
   }
 
   // =========================================================================
+  // Helper: Standardized Item KPI Point Calculation
+  // Regular 477, Hindi 792, New Content 594, Prep 660 (Prep=2.0 fresh / 1.5 opt, Opt=1.5, HighIntent=1.5, News=0.5/0.25, Fresh=1.0)
+  // =========================================================================
+  function calculateItemKpiPoints(item) {
+    if (!item) return 1.0;
+    if (typeof item.points === 'number' && item.points > 0) return item.points;
+
+    const cat = (item.category || '').toLowerCase();
+    const tt = (item.taskType || '').toLowerCase();
+    const type = (item.type || '').toLowerCase();
+    const pt = (item.pageType || '').toLowerCase();
+    const wLower = (item.writer || '').toLowerCase();
+    const domain = (item.domain || '').toLowerCase();
+
+    const isNews = tt.includes('news');
+    const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+                   ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p));
+    const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
+    const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
+
+    if (isNews) {
+      return (parseInt(item.wordCount, 10) >= 500 ? 0.5 : 0.25);
+    } else if (isPrep) {
+      // Prep Articles: New = 2.0 pts, Update/Opt = 1.5 pts
+      return isOpt ? 1.5 : 2.0;
+    } else if (isOpt || isHighIntent) {
+      return 1.5;
+    }
+    return 1.0; // Standard New Content
+  }
+
+  // =========================================================================
   // Autonomous AI Review Runner (Start Run Button)
   // Scoped to active filtered items (e.g. selected filters: Date, Writer, Type, Status, etc.)
   // =========================================================================
@@ -3991,49 +4026,65 @@
 
       try {
         const res = await sheetsClient.auditContentWithAI(item);
-        const audit = res.audit || {};
-        const isApproved = audit.isApproved !== false && (audit.qualityVerdict || '').toLowerCase().includes('approv');
+        const a = (res && res.audit) ? res.audit : {};
+        const isApproved = a.isApproved !== false && (a.qualityVerdict || '').toLowerCase().includes('approv');
         const verdict = isApproved ? 'Approved' : 'Needs Revision';
-        const score = audit.editorialScore || (isApproved ? 8 : 5);
-        const isPrepWriter = ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(wLower);
-        const defaultPts = isPrepWriter ? 2.0 : 1.0;
-        const pts = audit.pointsAwarded || defaultPts;
+        const score = a.editorialScore || (isApproved ? 9 : 5);
+        const itemPoints = calculateItemKpiPoints(item);
+        const pts = a.pointsAwarded !== undefined ? a.pointsAwarded : (isApproved ? itemPoints : 0);
 
-        // Save to cache
-        state.aiReviewCache[item.topic] = {
+        // Build complete auditData identical to manual review
+        const auditData = {
           isApproved: isApproved,
           verdict: verdict,
           score: score,
           points: pts,
-          classification: audit.suggestedClassification || item.classification || 'New Content',
-          netWordDiff: (audit.netWordDiff !== undefined && audit.netWordDiff !== null) ? audit.netWordDiff : (parseInt(item.wordCount, 10) || 0),
-          newDocWordCount: audit.newDocWordCount || parseInt(item.wordCount, 10) || 0,
-          oldDocWordCount: audit.oldDocWordCount || 0,
-          rewrittenWords: audit.rewrittenWords || 0,
-          docWordCountText: audit.docWordCountText || `${item.wordCount || 0} words`,
-          justificationSummary: audit.justificationSummary || (isApproved 
+          pointsAwarded: pts,
+          classification: a.suggestedClassification || item.classification || 'New Content',
+          suggestedClassification: a.suggestedClassification || item.classification || 'New Content',
+          netWordDiff: (a.netWordDiff !== undefined && a.netWordDiff !== null) ? a.netWordDiff : (parseInt(item.wordCount, 10) || 0),
+          newDocWordCount: a.newDocWordCount !== undefined ? a.newDocWordCount : (parseInt(item.wordCount, 10) || 0),
+          oldDocWordCount: a.oldDocWordCount || 0,
+          rewrittenWords: a.rewrittenWords || 0,
+          docWordCountText: a.docWordCountText || (isApproved ? `${item.wordCount || 0} words` : '🚫 Needs Revision'),
+          justificationSummary: a.justificationSummary || (isApproved 
             ? `Approved: Aligned with exam intent and meets target depth with ${item.wordCount || 800}+ words.` 
-            : `Needs Revision: ${audit.rejectionReasons?.join(' ') || 'Fails quality and depth thresholds.'}`),
-          rejectionReasons: audit.rejectionReasons || (isApproved ? [] : ['Fails depth/volume criteria']),
-          wordCountAssessment: audit.wordCountAssessment || `${item.wordCount || 0} words`,
-          keyStrengths: audit.keyStrengths || ['Target focus keyword alignment'],
-          improvementAreas: audit.improvementAreas || ['Expand article length and depth'],
-          recommendationNote: audit.recommendationNote || '',
+            : (a.rejectionReasons?.join(' ') || 'Fails quality and depth thresholds.')),
+          rejectionReasons: a.rejectionReasons || (isApproved ? [] : ['Fails depth/volume criteria']),
+          wordCountAssessment: a.wordCountAssessment || a.docWordCountText || `${item.wordCount || 0} words`,
+          keyStrengths: (a.keyStrengths && a.keyStrengths.length > 0) ? a.keyStrengths : ['Target focus keyword alignment'],
+          improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Expand article length and depth'],
+          recommendationNote: a.recommendationNote || (isApproved ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'),
+          factualAudit: a.factualAudit || null,
           reviewedAt: new Date().toISOString()
         };
-        saveAiReviewCache(state.aiReviewCache);
 
+        // 1. Update in-memory item
+        item.reviewStatus = verdict;
+        const shortNote = formatShortReviewNote(isApproved, score, a.rejectionReasons, auditData.justificationSummary);
+        item.reviewNotes = shortNote;
+
+        // 2. Set review override
         if (!state.reviewOverrides) state.reviewOverrides = {};
         state.reviewOverrides[item.topic] = verdict;
 
-        // Sync to Google Sheet Col P & Col R in background (Concise short note to keep sheet safe)
-        const notes = formatShortReviewNote(isApproved, score, audit.rejectionReasons);
-        sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (i + 2), item.topic, verdict, notes).catch(e => console.warn(e));
+        // 3. Save to cache
+        state.aiReviewCache[item.topic] = auditData;
+        saveAiReviewCache(state.aiReviewCache);
+
+        // 4. Sync to Google Sheet Col P & Col R in background
+        if (typeof sheetsClient !== 'undefined') {
+          sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (i + 2), item.topic, verdict, shortNote).catch(e => console.warn('Sheet sync error:', e));
+        }
 
         processed++;
-        renderReviewHub(false);
 
-        // Pause slightly between API calls
+        // 5. Re-render all dashboards in real-time so live approval status and points increment immediately
+        renderReviewHub(false);
+        renderTeamDashboard();
+        renderKpiDashboard();
+
+        // Pause slightly between API calls to avoid rate limiting
         await new Promise(r => setTimeout(r, 650));
       } catch (err) {
         console.warn(`Error during AI audit for "${item.topic}":`, err);
@@ -4043,6 +4094,8 @@
     state.aiRunnerActive = false;
     updateAiRunnerUI(`✅ Complete! AI-reviewed ${processed} filtered articles${filterTag} with Classplus Gemini Flash.`);
     renderReviewHub(false);
+    renderTeamDashboard();
+    renderKpiDashboard();
   }
 
   function stopAiAutoReviewRunner() {
@@ -4081,24 +4134,12 @@
 
       const isNews = tt.includes('news');
       const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka');
+                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha';
       const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
       const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
       const isFresh = (isPrep && !isOpt) || type === 'new' || tt.includes('new');
 
-      let points = item.points;
-      if (!points) {
-        if (isNews) {
-          points = (item.wordCount >= 500 ? 0.5 : 0.25);
-        } else if (isPrep) {
-          // Prep Articles: New = 2.0 pts, Update/Opt = 1.5 pts
-          points = isOpt ? 1.5 : 2.0;
-        } else if (isOpt || isHighIntent) {
-          points = 1.5;
-        } else {
-          points = 1.0; // Standard New Content
-        }
-      }
+      const points = calculateItemKpiPoints(item);
 
       if (!writerScorecard[writer]) {
         writerScorecard[writer] = {
@@ -4265,7 +4306,7 @@
           const isNews = tt.includes('news') || rawTaskType.toLowerCase().includes('news');
           const isHighIntent = (tt.includes('high in') || tt.includes('pyp')) && !isNews;
           const isOpt = (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))) && !isNews;
-          const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes(wLower)) && !isNews;
+          const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) && !isNews;
           
           let tierBadge = '';
           if (isNews) {
@@ -4695,7 +4736,8 @@
         verdict: isAppr ? 'Approved' : 'Needs Revision',
         score: a.editorialScore || (isAppr ? 9 : 5),
         suggestedClassification: a.suggestedClassification || item.classification || 'New Content',
-        pointsAwarded: a.pointsAwarded || (isAppr ? (item.classification === 'Standard Fresh' ? 2.0 : 1.0) : 0),
+        pointsAwarded: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? calculateItemKpiPoints(item) : 0),
+        points: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? calculateItemKpiPoints(item) : 0),
         netWordDiff: (a.netWordDiff !== undefined && a.netWordDiff !== null) ? a.netWordDiff : null,
         newDocWordCount: a.newDocWordCount !== undefined ? a.newDocWordCount : null,
         oldDocWordCount: a.oldDocWordCount || 0,
