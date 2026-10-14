@@ -3960,35 +3960,13 @@
   }
 
   // =========================================================================
-  // Helper: Standardized Item KPI Point Calculation
-  // Regular 477, Hindi 792, New Content 594, Prep 660 (Prep=2.0 fresh / 1.5 opt, Opt=1.5, HighIntent=1.5, News=0.5/0.25, Fresh=1.0)
+  // Helper: Standardized Item KPI Point Numeric Value
   // =========================================================================
-  function calculateItemKpiPoints(item) {
+  function getItemKpiPointsNumber(item) {
     if (!item) return 1.0;
     if (typeof item.points === 'number' && item.points > 0) return item.points;
-
-    const cat = (item.category || '').toLowerCase();
-    const tt = (item.taskType || '').toLowerCase();
-    const type = (item.type || '').toLowerCase();
-    const pt = (item.pageType || '').toLowerCase();
-    const wLower = (item.writer || '').toLowerCase();
-    const domain = (item.domain || '').toLowerCase();
-
-    const isNews = tt.includes('news');
-    const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                   ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p));
-    const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
-    const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
-
-    if (isNews) {
-      return (parseInt(item.wordCount, 10) >= 500 ? 0.5 : 0.25);
-    } else if (isPrep) {
-      // Prep Articles: New = 2.0 pts, Update/Opt = 1.5 pts
-      return isOpt ? 1.5 : 2.0;
-    } else if (isOpt || isHighIntent) {
-      return 1.5;
-    }
-    return 1.0; // Standard New Content
+    const ptInfo = calculateItemKpiPoints(item);
+    return (ptInfo && typeof ptInfo.points === 'number') ? ptInfo.points : 1.0;
   }
 
   // =========================================================================
@@ -4030,7 +4008,7 @@
         const isApproved = a.isApproved !== false && (a.qualityVerdict || '').toLowerCase().includes('approv');
         const verdict = isApproved ? 'Approved' : 'Needs Revision';
         const score = a.editorialScore || (isApproved ? 9 : 5);
-        const itemPoints = calculateItemKpiPoints(item);
+        const itemPoints = getItemKpiPointsNumber(item);
         const pts = a.pointsAwarded !== undefined ? a.pointsAwarded : (isApproved ? itemPoints : 0);
 
         // Build complete auditData identical to manual review
@@ -4139,7 +4117,7 @@
       const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
       const isFresh = (isPrep && !isOpt) || type === 'new' || tt.includes('new');
 
-      const points = calculateItemKpiPoints(item);
+      const points = getItemKpiPointsNumber(item);
 
       if (!writerScorecard[writer]) {
         writerScorecard[writer] = {
@@ -4736,8 +4714,8 @@
         verdict: isAppr ? 'Approved' : 'Needs Revision',
         score: a.editorialScore || (isAppr ? 9 : 5),
         suggestedClassification: a.suggestedClassification || item.classification || 'New Content',
-        pointsAwarded: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? calculateItemKpiPoints(item) : 0),
-        points: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? calculateItemKpiPoints(item) : 0),
+        pointsAwarded: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? getItemKpiPointsNumber(item) : 0),
+        points: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? getItemKpiPointsNumber(item) : 0),
         netWordDiff: (a.netWordDiff !== undefined && a.netWordDiff !== null) ? a.netWordDiff : null,
         newDocWordCount: a.newDocWordCount !== undefined ? a.newDocWordCount : null,
         oldDocWordCount: a.oldDocWordCount || 0,
@@ -4991,6 +4969,20 @@
   // TAB: TEAM KPI DASHBOARD & 66-DAY TARGET ENGINE
   // =========================================================================
   function calculateItemKpiPoints(item) {
+    if (!item) return { points: 1.00, label: 'New Content / Child Page', badgeColor: '#15803d', bg: '#f0fdf4', typeKey: 'child_page', valueOf() { return this.points; } };
+
+    function makePtResult(points, label, badgeColor, bg, typeKey) {
+      return {
+        points,
+        label,
+        badgeColor,
+        bg,
+        typeKey,
+        valueOf() { return this.points; },
+        toString() { return String(this.points); }
+      };
+    }
+
     const tt = (item.taskType || '').toString().toLowerCase().trim();
     const type = (item.type || '').toString().toLowerCase().trim();
     const pt = (item.pageType || '').toString().toLowerCase().trim();
@@ -5006,9 +4998,9 @@
 
     if (isNews) {
       if (tt.includes('lms') || wc < 500) {
-        return { points: 0.25, label: 'Micro News Brief', badgeColor: '#64748b', bg: '#f1f5f9', typeKey: 'micro_news' };
+        return makePtResult(0.25, 'Micro News Brief', '#64748b', '#f1f5f9', 'micro_news');
       } else {
-        return { points: 0.50, label: 'Standard News & Updates', badgeColor: '#475569', bg: '#f8fafc', typeKey: 'standard_news' };
+        return makePtResult(0.50, 'Standard News & Updates', '#475569', '#f8fafc', 'standard_news');
       }
     }
 
@@ -5021,26 +5013,26 @@
     if (isPrep) {
       if (isOpt) {
         // Update in Prep Articles: 1.5 Points
-        return { points: 1.50, label: 'Prep Optimization / Update', badgeColor: '#b45309', bg: '#fef3c7', typeKey: 'prep_opt' };
+        return makePtResult(1.50, 'Prep Optimization / Update', '#b45309', '#fef3c7', 'prep_opt');
       } else {
         // New Prep Articles: 2.0 Points
-        return { points: 2.00, label: 'Fresh Prep Article', badgeColor: '#166534', bg: '#f0fdf4', typeKey: 'fresh_prep' };
+        return makePtResult(2.00, 'Fresh Prep Article', '#166534', '#f0fdf4', 'fresh_prep');
       }
     }
 
     // High Intent / PYP / Mock Test Landing Page: 1.5 Points (High Intent structured Q&A, exam patterns)
     const isHighIntentPyp = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || cl.includes('high intent') || topic.includes('mock') || topic.includes('previous year');
     if (isHighIntentPyp) {
-      return { points: 1.50, label: 'PYP / Mock Test Landing Page', badgeColor: '#1d4ed8', bg: '#eff6ff', typeKey: 'high_intent' };
+      return makePtResult(1.50, 'PYP / Mock Test Landing Page', '#1d4ed8', '#eff6ff', 'high_intent');
     }
 
     // Data-Backed Content Optimization / Refresh: 1.5 Points (Requires baseline Old Doc)
     if (isOpt) {
-      return { points: 1.50, label: 'SEO Optimization & Refresh', badgeColor: '#b45309', bg: '#fef3c7', typeKey: 'optimization' };
+      return makePtResult(1.50, 'SEO Optimization & Refresh', '#b45309', '#fef3c7', 'optimization');
     }
 
     // New Child Pages / New Content: 1.0 Point
-    return { points: 1.00, label: 'New Content / Child Page', badgeColor: '#15803d', bg: '#f0fdf4', typeKey: 'child_page' };
+    return makePtResult(1.00, 'New Content / Child Page', '#15803d', '#f0fdf4', 'child_page');
   }
 
   // Get Roster Squad metadata for any writer
