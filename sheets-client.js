@@ -170,15 +170,41 @@ class SheetsClient {
     const taskTypeLower = (item.taskType || '').toLowerCase().trim();
     const typeLower = (item.type || '').toLowerCase().trim();
     const writerLower = (item.writer || '').toLowerCase().trim();
+    const categoryLower = (item.category || '').toLowerCase().trim();
+    const classificationLower = (item.classification || '').toLowerCase().trim();
 
     // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content - never require Old Doc
     const hindiWriters = ['anshika', 'vidit', 'prabodh'];
     const isHindiWriter = hindiWriters.some(w => writerLower.includes(w));
 
-    // Explicit new article indicators
-    const isExplicitNew = typeLower.includes('new') || taskTypeLower.includes('new');
+    // New Content Team writers (Archana, Shilpa Singh) - never require Old Doc
+    const newContentWriters = ['archana', 'shilpa singh'];
+    const isNewContentWriter = newContentWriters.some(w => writerLower.includes(w));
 
-    const isUpdateTask = !isHindiWriter && !isExplicitNew && (
+    // News tasks (breaking alerts, notifications, blog updates, LMS updates) - NEVER require Old Doc
+    const isNews = taskTypeLower.includes('news') || 
+                   typeLower.includes('news') || 
+                   categoryLower.includes('news') || 
+                   classificationLower.includes('news') ||
+                   Boolean(item.isNewsTask);
+
+    // Explicit new article indicators: Type or Task Type contains 'new' or 'fresh' - NEVER require Old Doc
+    const isExplicitNew = typeLower.includes('new') || 
+                          taskTypeLower.includes('new') || 
+                          typeLower.includes('fresh') || 
+                          taskTypeLower.includes('fresh') ||
+                          classificationLower.includes('new') ||
+                          classificationLower.includes('fresh') ||
+                          categoryLower.includes('new') ||
+                          isHindiWriter ||
+                          isNewContentWriter;
+
+    // An update task requiring Old Doc is ONLY when:
+    // 1. NOT News
+    // 2. NOT New or Fresh content
+    // 3. NOT Hindi or New Content team writers
+    // 4. Type or Task Type is strictly SEO Optimization or Content Overhaul on existing non-news page
+    const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && (
       typeLower === 'update' || 
       typeLower === 'optimization' || 
       typeLower === 'optimi' ||
@@ -813,11 +839,16 @@ Use these exact extracted word counts in your evaluation.`;
       const tt = String(taskType || '').trim().toLowerCase();
       const typeStr = String(type || '').trim().toLowerCase();
       const ptStr = String(pageType || '').trim().toLowerCase();
-      const isNew = typeStr.includes('new') || tt.includes('new');
+      const catStr = String(category || '').trim().toLowerCase();
+
+      // News check: Any task labeled News, or in News category
+      const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news');
+      // New check: Type or Task Type contains 'new' or 'fresh'
+      const isNew = typeStr.includes('new') || tt.includes('new') || typeStr.includes('fresh') || tt.includes('fresh');
       let points = 1.0;
       let classification = taskType || 'New Content';
 
-      if (tt.includes('news')) {
+      if (isNews) {
         if (wordCount >= 500) {
           classification = 'Standard News';
           points = 0.5;
@@ -825,16 +856,13 @@ Use these exact extracted word counts in your evaluation.`;
           classification = 'Micro News';
           points = 0.25;
         }
-      } else if (tt.includes('high in') || tt.includes('pyp')) {
+      } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in')) {
         classification = 'High Intent / PYP';
         points = 1.5;
-      } else if (tt.includes('optimi') || typeStr === 'update' || tt.includes('update')) {
+      } else if (!isNew && (tt.includes('optimi') || typeStr === 'update' || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization')) {
         classification = 'SEO Optimization';
         points = 1.5;
       } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar')) {
-        classification = 'New Content';
-        points = 1.0;
-      } else if (isNew) {
         classification = 'New Content';
         points = 1.0;
       } else {

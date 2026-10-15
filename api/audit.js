@@ -104,19 +104,41 @@ export default async function handler(req, res) {
   const taskTypeLower = (item.taskType || '').toLowerCase().trim();
   const typeLower = (item.type || '').toLowerCase().trim();
   const writerLower = (item.writer || '').toLowerCase().trim();
+  const categoryLower = (item.category || '').toLowerCase().trim();
+  const classificationLower = (item.classification || '').toLowerCase().trim();
 
   // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content - never require Old Doc
   const hindiWriters = ['anshika', 'vidit', 'prabodh'];
   const isHindiWriter = hindiWriters.some(w => writerLower.includes(w));
 
-  // Explicit new article indicators
-  const isExplicitNew = typeLower.includes('new') || taskTypeLower.includes('new');
+  // New Content Team writers (Archana, Shilpa Singh) - never require Old Doc
+  const newContentWriters = ['archana', 'shilpa singh'];
+  const isNewContentWriter = newContentWriters.some(w => writerLower.includes(w));
+
+  // News tasks (breaking alerts, notifications, blog updates, LMS updates) - NEVER require Old Doc
+  const isNews = taskTypeLower.includes('news') || 
+                 typeLower.includes('news') || 
+                 categoryLower.includes('news') || 
+                 classificationLower.includes('news') ||
+                 Boolean(item.isNewsTask);
+
+  // Explicit new article indicators: Type or Task Type contains 'new' or 'fresh' - NEVER require Old Doc
+  const isExplicitNew = typeLower.includes('new') || 
+                        taskTypeLower.includes('new') || 
+                        typeLower.includes('fresh') || 
+                        taskTypeLower.includes('fresh') ||
+                        classificationLower.includes('new') ||
+                        classificationLower.includes('fresh') ||
+                        categoryLower.includes('new') ||
+                        isHindiWriter ||
+                        isNewContentWriter;
 
   // An update task requiring Old Doc is ONLY when:
-  // 1. Not a Hindi team writer
-  // 2. Type is explicitly 'Update' or 'Optimization' or 'Refresh' (and NOT 'New')
-  // 3. Task is an SEO Optimization or Content Refresh on an existing page
-  const isUpdateTask = !isHindiWriter && !isExplicitNew && (
+  // 1. NOT News
+  // 2. NOT New or Fresh content
+  // 3. NOT Hindi or New Content team writers
+  // 4. Type or Task Type is strictly SEO Optimization or Content Overhaul on existing non-news page
+  const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && (
     typeLower === 'update' || 
     typeLower === 'optimization' || 
     typeLower === 'optimi' ||
@@ -478,8 +500,8 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     console.warn('AI Audit failed on backend, returning verified fallback:', err);
     const taskTypeLower = (item.taskType || '').toLowerCase();
     const typeLower = (item.type || '').toLowerCase();
-    const isUpdate = typeLower === 'update' || taskTypeLower.includes('optimi') || hasOldDocLink;
-    const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
+    const isNews = taskTypeLower.includes('news') || typeLower.includes('news') || (item.category || '').toLowerCase().includes('news') || Boolean(item.isNewsTask);
+    const isUpdate = !isNews && (typeLower === 'update' || taskTypeLower.includes('optimi') || hasOldDocLink);
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
     const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 0);
@@ -493,14 +515,14 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     let ptsAwarded = 0;
     let rejectReason = '';
 
-    if (isNews && isUpdate) {
-      isApproved = effort >= 350;
+    if (isNews && (isUpdate || hasOldDocLink)) {
+      isApproved = effort >= 300;
       ptsAwarded = isApproved ? (effort >= 500 ? 0.5 : 0.25) : 0;
-      if (!isApproved) rejectReason = `News Update shortfall: Writer rewrote/added only ~${effort}w (minimum 350+ rewritten/added words required).`;
-    } else if (isNews && !isUpdate) {
-      isApproved = estNew >= 500;
-      ptsAwarded = isApproved ? 0.5 : 0;
-      if (!isApproved) rejectReason = `New News shortfall: Found ${estNew}w (minimum 500 words required).`;
+      if (!isApproved) rejectReason = `News Update shortfall: Writer rewrote/added only ~${effort}w (minimum 300–350+ rewritten/added words required).`;
+    } else if (isNews) {
+      isApproved = estNew >= 300;
+      ptsAwarded = isApproved ? (estNew >= 500 ? 0.5 : 0.25) : 0;
+      if (!isApproved) rejectReason = `New News shortfall: Found ${estNew}w (minimum 300–500 words required).`;
     } else if (isUpdate) {
       isApproved = effort >= 700;
       ptsAwarded = isApproved ? 1.5 : 0;
