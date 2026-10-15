@@ -4094,12 +4094,13 @@
       const wLower = (item.writer || '').toLowerCase();
       const domain = (item.domain || '').toLowerCase();
 
-      const isNews = tt.includes('news');
-      const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha';
-      const isOpt = type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'));
-      const isHighIntent = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts');
-      const isFresh = (isPrep && !isOpt) || type === 'new' || tt.includes('new');
+      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || Boolean(item.isNewsTask);
+      const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha') && !isNews;
+      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+      const isOpt = !isNews && !isExplicitNew && (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
+      const isHighIntent = (tt.includes('high in') || tt.includes('pyp') || pt.includes('ts')) && !isNews;
+      const isFresh = (isPrep && !isOpt) || isExplicitNew;
 
       const points = getItemKpiPointsNumber(item);
 

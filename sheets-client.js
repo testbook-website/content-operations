@@ -828,23 +828,34 @@ Use these exact extracted word counts in your evaluation.`;
       if (!url && getVal(3) && String(getVal(3)).startsWith('http')) url = getVal(3);
 
       // Column P (idx 15): Review Status
-      const reviewStatus = getVal(15) || 'Pending Review';
+      let reviewStatus = getVal(15) || 'Pending Review';
       // Column Q (idx 16): Status
       const status = getVal(16) || 'Done';
       // Column S (idx 18): Review Notes / Rejection Reason (Strictly Column S, Never Column R)
       const rawNotes = getVal(18);
-      const reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables'))) ? '' : rawNotes;
+      let reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables'))) ? '' : rawNotes;
 
       // OND Framework Standard Point Matrix based directly on Column G (Task Type) & Column H (Type)
       const tt = String(taskType || '').trim().toLowerCase();
       const typeStr = String(type || '').trim().toLowerCase();
       const ptStr = String(pageType || '').trim().toLowerCase();
       const catStr = String(category || '').trim().toLowerCase();
+      const wLower = String(writer || '').trim().toLowerCase();
 
       // News check: Any task labeled News, or in News category
       const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news');
-      // New check: Type or Task Type contains 'new' or 'fresh'
-      const isNew = typeStr.includes('new') || tt.includes('new') || typeStr.includes('fresh') || tt.includes('fresh');
+      // New check: Type or Task Type contains 'new' or 'fresh' or Hindi/New Content writer
+      const isNew = typeStr.includes('new') || tt.includes('new') || typeStr.includes('fresh') || tt.includes('fresh') ||
+                    ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+      const hasOldDoc = Boolean(oldDoc && oldDoc.startsWith('http'));
+
+      // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, or is News:
+      if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (hasOldDoc || isNew || isNews)) {
+        reviewNotes = '';
+        if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
+          reviewStatus = 'Pending Review';
+        }
+      }
       let points = 1.0;
       let classification = taskType || 'New Content';
 
