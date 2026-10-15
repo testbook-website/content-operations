@@ -242,17 +242,46 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     };
     const shortNoteVal = formatShortNote(notes);
 
-    // 1. TOPIC-FIRST SEARCH: Finds exact row matching topic across all 1000+ rows
-    if (topic && String(topic).trim()) {
-      const cleanTopic = String(topic).trim().toLowerCase();
-      const data = sheet.getDataRange().getValues();
+    const cleanTopic = topic ? String(topic).trim().toLowerCase() : '';
+    const data = sheet.getDataRange().getValues();
+    const rIdx = parseInt(rowIndex, 10);
 
-      // Pass 1: EXACT topic match
+    // 0. If rowIndex is provided and valid, verify exact row match first
+    if (rIdx && rIdx >= 2 && rIdx <= data.length) {
+      const directTopic = String(data[rIdx - 1][1] || '').trim().toLowerCase();
+      if (!cleanTopic || directTopic === cleanTopic || directTopic.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(directTopic) !== -1) {
+        const targetRow = rIdx;
+        sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
+        if (statusCol > 0 && statusCol !== reviewStatusCol) {
+          sheet.getRange(targetRow, statusCol).setValue('Done');
+        }
+        if (notesCol > 0 && notes !== undefined) {
+          if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
+            sheet.getRange(targetRow, notesCol).setValue('');
+          } else if (shortNoteVal) {
+            sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
+          }
+        }
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          sheetName: sheet.getName(),
+          matchedBy: 'verified_rowIndex',
+          row: targetRow,
+          topic: topic,
+          reviewStatusCol: reviewStatusCol,
+          notesCol: notesCol,
+          status: statusVal,
+          notes: shortNoteVal
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // 1. TOPIC-FIRST SEARCH: Finds exact row matching Column B (Topic) across all rows
+    if (cleanTopic) {
+      // Pass 1: EXACT Column B (Topic) match
       for (let i = 1; i < data.length; i++) {
         const rowTopicB = String(data[i][1] || '').trim().toLowerCase();
-        const rowTopicH = String(data[i][7] || '').trim().toLowerCase();
-        const rowTopicK = String(data[i][10] || '').trim().toLowerCase();
-        if ((rowTopicB && rowTopicB === cleanTopic) || (rowTopicK && rowTopicK === cleanTopic) || (rowTopicH && rowTopicH === cleanTopic)) {
+        if (rowTopicB && rowTopicB === cleanTopic) {
           const targetRow = i + 1;
           sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
           if (statusCol > 0 && statusCol !== reviewStatusCol) {
@@ -268,7 +297,7 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
           return ContentService.createTextOutput(JSON.stringify({
             success: true,
             sheetName: sheet.getName(),
-            matchedBy: 'exact_topic',
+            matchedBy: 'exact_topic_colB',
             row: targetRow,
             topic: topic,
             reviewStatusCol: reviewStatusCol,

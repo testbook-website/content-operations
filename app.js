@@ -59,15 +59,9 @@
             return;
           }
 
-          // Strict Rule: If marked Missing Old Doc or Update without Old Doc
+          // Purge stale "Missing Old Doc" entries from previous sessions so newly added Old Docs in Google Sheet are pulled cleanly
           if (item.docWordCountText === '🚫 Missing Old Doc' || summaryStr.includes('missing old doc') || summaryStr.includes('missing baseline old doc')) {
-            item.isApproved = false;
-            item.verdict = 'Needs Revision';
-            item.score = 0;
-            item.points = 0;
-            item.pointsAwarded = 0;
-            item.rejectionReasons = ['Missing baseline Old Doc link for Update task in Column M.'];
-            item.justificationSummary = 'Needs Revision: Missing baseline Old Doc link. For Update/Optimization tasks, Old Doc is compulsory to verify rewritten content.';
+            delete parsed[k];
             return;
           }
 
@@ -195,34 +189,29 @@
       const rawStat = (item.reviewStatus || '').trim().toLowerCase();
       const tt = (item.taskType || '').toLowerCase();
       const type = (item.type || '').toLowerCase();
-      const isUpdateOrOpt = type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
-                            tt.includes('update') || tt.includes('optimi') || tt.includes('refresh');
-      const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
-      const hasNewDoc = item.newDoc && item.newDoc.startsWith('http');
+      const isExplicitNew = type.includes('new') || tt.includes('new');
+      const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
 
-      // MANDATORY RULE: If task is an Update/Optimization, Old Doc is compulsory! If missing, reject!
-      if (isUpdateOrOpt && !hasOldDoc) {
-        state.aiReviewCache[item.topic] = {
-          isApproved: false,
-          verdict: 'Needs Revision',
-          score: 0,
-          suggestedClassification: item.classification || 'Optimization',
-          pointsAwarded: 0,
-          netWordDiff: null,
-          newDocWordCount: item.wordCount || null,
-          oldDocWordCount: null,
-          docWordCountText: '🚫 Missing Old Doc',
-          justificationSummary: 'Needs Revision: Task Type is "Update/Optimization", but no baseline Old Doc link was provided in Column M. Baseline Old Doc is compulsory to audit rewritten content.',
-          rejectionReasons: ['Missing baseline Old Doc link for Update task in Column M.'],
-          wordCountAssessment: 'Missing Old Doc baseline',
-          keyStrengths: [],
-          improvementAreas: ['Attach baseline Old Doc in Column M so rewritten content (350+ words for News Update, 700+ words for Optimization) can be audited.'],
-          recommendationNote: 'Needs Revision: Missing Old Doc link in Column M.',
-          reviewedAt: item.date || new Date().toISOString(),
-          fromSheetSync: false
-        };
-        cacheChanged = true;
-        return;
+      // If the item now has a valid Old Doc, or is an explicit New article, purge any stale "Missing Old Doc" cache
+      if (hasOldDoc || isExplicitNew) {
+        const existingCache = state.aiReviewCache[item.topic];
+        if (existingCache) {
+          const cText = (existingCache.docWordCountText || '') + (existingCache.justificationSummary || '') + JSON.stringify(existingCache.rejectionReasons || []);
+          if (/missing.*old doc/i.test(cText)) {
+            delete state.aiReviewCache[item.topic];
+            cacheChanged = true;
+          }
+        }
+        // In-memory sanitization: if the sheet had stale "Missing baseline Old Doc link" note, clear it so it doesn't taint UI
+        if (item.reviewNotes && /missing.*old doc/i.test(item.reviewNotes)) {
+          item.reviewNotes = '';
+          if (rawStat.includes('revis') || !rawStat) {
+            item.reviewStatus = 'Pending Review';
+          }
+        }
+        if (state.reviewOverrides && state.reviewOverrides[item.topic] === 'Needs Revision') {
+          delete state.reviewOverrides[item.topic];
+        }
       }
 
       // Sanitize: Purge generic "tables & FAQ" filler from sheet notes
@@ -667,7 +656,7 @@
         }
         if (data && Array.isArray(data.workflow_ond)) {
           syncAiCacheFromSheetWorkflow(data.workflow_ond);
-          pushAuthenticAiCacheToSheet(data.workflow_ond);
+          // Strictly read-only passive sync. Never auto-push review findings to Google Sheets in background.
         }
         if (state.isAuthenticated) {
           if (state.activeNavTab === 'team_dashboard') renderTeamDashboard();
@@ -3764,55 +3753,41 @@
     if (state.reviewOverrides && state.reviewOverrides[item.topic]) {
       return state.reviewOverrides[item.topic];
     }
-    
+
+    const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
+    const tt = (item.taskType || '').toLowerCase();
+    const type = (item.type || '').toLowerCase();
+    const isExplicitNew = type.includes('new') || tt.includes('new');
+
     // 1. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
     const ai = (state.aiReviewCache && state.aiReviewCache[item.topic]) ? state.aiReviewCache[item.topic] : null;
     if (ai && ai.verdict && !ai.running) {
-      return ai.verdict;
+      const cText = (ai.docWordCountText || '') + (ai.justificationSummary || '') + JSON.stringify(ai.rejectionReasons || []);
+      if (/missing.*old doc/i.test(cText) && (hasOldDoc || isExplicitNew)) {
+        // Cache contains stale Missing Old Doc error, but item now has Old Doc or is New -> invalidate
+        delete state.aiReviewCache[item.topic];
+      } else {
+        return ai.verdict;
+      }
     }
     
     const raw = (item.reviewStatus || '').trim();
     if (raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc') || (!item.newDoc && !item.url)) {
       return 'Doc Missing';
     }
-    
-    // User's exact rules on Sheet Synced & AI data:
-    const tt = (item.taskType || '').toLowerCase();
-    const type = (item.type || '').toLowerCase();
-    const isUpdateOrOpt = type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
-                          tt.includes('update') || tt.includes('optimi') || tt.includes('refresh');
-    const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
 
-    // MANDATORY RULE: If task is an Update or Optimization, Old Doc is compulsory! If missing, reject!
-    if (isUpdateOrOpt && !hasOldDoc) {
-      return 'Needs Revision';
-    }
-
-    const isNews = tt.includes('news') || (item.classification || '').toLowerCase().includes('news');
-    const isOpt = hasOldDoc || isUpdateOrOpt;
-    
-    const rwMatch = (ai?.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (ai?.docWordCountText || '').match(/~(\d+)w Revamped/i);
-    const rewritten = ai?.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
-    const net = (ai?.netWordDiff !== undefined && ai?.netWordDiff !== null) ? ai.netWordDiff : 0;
-    const newWc = ai?.newDocWordCount || parseInt(item.wordCount, 10) || 0;
-    const effort = isOpt ? (rewritten > 0 ? rewritten : (net > 0 ? net : newWc)) : newWc;
-
-    if (isNews && isOpt) {
-      if (effort < 350) return 'Needs Revision';
-    } else if (isNews && !isOpt) {
-      if (effort < 500) return 'Needs Revision';
-    } else if (isOpt) {
-      if (effort < 700) return 'Needs Revision';
-    } else {
-      if (effort < 800) return 'Needs Revision';
-    }
-
+    // Check if sheet status has an explicit editorial review
     if (raw.toLowerCase().includes('approv')) {
       return 'Approved';
     }
     if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) {
+      // If the sheet note was the stale auto-pushed "Missing baseline Old Doc" note and Old Doc is now present or is New, treat as Pending
+      if (item.reviewNotes && /missing.*old doc/i.test(item.reviewNotes) && (hasOldDoc || isExplicitNew)) {
+        return 'Pending Review';
+      }
       return 'Needs Revision';
     }
+
     return 'Pending Review';
   }
 
@@ -4280,10 +4255,10 @@
           const wLower = (item.writer || '').toLowerCase();
           const domain = (item.domain || '').toLowerCase();
 
-          const rawTaskType = item.taskType || (type === 'new' ? 'New Content' : (type === 'update' ? 'SEO Optimization' : 'New Content'));
+          const isExplicitNew = type === 'new' || tt.includes('new');
           const isNews = tt.includes('news') || rawTaskType.toLowerCase().includes('news');
           const isHighIntent = (tt.includes('high in') || tt.includes('pyp')) && !isNews;
-          const isOpt = (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))) && !isNews;
+          const isOpt = !isExplicitNew && (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))) && !isNews;
           const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) && !isNews;
           
           let tierBadge = '';
@@ -4390,7 +4365,7 @@
           } else if (!hasValidDoc) {
             verdictHtml = `<span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">🚫 No Doc Attached</span>`;
           } else if (isOpt && !hasOldDoc && (!aiRecord || aiRecord.verdict !== 'Approved')) {
-            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⚠️ Needs Revision</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600; line-height:1.25;">Missing Old Doc (Compulsory for Update)</span></div>`;
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef3c7; color:#b45309; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⏳ Awaiting Old Doc</span><span style="color:#b45309; font-size:0.72rem; font-weight:600; line-height:1.25;">Required for Update in Col M</span></div>`;
           } else if (status === 'Doc Missing' || aiRecord?.verdict === 'Doc Missing') {
             verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">Old Doc required for update</span></div>`;
           } else if (status === 'Needs Revision' || (aiRecord && aiRecord.verdict === 'Needs Revision')) {
@@ -4640,6 +4615,18 @@
 
     // Check if existing audit is cached and has genuine AI results
     let cached = (!forceReAudit && state.aiReviewCache) ? state.aiReviewCache[item.topic] : null;
+
+    // Invalidate cached audit if it was a "Missing Old Doc" error and item now has Old Doc or is New
+    if (cached) {
+      const cText = (cached.docWordCountText || '') + (cached.justificationSummary || '') + JSON.stringify(cached.rejectionReasons || []);
+      const hasOldDocNow = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
+      const isExplicitNew = (item.type || '').toLowerCase().includes('new') || (item.taskType || '').toLowerCase().includes('new');
+      if (/missing.*old doc/i.test(cText) && (hasOldDocNow || isExplicitNew)) {
+        delete state.aiReviewCache[item.topic];
+        saveAiReviewCache(state.aiReviewCache);
+        cached = null;
+      }
+    }
 
     const hasRealAiAudit = cached && !cached.fromSheetSync && !cached.running && cached.isApproved !== undefined;
 
