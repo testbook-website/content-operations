@@ -5321,6 +5321,7 @@
       let docMissedCount = 0;
       let qualityWordsCount = 0;
       let otherCount = 0;
+      let pendingCount = 0;
       let pointsScored = 0;
 
       myItems.forEach(it => {
@@ -5329,11 +5330,13 @@
           approvedCount++;
           const ptInfo = calculateItemKpiPoints(it);
           pointsScored += (ptInfo.points || 0);
-        } else {
+        } else if (status === 'Needs Revision' || status === 'Doc Missing') {
           const rejType = categorizeRejection(it);
           if (rejType === 'doc_missed') docMissedCount++;
           else if (rejType === 'quality_words') qualityWordsCount++;
           else otherCount++;
+        } else {
+          pendingCount++;
         }
       });
 
@@ -5739,24 +5742,32 @@
       let docMissed = 0;
       let qualWords = 0;
       let otherRej = 0;
+      let pendingCount = 0;
 
       const taskItems = myItems.map(it => {
-        const isApproved = getEffectiveReviewStatus(it) === 'Approved';
+        const effStatus = getEffectiveReviewStatus(it);
+        const isApproved = effStatus === 'Approved';
+        const isRejected = effStatus === 'Needs Revision' || effStatus === 'Doc Missing';
+        const isPending = !isApproved && !isRejected;
         const pt = calculateItemKpiPoints(it);
-        const rejType = isApproved ? null : categorizeRejection(it);
+        const rejType = isRejected ? categorizeRejection(it) : null;
 
         if (isApproved) {
           achieved += (pt.points || 0);
           appr++;
-        } else {
+        } else if (isRejected) {
           if (rejType === 'doc_missed') docMissed++;
           else if (rejType === 'quality_words') qualWords++;
           else otherRej++;
+        } else {
+          pendingCount++;
         }
 
         return {
           ...it,
           isApproved,
+          isRejected,
+          isPending,
           rejType,
           points: pt.points
         };
@@ -5768,6 +5779,7 @@
         squadMeta: meta,
         achievedPoints: achieved,
         approvedCount: appr,
+        pendingCount: pendingCount,
         docMissedCount: docMissed,
         qualityWordsCount: qualWords,
         otherCount: otherRej,
@@ -5782,9 +5794,11 @@
 
     if (els.drilldownWriterSubtitle && writerData) {
       const totalRej = writerData.docMissedCount + writerData.qualityWordsCount + writerData.otherCount;
+      const pendingText = writerData.pendingCount > 0 ? `<span style="color:#b45309; font-weight:700;">⏳ ${writerData.pendingCount} Pending Review</span> | ` : '';
       els.drilldownWriterSubtitle.innerHTML = `
         <strong>${writerData.squadMeta.squadName}</strong> | 
         <span style="color:#16a34a; font-weight:700;">✅ ${writerData.approvedCount} Approved</span> | 
+        ${pendingText}
         <span style="color:#dc2626; font-weight:700;">⚠️ ${totalRej} Rejected (${writerData.docMissedCount} Doc Missed | ${writerData.qualityWordsCount} Quality/Wc | ${writerData.otherCount} Other)</span> | 
         <span style="color:#2563eb; font-weight:800;">⭐ ${writerData.achievedPoints.toFixed(1)} Points Credited</span>
       `;
@@ -5806,9 +5820,11 @@
           let statusBadge = '';
           if (isAppr) {
             statusBadge = `<span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✅ Approved (${ptInfo.points}p)</span>`;
-          } else {
+          } else if (t.isRejected) {
             const rejBadge = t.rejType === 'doc_missed' ? '🚫 Doc Missed' : (t.rejType === 'quality_words' ? '⚠️ Quality/Words' : '⚠️ Other');
             statusBadge = `<span style="background:#fee2e2; color:#991b1b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${rejBadge}</span>`;
+          } else {
+            statusBadge = `<span style="background:#f1f5f9; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⏳ Pending Review</span>`;
           }
 
           const docLink = t.newDoc && t.newDoc.startsWith('http')
