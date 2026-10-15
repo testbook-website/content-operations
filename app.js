@@ -4263,6 +4263,7 @@
           const pt = (item.pageType || '').toLowerCase();
           const wLower = (item.writer || '').toLowerCase();
           const domain = (item.domain || '').toLowerCase();
+          const rawTaskType = item.taskType || item.classification || 'New Content';
 
           const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || Boolean(item.isNewsTask) || rawTaskType.toLowerCase().includes('news');
           const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
