@@ -179,6 +179,64 @@
     return note.length > 120 ? note.substring(0, 117) + '...' : note;
   }
 
+  // Hindi Search Transliteration Dictionary for bi-lingual content search
+  const HINDI_SEARCH_DICT = {
+    'यूपीएसएसएससी': 'upsssc',
+    'जेएसएससी': 'jssc',
+    'पैरा टीचर': 'para teacher',
+    'बीटीएससी': 'btsc',
+    'खाद्य सुरक्षा अधिकारी': 'food safety officer',
+    'खाद्य सुरक्षा': 'food safety',
+    'नोटीफिकेशन': 'notification',
+    'एफएसएल': 'fsl',
+    'भर्ती': 'recruitment',
+    'उत्तर कुंजी': 'answer key',
+    'सीजी सेट': 'cg set',
+    'आरआरबी': 'rrb',
+    'स्टेशन मास्टर': 'station master',
+    'आरपीएससी': 'rpsc',
+    'पशु चिकित्सा अधिकारी': 'veterinary officer',
+    'पशु चिकित्सा': 'veterinary officer',
+    'परिणाम': 'result',
+    'एसएससी': 'ssc',
+    'जीडी': 'gd',
+    'रिजल्ट': 'result',
+    'जेई': 'je',
+    'पात्रता मानदंड': 'eligibility criteria',
+    'पात्रता': 'eligibility',
+    'जूनियर इंजीनियर': 'junior engineer',
+    'वेतन': 'salary',
+    'रेलवे': 'railway',
+    'नई भर्ती': 'new recruitment',
+    'एसएसबी': 'ssb',
+    'हेड कांस्टेबल': 'head constable',
+    'एचपीएससी': 'hpsc',
+    'सिलेबस': 'syllabus',
+    'झारखंड': 'jharkhand',
+    'शिक्षक पात्रता परीक्षा': 'teacher eligibility test',
+    'प्रवेश पत्र': 'admit card',
+    'पुलिस की नौकरी के लिए कौन सा एग्जाम दें': 'easiest post in the police',
+    'क्या बिना ग्रेजुएशन के पुलिस में भर्ती हो सकते हैं': 'without graduation',
+    'बिना ग्रेजुएशन': 'without graduation',
+    'एनटीपीसी': 'ntpc',
+    'यूजी': 'undergraduate',
+    'कट ऑफ': 'cut off',
+    'एडमिट कार्ड': 'admit card'
+  };
+
+  function transliterateHindiQuery(q) {
+    if (!q || typeof q !== 'string') return '';
+    let res = q.toLowerCase();
+    const sortedKeys = Object.keys(HINDI_SEARCH_DICT).sort((a, b) => b.length - a.length);
+    for (const hi of sortedKeys) {
+      const en = HINDI_SEARCH_DICT[hi];
+      if (res.includes(hi.toLowerCase())) {
+        res = res.replace(new RegExp(hi, 'gi'), ' ' + en + ' ');
+      }
+    }
+    return res.replace(/\s+/g, ' ').trim();
+  }
+
   // Two-way sync: Hydrate AI review cache directly from live Google Sheet Column S (Notes) & Column P (Review Status)
   function syncAiCacheFromSheetWorkflow(workflowItems) {
     if (!workflowItems || !Array.isArray(workflowItems)) return;
@@ -2252,7 +2310,8 @@
     if (!els.sectionWorkflow) return;
 
     const allItems = getWorkflowList();
-    const dateScopedItems = getWorkflowForDateScope(allItems);
+    const searchActive = Boolean(state.workflowSearch && state.workflowSearch.trim().length > 0);
+    const dateScopedItems = searchActive ? allItems : getWorkflowForDateScope(allItems);
 
     if (rebuildFilters) {
       populateWorkflowDynamicFilters(dateScopedItems);
@@ -2274,17 +2333,28 @@
         return false;
       }
 
-      // Search
+      // Search with Hindi Transliteration and URL matching
       if (state.workflowSearch) {
-        const q = state.workflowSearch;
-        const match = (e.topic && e.topic.toLowerCase().includes(q)) ||
-                      (e.category && e.category.toLowerCase().includes(q)) ||
-                      (e.writer && e.writer.toLowerCase().includes(q)) ||
-                      (e.fk && e.fk.toLowerCase().includes(q)) ||
-                      (e.taskType && e.taskType.toLowerCase().includes(q)) ||
-                      (e.pageType && e.pageType.toLowerCase().includes(q)) ||
-                      (e.date && e.date.toLowerCase().includes(q));
-        if (!match) return false;
+        const q = state.workflowSearch.toLowerCase().trim();
+        const qTrans = transliterateHindiQuery(q);
+        const qParts = q.split(/\s+/).filter(Boolean);
+        const qTransParts = qTrans.split(/\s+/).filter(Boolean);
+
+        const targetBlob = [
+          e.topic,
+          e.category,
+          e.writer,
+          e.fk,
+          e.taskType,
+          e.pageType,
+          e.url,
+          e.date
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        const matchDirect = targetBlob.includes(q) || (qParts.length > 1 && qParts.every(p => targetBlob.includes(p)));
+        const matchTrans = targetBlob.includes(qTrans) || (qTransParts.length > 1 && qTransParts.every(p => targetBlob.includes(p)));
+
+        if (!matchDirect && !matchTrans) return false;
       }
 
       return true;
@@ -3842,15 +3912,27 @@
       // Category Filter
       if (state.reviewCategoryFilter !== 'all' && item.category !== state.reviewCategoryFilter) return false;
 
-      // Search
+      // Search with Hindi Transliteration and URL matching
       if (state.reviewSearch) {
-        const q = state.reviewSearch.toLowerCase();
-        const match = (item.topic && item.topic.toLowerCase().includes(q)) ||
-                      (item.fk && item.fk.toLowerCase().includes(q)) ||
-                      (item.writer && item.writer.toLowerCase().includes(q)) ||
-                      (item.category && item.category.toLowerCase().includes(q)) ||
-                      (item.taskType && item.taskType.toLowerCase().includes(q));
-        if (!match) return false;
+        const q = state.reviewSearch.toLowerCase().trim();
+        const qTrans = transliterateHindiQuery(q);
+        const qParts = q.split(/\s+/).filter(Boolean);
+        const qTransParts = qTrans.split(/\s+/).filter(Boolean);
+
+        const targetBlob = [
+          item.topic,
+          item.fk,
+          item.writer,
+          item.category,
+          item.taskType,
+          item.url,
+          item.notes
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        const matchDirect = targetBlob.includes(q) || (qParts.length > 1 && qParts.every(p => targetBlob.includes(p)));
+        const matchTrans = targetBlob.includes(qTrans) || (qTransParts.length > 1 && qTransParts.every(p => targetBlob.includes(p)));
+
+        if (!matchDirect && !matchTrans) return false;
       }
       return true;
     });
@@ -4246,13 +4328,83 @@
     // 3. Render Review Queue Table Rows
     if (els.reviewTableBody) {
       if (filtered.length === 0) {
-        els.reviewTableBody.innerHTML = `
-          <tr>
-            <td colspan="10" style="text-align:center; padding:2rem; color:#94a3b8;">
-              <div style="font-weight:700; color:#334155; font-size:0.95rem;">No submissions matching the current filter</div>
-            </td>
-          </tr>
-        `;
+        let otherDateMatchesCount = 0;
+        if (state.reviewDateFilter && state.reviewDateFilter !== 'all') {
+          const allExcludingDate = allItems.filter(item => {
+            const status = getEffectiveReviewStatus(item);
+            const tt = (item.taskType || '').toLowerCase();
+            const type = (item.type || '').toLowerCase();
+            const pt = (item.pageType || '').toLowerCase();
+            const cl = (item.classification || '').toLowerCase();
+            const cat = (item.category || '').toLowerCase();
+            const domain = (item.domain || '').toLowerCase();
+            const wLower = (item.writer || '').toLowerCase();
+
+            if (state.reviewTaskTypeFilter !== 'all') {
+              const tf = state.reviewTaskTypeFilter;
+              if (tf === 'prep' && !cat.includes('prep') && !tt.includes('prep') && !domain.includes('prep') && !['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) return false;
+              if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh') && !(item.oldDoc && item.oldDoc.startsWith('http'))) return false;
+              if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('ts') && !cl.includes('high intent')) return false;
+              if (tf === 'new_content' && (type !== 'new' && !tt.includes('new content'))) return false;
+              if (tf === 'news' && !tt.includes('news') && !cl.includes('news')) return false;
+            }
+            if (state.reviewStatusFilter === 'pending' && status !== 'Pending Review') return false;
+            if (state.reviewStatusFilter === 'approved' && status !== 'Approved') return false;
+            if (state.reviewStatusFilter === 'needs_revision' && status !== 'Needs Revision') return false;
+            if (state.reviewWriterFilter !== 'all') {
+              const itemW = normalizeWriterName(item.writer);
+              const filterW = normalizeWriterName(state.reviewWriterFilter);
+              if (itemW.toLowerCase() !== filterW.toLowerCase()) return false;
+            }
+            if (state.reviewCategoryFilter !== 'all' && item.category !== state.reviewCategoryFilter) return false;
+            if (state.reviewSearch) {
+              const q = state.reviewSearch.toLowerCase().trim();
+              const qTrans = transliterateHindiQuery(q);
+              const qParts = q.split(/\s+/).filter(Boolean);
+              const qTransParts = qTrans.split(/\s+/).filter(Boolean);
+              const targetBlob = [item.topic, item.fk, item.writer, item.category, item.taskType, item.url, item.notes].filter(Boolean).join(' ').toLowerCase();
+              const matchDirect = targetBlob.includes(q) || (qParts.length > 1 && qParts.every(p => targetBlob.includes(p)));
+              const matchTrans = targetBlob.includes(qTrans) || (qTransParts.length > 1 && qTransParts.every(p => targetBlob.includes(p)));
+              if (!matchDirect && !matchTrans) return false;
+            }
+            return true;
+          });
+          otherDateMatchesCount = allExcludingDate.length;
+        }
+
+        if (otherDateMatchesCount > 0) {
+          els.reviewTableBody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align:center; padding:2.5rem 1.5rem; background:#f0f9ff; border:1px dashed #bae6fd; border-radius:8px;">
+                <div style="font-weight:800; color:#0369a1; font-size:1.05rem; margin-bottom:0.4rem;">
+                  🔎 Found ${otherDateMatchesCount} matching submission(s) on other dates!
+                </div>
+                <div style="font-size:0.85rem; color:#475569; margin-bottom:1rem;">
+                  Your current date filter is set to <strong>${escapeHtml(state.reviewDateFilter)}</strong>.
+                </div>
+                <button type="button" class="btn-action" id="btnSwitchToAllDatesInReview" style="background:#2563eb; color:#ffffff; font-weight:700; padding:6px 16px; border-radius:6px; cursor:pointer; border:none; box-shadow:0 2px 4px rgba(37,99,235,0.2);">
+                  📅 Show All Dates (${otherDateMatchesCount} Results)
+                </button>
+              </td>
+            </tr>
+          `;
+          const btnSw = document.getElementById('btnSwitchToAllDatesInReview');
+          if (btnSw) {
+            btnSw.addEventListener('click', () => {
+              state.reviewDateFilter = 'all';
+              if (els.reviewDateFilter) els.reviewDateFilter.value = 'all';
+              renderReviewHub(false);
+            });
+          }
+        } else {
+          els.reviewTableBody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align:center; padding:2rem; color:#94a3b8;">
+                <div style="font-weight:700; color:#334155; font-size:0.95rem;">No submissions matching the current filter</div>
+              </td>
+            </tr>
+          `;
+        }
       } else {
         let html = '';
         filtered.forEach((item, idx) => {
