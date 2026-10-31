@@ -40,8 +40,9 @@
         // 1. Updates & Optimizations MUST have an Old Doc baseline. If missing Old Doc, CANNOT be approved!
         // 2. News Update: 350+ Words
         // 3. News New: 500 Words
-        // 4. Optimization: 700 - 800 Words
+        // 4. Optimization: 500+ Words (Updated: 500 words is enough)
         // 5. New Prep: 800 - 1200 Words
+        // 6. Standard New Content: 600+ Words
         Object.keys(parsed).forEach(k => {
           const item = parsed[k];
           if (!item) {
@@ -121,15 +122,15 @@
               item.rejectionReasons = [];
             }
           } else if (isOpt) {
-            // Rule 3: Optimization (Must rewrite/add 700 - 800 Words)
-            if (displayWc < 700) {
+            // Rule 3: Optimization (Must rewrite/add 500+ Words)
+            if (displayWc < 500) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
               item.pointsAwarded = 0;
-              item.justificationSummary = `Needs Revision: Optimization shortfall: Found ${displayLabel} words (minimum 700–800 words required).`;
-              item.rejectionReasons = [`Optimization shortfall: Found ${displayLabel} words (minimum 700–800 words required).`];
+              item.justificationSummary = `Needs Revision: Optimization shortfall: Found ${displayLabel} words (minimum 500 words required).`;
+              item.rejectionReasons = [`Optimization shortfall: Found ${displayLabel} words (minimum 500 words required).`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
@@ -323,6 +324,33 @@
           }
           if (state.reviewOverrides && state.reviewOverrides[item.topic] === 'Needs Revision') {
             delete state.reviewOverrides[item.topic];
+          }
+        }
+      }
+
+      // Sanitize: Optimization threshold updated to 500 words (500 words are enough)
+      if (isOpt) {
+        const rwM = (item.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (item.docWordCountText || '').match(/~(\d+)w Revamped/i);
+        const effRw = item.rewrittenWords || (rwM ? parseInt(rwM[1], 10) : 0);
+        const nDiff = item.netWordDiff !== undefined ? item.netWordDiff : 0;
+        const dispWc = effRw > 0 ? effRw : (nDiff > 0 ? nDiff : (item.newDocWordCount || item.wordCount || 0));
+        if (dispWc >= 500) {
+          const existingCache = state.aiReviewCache[item.topic];
+          if (existingCache) {
+            const cText = (existingCache.docWordCountText || '') + (existingCache.justificationSummary || '') + JSON.stringify(existingCache.rejectionReasons || []);
+            if (/700|800|optimization shortfall/i.test(cText)) {
+              delete state.aiReviewCache[item.topic];
+              cacheChanged = true;
+            }
+          }
+          if (item.reviewNotes && (/700|800|optimization shortfall/i.test(item.reviewNotes))) {
+            item.reviewNotes = '';
+            if (rawStat.includes('revis') || !rawStat) {
+              item.reviewStatus = (item.newDoc || item.url) ? 'Approved' : 'Doc Missing';
+            }
+            if (state.reviewOverrides && state.reviewOverrides[item.topic] === 'Needs Revision') {
+              delete state.reviewOverrides[item.topic];
+            }
           }
         }
       }

@@ -455,8 +455,8 @@ function handlePopulateAllRevisionNotes() {
           note = `AI Rev: Alert/News below threshold (${wc}/300w)`;
         } else if (isOpt && wc > 0 && wc < 300) {
           note = `AI Rev: Net addition below +300w threshold (${wc}w)`;
-        } else if (isHighIntent && wc > 0 && wc < 650) {
-          note = `AI Rev: Word count deficit (${wc}/700w for High-Intent)`;
+        } else if (isHighIntent && wc > 0 && wc < 500) {
+          note = `AI Rev: Word count deficit (${wc}/500w for High-Intent)`;
         } else if (wc > 0 && wc < 600 && !isNewsOrAlert && !isPrep) {
           note = `AI Rev: Word count deficit (${wc}/600w min)`;
         } else if (wc === 0) {

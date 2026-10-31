@@ -262,7 +262,7 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context).
 3. Standard New Content / Child Page (Fresh writing): 1.0 Point (Standard fresh article, syllabus notes, child pages, 700+ words).
 4. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
-5. Data-Backed Content Optimization / Update (Must be at least 700–800 words total length AND have Net +300w OR >= 30% / 350+ Rewritten Words): 1.5 Points (Award 1.5 pts if total length is >= 700-800 words and net expansion is +300w OR substantially rewrote sentences/tables).
+5. Data-Backed Content Optimization / Update (Must rewrite/add at least 500+ words): 1.5 Points (Award 1.5 pts if rewritten/added words >= 500 words).
 6. Fresh Exam Prep Article (Category/Task is Prep, Type is 'New', 800–1200 words): 2.0 Points (In-depth subject/exam preparation guides, pedagogical notes).
 
 📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
@@ -475,14 +475,14 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.suggestedClassification = effectiveNewWc >= 500 ? 'Standard News' : 'Micro News';
       }
     }
-    // Rule 3: Optimization / Update (Must rewrite / add 700 - 800 words)
+    // Rule 3: Optimization / Update (Must rewrite / add 500+ words)
     else if (isUpdateTask) {
-      if (displayWc < 700) {
+      if (displayWc < 500) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `Optimization shortfall: Found ${displayLabel} words (minimum 700–800 words required).`;
+        const reason = `Optimization shortfall: Found ${displayLabel} words (minimum 500 words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
@@ -546,9 +546,9 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       ptsAwarded = isApproved ? (estNew >= 500 ? 0.5 : 0.25) : 0;
       if (!isApproved) rejectReason = `New News shortfall: Found ${estNew}w (minimum 300–500 words required).`;
     } else if (isUpdate) {
-      isApproved = effort >= 700;
+      isApproved = effort >= 500;
       ptsAwarded = isApproved ? 1.5 : 0;
-      if (!isApproved) rejectReason = `Optimization shortfall: Writer rewrote/added only ~${effort}w (minimum 700–800 rewritten/added words required).`;
+      if (!isApproved) rejectReason = `Optimization shortfall: Writer rewrote/added only ~${effort}w (minimum 500 rewritten/added words required).`;
     } else if (isPrep) {
       const minPrepWc = 800;
       isApproved = estNew >= minPrepWc;
