@@ -143,7 +143,7 @@ class SheetsClient {
     });
   }
 
-  async updateWorkflowReviewStatus(rowIndex, topic, reviewStatus, notes = '') {
+  async updateWorkflowReviewStatus(rowIndex, topic, reviewStatus, notes = '', writer = '', date = '') {
     // Truncate note to safe concise length (under 120 chars) to prevent Google Sheet lag or corruption
     const cleanNote = String(notes || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
     const shortNote = cleanNote.length > 120 ? cleanNote.substring(0, 117) + '...' : cleanNote;
@@ -152,7 +152,9 @@ class SheetsClient {
       rowIndex: rowIndex,
       topic: topic,
       reviewStatus: reviewStatus,
-      notes: shortNote
+      notes: shortNote,
+      writer: writer,
+      date: date
     });
   }
 
@@ -181,12 +183,20 @@ class SheetsClient {
     const newContentWriters = ['archana', 'shilpa singh'];
     const isNewContentWriter = newContentWriters.some(w => writerLower.includes(w));
 
-    // News tasks (breaking alerts, notifications, blog updates, LMS updates) - NEVER require Old Doc
+    const topicLower = (item.topic || '').toLowerCase().trim();
+    const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter/i.test(topicLower);
+
+    // News tasks (breaking alerts, notifications, blog updates, LMS updates, admit cards, results) - NEVER require Old Doc
     const isNews = taskTypeLower.includes('news') || 
                    typeLower.includes('news') || 
                    categoryLower.includes('news') || 
                    classificationLower.includes('news') ||
+                   (item.pageType || '').toLowerCase().includes('blog') ||
+                   isNewsTopic ||
                    Boolean(item.isNewsTask);
+
+    // Prep concept tasks (engineering concepts, pedagogy notes) - NEVER require Old Doc
+    const isPrep = taskTypeLower.includes('prep') || typeLower.includes('prep') || categoryLower.includes('prep');
 
     // Explicit new article indicators: Type or Task Type contains 'new' or 'fresh' - NEVER require Old Doc
     const isExplicitNew = typeLower.includes('new') || 
@@ -197,20 +207,18 @@ class SheetsClient {
                           classificationLower.includes('fresh') ||
                           categoryLower.includes('new') ||
                           isHindiWriter ||
-                          isNewContentWriter;
+                          isNewContentWriter ||
+                          isPrep;
 
-    // An update task requiring Old Doc is ONLY when:
-    // 1. NOT News
+    // An update task requiring Old Doc is strictly ONLY when:
+    // 1. NOT News or Event page
     // 2. NOT New or Fresh content
-    // 3. NOT Hindi or New Content team writers
-    // 4. Type or Task Type is strictly SEO Optimization or Content Overhaul on existing non-news page
-    const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && (
-      typeLower === 'update' || 
-      typeLower === 'optimization' || 
-      typeLower === 'optimi' ||
-      typeLower === 'refresh' ||
+    // 3. NOT Hindi, New Content, or Prep concept writers
+    // 4. Task Type is strictly SEO Optimization or Content Optimization
+    const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && !isPrep && (
       taskTypeLower === 'seo optimization' ||
-      taskTypeLower === 'content optimization'
+      taskTypeLower === 'content optimization' ||
+      taskTypeLower === 'optimization'
     );
 
     if (!hasNewDocLink) {
@@ -218,6 +226,7 @@ class SheetsClient {
         success: true,
         audit: {
           isApproved: false,
+          isPendingSubmission: true,
           qualityVerdict: 'Doc Missing',
           editorialScore: 0,
           pointsAwarded: 0,
@@ -225,10 +234,10 @@ class SheetsClient {
           oldDocWordCount: null,
           netWordDiff: null,
           docWordCountText: '🚫 No Doc Attached',
-          justificationSummary: 'Doc Missing: No valid Google Doc submission link was provided in the sheet. Skipped AI review to save tokens.',
-          rejectionReasons: ['Missing Google Doc link. Please provide a valid submission URL in the sheet.'],
+          justificationSummary: 'Pending Submission: Writer has not attached a Google Doc link yet. Task is awaiting draft submission (not an editorial rejection).',
+          rejectionReasons: [],
           keyStrengths: [],
-          improvementAreas: ['Attach working Google Doc link before requesting review.']
+          improvementAreas: ['Attach working Google Doc link when draft is complete.']
         }
       };
     }
@@ -245,8 +254,8 @@ class SheetsClient {
           oldDocWordCount: null,
           netWordDiff: null,
           docWordCountText: '🚫 Missing Old Doc',
-          justificationSummary: 'Doc Missing: Task Type is "Update/Optimization", but no baseline Old Doc was provided in Column M. Skipped AI text evaluation to save tokens.',
-          rejectionReasons: ['Missing baseline Old Doc link for Update task in Column M.'],
+          justificationSummary: 'Doc Missing: Task Type is "SEO Optimization", but no baseline Old Doc was provided in Column M. Skipped AI text evaluation to save tokens.',
+          rejectionReasons: ['Missing baseline Old Doc link for SEO Optimization task in Column M.'],
           keyStrengths: [],
           improvementAreas: ['Attach baseline Old Doc in Column M so the diff and overhaul percentage can be audited.']
         }
@@ -831,9 +840,14 @@ Use these exact extracted word counts in your evaluation.`;
       let reviewStatus = getVal(15) || 'Pending Review';
       // Column Q (idx 16): Status
       const status = getVal(16) || 'Done';
+      // If no document link is attached and no live URL exists, status is strictly Doc Missing (cannot be Approved)
+      if (!newDoc && !url) {
+        reviewStatus = 'Doc Missing';
+      }
+
       // Column S (idx 18): Review Notes / Rejection Reason (Strictly Column S, Never Column R)
       const rawNotes = getVal(18);
-      let reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables'))) ? '' : rawNotes;
+      let reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables') || rawNotes === '-' || rawNotes === 'CLEAR')) ? '' : rawNotes;
 
       // OND Framework Standard Point Matrix based directly on Column G (Task Type) & Column H (Type)
       const tt = String(taskType || '').trim().toLowerCase();
@@ -841,19 +855,42 @@ Use these exact extracted word counts in your evaluation.`;
       const ptStr = String(pageType || '').trim().toLowerCase();
       const catStr = String(category || '').trim().toLowerCase();
       const wLower = String(writer || '').trim().toLowerCase();
+      const topicLower = String(topic || '').trim().toLowerCase();
 
-      // News check: Any task labeled News, or in News category
-      const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news');
-      // New check: Type or Task Type contains 'new' or 'fresh' or Hindi/New Content writer
+      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
+
+      // News check: Any task labeled News, or in News category, or blog pageType, or matching news topic
+      const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news') || ptStr.includes('blog') || isNewsTopic;
+      
+      // Prep concept tasks: engineering concepts, pedagogy, formulas
+      const isPrep = tt.includes('prep') || typeStr.includes('prep') || catStr.includes('prep');
+
+      // New check: Type or Task Type contains 'new' or 'fresh' or Hindi/New Content writer or Prep concept
       const isNew = typeStr.includes('new') || tt.includes('new') || typeStr.includes('fresh') || tt.includes('fresh') ||
-                    ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+                    ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
       const hasOldDoc = Boolean(oldDoc && oldDoc.startsWith('http'));
 
-      // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, or is News:
-      if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (hasOldDoc || isNew || isNews)) {
+      // An update task requiring Old Doc is strictly ONLY when:
+      const isUpdateTask = !isNews && !isNew && !isPrep && (
+        tt === 'seo optimization' ||
+        tt === 'content optimization' ||
+        tt === 'optimization'
+      );
+
+      // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, is News, is Prep, or not an update task:
+      if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (!isUpdateTask || hasOldDoc || !newDoc)) {
         reviewNotes = '';
         if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
-          reviewStatus = 'Pending Review';
+          reviewStatus = (!newDoc && !url) ? 'Doc Missing' : 'Pending Review';
+        }
+      }
+
+      // News items strictly require only 350 words (300+ for micro news). They NEVER trigger 700-800w rules.
+      // Purge false 700-800w triggers or shortfall notes from News items:
+      if (isNews && reviewNotes && (/700|800|new prep length|optimization shortfall/i.test(reviewNotes) || (/shortfall|deficit/i.test(reviewNotes) && wordCount >= 300))) {
+        reviewNotes = '';
+        if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
+          reviewStatus = (newDoc || url) ? 'Approved' : 'Doc Missing';
         }
       }
       let points = 1.0;
@@ -870,9 +907,12 @@ Use these exact extracted word counts in your evaluation.`;
       } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in')) {
         classification = 'High Intent / PYP';
         points = 1.5;
-      } else if (!isNew && (tt.includes('optimi') || typeStr === 'update' || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization')) {
+      } else if (!isNew && !isNews && !isPrep && (tt.includes('optimi') || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization' || tt === 'content optimization')) {
         classification = 'SEO Optimization';
         points = 1.5;
+      } else if (isPrep) {
+        classification = 'Fresh Prep Article';
+        points = 2.0;
       } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar')) {
         classification = 'New Content';
         points = 1.0;
@@ -1203,10 +1243,18 @@ Use these exact extracted word counts in your evaluation.`;
       const pdfLink = (r[27] || r[26] || '').trim();
       let url = (r[14] || '').trim();
       if (!url && r[3]) url = r[3].trim();
-      const reviewStatus = (r[15] || '').trim();
+      let reviewStatus = (r[15] || '').trim();
+      if (!newDoc && !url) {
+        reviewStatus = 'Doc Missing';
+      } else if (!reviewStatus) {
+        reviewStatus = 'Pending Review';
+      }
       const status = (r[16] || '').trim();
       const rawNotes = (r[18] || '').trim();
-      const reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || rawNotes.includes('syllabus tables'))) ? '' : rawNotes;
+      let reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || rawNotes.includes('syllabus tables'))) ? '' : rawNotes;
+      if (reviewNotes && /missing.*old doc/i.test(reviewNotes)) {
+        reviewNotes = '';
+      }
 
       items.push({
         date,
@@ -1470,3 +1518,7 @@ Use these exact extracted word counts in your evaluation.`;
 }
 
 const sheetsClient = new SheetsClient();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = SheetsClient;
+}

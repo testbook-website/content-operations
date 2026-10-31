@@ -65,9 +65,20 @@
             return;
           }
 
-          const isNews = item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news');
-          const isExplicitNew = item.classification === 'New Content' || item.classification === 'Fresh Prep Article' || summaryStr.includes('new content') || summaryStr.includes('fresh prep');
-          const isOpt = !isNews && !isExplicitNew && (item.classification === 'Deep Optimization' || (item.oldDocWordCount > 0));
+          // Items without doc submission should be strictly Doc Missing (never penalised or approved)
+          if (item.docWordCountText === '🚫 No Doc Attached' || item.qualityVerdict === 'Doc Missing' || item.isPendingSubmission) {
+            item.isApproved = false;
+            item.verdict = 'Doc Missing';
+            item.isPendingSubmission = true;
+            return;
+          }
+
+          const topicStr = (k || '').toLowerCase();
+          const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicStr);
+          const isNews = item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news') || isNewsTopic;
+          const isPrep = item.classification === 'Fresh Prep Article' || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => item.writer.toLowerCase().includes(p)));
+          const isExplicitNew = item.classification === 'New Content' || isPrep || summaryStr.includes('new content');
+          const isOpt = !isNews && !isExplicitNew && !isPrep && (item.classification === 'SEO Optimization' || item.classification === 'Deep Optimization' || (item.oldDocWordCount > 0));
           const rwMatch = (item.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (item.docWordCountText || '').match(/~(\d+)w Revamped/i);
           const effectiveRewritten = item.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
           const netDiff = item.netWordDiff !== undefined ? item.netWordDiff : 0;
@@ -126,8 +137,8 @@
               item.pointsAwarded = 1.5;
               item.rejectionReasons = [];
             }
-          } else {
-            // Rule 4: New Prep (800 - 1200 Words = 2.0 Points) / New Content
+          } else if (isPrep) {
+            // Rule 4: New Prep (800 - 1200 Words = 2.0 Points)
             if (effectiveNewWc < 800) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
@@ -139,9 +150,25 @@
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              const isPrepPiece = item.classification?.includes('Prep') || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => item.writer.toLowerCase().includes(p)));
-              item.points = isPrepPiece ? 2.0 : 1.0;
-              item.pointsAwarded = item.points;
+              item.points = 2.0;
+              item.pointsAwarded = 2.0;
+              item.rejectionReasons = [];
+            }
+          } else {
+            // Rule 5: Standard New Content (600+ Words = 1.0 Point)
+            if (effectiveNewWc < 600) {
+              item.isApproved = false;
+              item.verdict = 'Needs Revision';
+              item.score = 4;
+              item.points = 0;
+              item.pointsAwarded = 0;
+              item.justificationSummary = `Needs Revision: New Content length shortfall (${effectiveNewWc}w). Minimum 600 words required.`;
+              item.rejectionReasons = [`New Content length shortfall (${effectiveNewWc}w). Minimum 600 words required.`];
+            } else {
+              item.isApproved = true;
+              item.verdict = 'Approved';
+              item.points = 1.0;
+              item.pointsAwarded = 1.0;
               item.rejectionReasons = [];
             }
           }
@@ -251,8 +278,10 @@
       const cat = (item.category || '').toLowerCase();
       const cl = (item.classification || '').toLowerCase();
       const wLower = (item.writer || '').toLowerCase();
-      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask);
-      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(item.topic || '');
+      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask) || isNewsTopic;
+      const isPrep = tt.includes('prep') || type.includes('prep') || cat.includes('prep');
+      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
       const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
 
       // If the item now has a valid Old Doc, or is News, or is an explicit New article, purge any stale "Missing Old Doc" cache
@@ -269,11 +298,32 @@
         if (item.reviewNotes && /missing.*old doc/i.test(item.reviewNotes)) {
           item.reviewNotes = '';
           if (rawStat.includes('revis') || !rawStat) {
-            item.reviewStatus = 'Pending Review';
+            item.reviewStatus = (item.newDoc || item.url) ? 'Pending Review' : 'Doc Missing';
           }
         }
         if (state.reviewOverrides && state.reviewOverrides[item.topic] === 'Needs Revision') {
           delete state.reviewOverrides[item.topic];
+        }
+      }
+
+      // Sanitize: Purge false 700-800w triggers and deficit notes on News items (News limit is strictly 350 words)
+      if (isNews) {
+        const existingCache = state.aiReviewCache[item.topic];
+        if (existingCache) {
+          const cText = (existingCache.docWordCountText || '') + (existingCache.justificationSummary || '') + JSON.stringify(existingCache.rejectionReasons || []);
+          if (/700|800|optimization shortfall|new prep length|word count deficit/i.test(cText)) {
+            delete state.aiReviewCache[item.topic];
+            cacheChanged = true;
+          }
+        }
+        if (item.reviewNotes && (/700|800|optimization shortfall|new prep length/i.test(item.reviewNotes) || (/shortfall|deficit/i.test(item.reviewNotes) && (item.wordCount >= 300 || item.newDocWordCount >= 300)))) {
+          item.reviewNotes = '';
+          if (rawStat.includes('revis') || !rawStat) {
+            item.reviewStatus = (item.newDoc || item.url) ? 'Approved' : 'Doc Missing';
+          }
+          if (state.reviewOverrides && state.reviewOverrides[item.topic] === 'Needs Revision') {
+            delete state.reviewOverrides[item.topic];
+          }
         }
       }
 
@@ -359,7 +409,7 @@
         const currentSheetNote = item.reviewNotes || '';
         const needsSync = !currentSheetNote || /tables?\s*(&|and)?\s*faqs?/i.test(currentSheetNote) || currentSheetNote.includes('syllabus tables');
         if (needsSync && (genuineReason || rec.isApproved)) {
-          sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (idx + 2), item.topic, rec.verdict || (rec.isApproved ? 'Approved' : 'Needs Revision'), shortNote)
+          sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (idx + 2), item.topic, rec.verdict || (rec.isApproved ? 'Approved' : 'Needs Revision'), shortNote, item.writer, item.date)
             .catch(e => console.warn('Background sync error:', e));
         }
       }
@@ -1217,6 +1267,10 @@
 
     if (t === 'SEO Optimization') {
       return '<div class="grid-badge badge-seo">SEO Optimization</div>';
+    }
+
+    if (t === 'New Content') {
+      return '<div class="grid-badge badge-new-content">New Content</div>';
     }
 
     // On News week: simple, clean Event Pages badge (no bulky Night Update badge in table)
@@ -3825,6 +3879,16 @@
   }
 
   function getEffectiveReviewStatus(item) {
+    const hasDoc = Boolean((item.newDoc && String(item.newDoc).startsWith('http')) || (item.url && String(item.url).startsWith('http')));
+    const raw = (item.reviewStatus || '').trim();
+
+    // Absolute Rule 1: Every submission requires a Google Doc or live URL.
+    // If missing, status is strictly 'Doc Missing' (Pending Submission).
+    // An item without a document can NEVER be Approved, and can NEVER be penalized as Needs Revision.
+    if (!hasDoc || raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc')) {
+      return 'Doc Missing';
+    }
+
     if (state.reviewOverrides && state.reviewOverrides[item.topic]) {
       return state.reviewOverrides[item.topic];
     }
@@ -3834,25 +3898,24 @@
     const type = (item.type || '').toLowerCase();
     const cat = (item.category || '').toLowerCase();
     const cl = (item.classification || '').toLowerCase();
+    const pt = (item.pageType || '').toLowerCase();
     const wLower = (item.writer || '').toLowerCase();
-    const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask);
-    const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+    const topicLower = (item.topic || '').toLowerCase();
+    const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
+    const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask);
+    const isPrep = tt.includes('prep') || type.includes('prep') || cat.includes('prep');
+    const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
 
     // 1. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
     const ai = (state.aiReviewCache && state.aiReviewCache[item.topic]) ? state.aiReviewCache[item.topic] : null;
     if (ai && ai.verdict && !ai.running) {
       const cText = (ai.docWordCountText || '') + (ai.justificationSummary || '') + JSON.stringify(ai.rejectionReasons || []);
-      if (/missing.*old doc/i.test(cText) && (hasOldDoc || isExplicitNew || isNews)) {
-        // Cache contains stale Missing Old Doc error, but item has Old Doc, is New, or is News -> invalidate
+      if (/missing.*old doc/i.test(cText) && (hasOldDoc || isExplicitNew || isNews || isPrep)) {
+        // Cache contains stale Missing Old Doc error, but item has Old Doc, is New, is News, or is Prep -> invalidate
         delete state.aiReviewCache[item.topic];
       } else {
         return ai.verdict;
       }
-    }
-    
-    const raw = (item.reviewStatus || '').trim();
-    if (raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc') || (!item.newDoc && !item.url)) {
-      return 'Doc Missing';
     }
 
     // Check if sheet status has an explicit editorial review
@@ -3979,6 +4042,7 @@
     auditedKeys.forEach(k => {
       const rec = state.aiReviewCache[k];
       if (rec && (rec.verdict === 'Approved' || rec.isApproved)) approvedCount++;
+      else if (rec && (rec.verdict === 'Doc Missing' || rec.isPendingSubmission)) {} // Doc missing is awaiting draft submission, not an editorial revision
       else revisionCount++;
     });
 
@@ -4064,6 +4128,15 @@
       }
 
       const item = filteredItems[i];
+      const hasDoc = Boolean((item.newDoc && String(item.newDoc).startsWith('http')) || (item.url && String(item.url).startsWith('http')));
+
+      // Strict Rule: Skip items awaiting draft submission; never fail or mark as Needs Revision
+      if (!hasDoc) {
+        item.reviewStatus = 'Doc Missing';
+        processed++;
+        continue;
+      }
+
       const currentNum = i + 1;
       const randomTip = SEO_AUDIT_INSIGHTS[i % SEO_AUDIT_INSIGHTS.length];
       updateAiRunnerUI(`⚡ AI Reviewing${filterTag} [${currentNum}/${totalCount}]: "${escapeHtml(item.topic.substring(0, 32))}..." (${item.writer || 'Unassigned'})<div style="font-size:0.74rem; color:#4338ca; font-style:italic; margin-top:2px;">💡 ${randomTip}</div>`);
@@ -4071,6 +4144,12 @@
       try {
         const res = await sheetsClient.auditContentWithAI(item);
         const a = (res && res.audit) ? res.audit : {};
+        if (a.isPendingSubmission || a.qualityVerdict === 'Doc Missing') {
+          item.reviewStatus = 'Doc Missing';
+          processed++;
+          continue;
+        }
+
         const isApproved = a.isApproved !== false && (a.qualityVerdict || '').toLowerCase().includes('approv');
         const verdict = isApproved ? 'Approved' : 'Needs Revision';
         const score = a.editorialScore || (isApproved ? 9 : 5);
@@ -4116,9 +4195,9 @@
         state.aiReviewCache[item.topic] = auditData;
         saveAiReviewCache(state.aiReviewCache);
 
-        // 4. Sync to Google Sheet Col P & Col R in background
-        if (typeof sheetsClient !== 'undefined') {
-          sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (i + 2), item.topic, verdict, shortNote).catch(e => console.warn('Sheet sync error:', e));
+        // 4. Sync to Google Sheet Col P & Col S in background
+        if (typeof sheetsClient !== 'undefined' && (verdict === 'Approved' || verdict === 'Needs Revision')) {
+          sheetsClient.updateWorkflowReviewStatus(item.rowIndex || (i + 2), item.topic, verdict, shortNote, item.writer, item.date).catch(e => console.warn('Sheet sync error:', e));
         }
 
         processed++;
@@ -4176,11 +4255,13 @@
       const wLower = (item.writer || '').toLowerCase();
       const domain = (item.domain || '').toLowerCase();
 
-      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || Boolean(item.isNewsTask);
+      const topicLower = (item.topic || '').toLowerCase();
+      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
+      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask);
       const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
                      wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha') && !isNews;
-      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
-      const isOpt = !isNews && !isExplicitNew && (type === 'update' || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
+      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+      const isOpt = !isNews && !isExplicitNew && !isPrep && (tt.includes('optimi') || type.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
       const isHighIntent = (tt.includes('high in') || tt.includes('pyp') || pt.includes('ts')) && !isNews;
       const isFresh = (isPrep && !isOpt) || isExplicitNew;
 
@@ -4699,7 +4780,7 @@
     renderKpiDashboard();
 
     if (typeof sheetsClient !== 'undefined') {
-      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Approved', 'Approved by Editor');
+      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Approved', 'Approved by Editor', targetItem ? targetItem.writer : '', targetItem ? targetItem.date : '');
     }
   }
 
@@ -4736,7 +4817,7 @@
     renderKpiDashboard();
 
     if (typeof sheetsClient !== 'undefined') {
-      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Needs Revision', note);
+      await sheetsClient.updateWorkflowReviewStatus(rowIdx, topic, 'Needs Revision', note, targetItem ? targetItem.writer : '', targetItem ? targetItem.date : '');
     }
   }
 
@@ -4860,31 +4941,33 @@
       }
 
       const a = (res && res.audit) ? res.audit : {};
-      const isAppr = a.isApproved !== false && (a.qualityVerdict || '').toLowerCase().includes('approv');
+      const isDocMissing = a.qualityVerdict === 'Doc Missing' || a.isPendingSubmission || (!item.newDoc && !item.url);
+      const isAppr = !isDocMissing && a.isApproved !== false && (a.qualityVerdict || '').toLowerCase().includes('approv');
+      const verdict = isDocMissing ? 'Doc Missing' : (isAppr ? 'Approved' : 'Needs Revision');
       auditData = {
         isApproved: isAppr,
-        verdict: isAppr ? 'Approved' : 'Needs Revision',
-        score: a.editorialScore || (isAppr ? 9 : 5),
+        verdict: verdict,
+        score: a.editorialScore || (isDocMissing ? 0 : (isAppr ? 9 : 5)),
         suggestedClassification: a.suggestedClassification || item.classification || 'New Content',
         pointsAwarded: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? getItemKpiPointsNumber(item) : 0),
         points: a.pointsAwarded !== undefined ? a.pointsAwarded : (isAppr ? getItemKpiPointsNumber(item) : 0),
         netWordDiff: (a.netWordDiff !== undefined && a.netWordDiff !== null) ? a.netWordDiff : null,
         newDocWordCount: a.newDocWordCount !== undefined ? a.newDocWordCount : null,
         oldDocWordCount: a.oldDocWordCount || 0,
-        docWordCountText: a.docWordCountText || (isAppr ? 'Verified' : '🚫 Needs Revision'),
-        justificationSummary: a.justificationSummary || (isAppr ? 'Meets framework criteria.' : 'Needs revision.'),
-        rejectionReasons: a.rejectionReasons || [],
+        docWordCountText: a.docWordCountText || (isDocMissing ? '🚫 No Doc Attached' : (isAppr ? 'Verified' : '🚫 Needs Revision')),
+        justificationSummary: a.justificationSummary || (isDocMissing ? 'Pending Submission: Writer has not attached a Google Doc link yet.' : (isAppr ? 'Meets framework criteria.' : 'Needs revision.')),
+        rejectionReasons: isDocMissing ? [] : (a.rejectionReasons || []),
         wordCountAssessment: a.wordCountAssessment || a.docWordCountText || '',
         keyStrengths: (a.keyStrengths && a.keyStrengths.length > 0) ? a.keyStrengths : ['Accurate exam syllabus structure', 'Tabular download resources added', 'High keyword relevance'],
         improvementAreas: (a.improvementAreas && a.improvementAreas.length > 0) ? a.improvementAreas : ['Ensure internal linking to main category hub'],
-        recommendationNote: a.recommendationNote || (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.'),
+        recommendationNote: a.recommendationNote || (isDocMissing ? 'Awaiting draft submission.' : (isAppr ? 'Adheres to OND Value & Impact Framework.' : 'Return draft to writer for expansion.')),
         factualAudit: a.factualAudit || null,
         reviewedAt: new Date().toISOString()
       };
 
       // 1. Update in-memory item
       item.reviewStatus = auditData.verdict;
-      const shortNote = formatShortReviewNote(isAppr, auditData.score, auditData.rejectionReasons, auditData.justificationSummary);
+      const shortNote = isDocMissing ? '' : formatShortReviewNote(isAppr, auditData.score, auditData.rejectionReasons, auditData.justificationSummary);
       item.reviewNotes = shortNote;
 
       // 2. Set review override
@@ -4895,9 +4978,9 @@
       state.aiReviewCache[item.topic] = auditData;
       saveAiReviewCache(state.aiReviewCache);
 
-      // 4. Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status) & Col R (Notes)
-      if (typeof sheetsClient !== 'undefined') {
-        sheetsClient.updateWorkflowReviewStatus(item.rowIndex, item.topic, auditData.verdict, shortNote).catch(e => console.warn('Sheet sync error:', e));
+      // 4. Permanently sync status to Google Sheet Workflow <OND> Col P (Review Status) & Col S (Notes) only if approved or revision
+      if (typeof sheetsClient !== 'undefined' && !isDocMissing) {
+        sheetsClient.updateWorkflowReviewStatus(item.rowIndex, item.topic, auditData.verdict, shortNote, item.writer, item.date).catch(e => console.warn('Sheet sync error:', e));
       }
 
       // 5. Re-render all relevant dashboards

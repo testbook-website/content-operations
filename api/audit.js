@@ -115,12 +115,20 @@ export default async function handler(req, res) {
   const newContentWriters = ['archana', 'shilpa singh'];
   const isNewContentWriter = newContentWriters.some(w => writerLower.includes(w));
 
-  // News tasks (breaking alerts, notifications, blog updates, LMS updates) - NEVER require Old Doc
+  const topicLower = (item.topic || '').toLowerCase().trim();
+  const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|live update/i.test(topicLower);
+
+  // News tasks (breaking alerts, notifications, blog updates, LMS updates, admit cards, results) - NEVER require Old Doc
   const isNews = taskTypeLower.includes('news') || 
                  typeLower.includes('news') || 
                  categoryLower.includes('news') || 
                  classificationLower.includes('news') ||
+                 (item.pageType || '').toLowerCase().includes('blog') ||
+                 isNewsTopic ||
                  Boolean(item.isNewsTask);
+
+  // Prep concept tasks (engineering concepts, pedagogy notes) - NEVER require Old Doc
+  const isPrep = taskTypeLower.includes('prep') || typeLower.includes('prep') || categoryLower.includes('prep');
 
   // Explicit new article indicators: Type or Task Type contains 'new' or 'fresh' - NEVER require Old Doc
   const isExplicitNew = typeLower.includes('new') || 
@@ -131,20 +139,18 @@ export default async function handler(req, res) {
                         classificationLower.includes('fresh') ||
                         categoryLower.includes('new') ||
                         isHindiWriter ||
-                        isNewContentWriter;
+                        isNewContentWriter ||
+                        isPrep;
 
-  // An update task requiring Old Doc is ONLY when:
-  // 1. NOT News
+  // An update task requiring Old Doc is strictly ONLY when:
+  // 1. NOT News or Event page
   // 2. NOT New or Fresh content
-  // 3. NOT Hindi or New Content team writers
-  // 4. Type or Task Type is strictly SEO Optimization or Content Overhaul on existing non-news page
-  const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && (
-    typeLower === 'update' || 
-    typeLower === 'optimization' || 
-    typeLower === 'optimi' ||
-    typeLower === 'refresh' ||
+  // 3. NOT Hindi, New Content, or Prep concept writers
+  // 4. Task Type is strictly SEO Optimization or Content Optimization
+  const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && !isPrep && (
     taskTypeLower === 'seo optimization' ||
-    taskTypeLower === 'content optimization'
+    taskTypeLower === 'content optimization' ||
+    taskTypeLower === 'optimization'
   );
 
   // Strict Rule 1: Every submission requires a New Doc
@@ -153,6 +159,7 @@ export default async function handler(req, res) {
       success: true,
       audit: {
         isApproved: false,
+        isPendingSubmission: true,
         qualityVerdict: 'Doc Missing',
         editorialScore: 0,
         pointsAwarded: 0,
@@ -160,10 +167,10 @@ export default async function handler(req, res) {
         oldDocWordCount: null,
         netWordDiff: null,
         docWordCountText: '🚫 No Doc Attached',
-        justificationSummary: 'Doc Missing: No valid Google Doc submission link was provided in the sheet. Skipped AI review to save tokens.',
-        rejectionReasons: ['Missing Google Doc link. Please provide a valid submission URL in the sheet.'],
+        justificationSummary: 'Pending Submission: Writer has not attached a Google Doc link yet. Task is awaiting draft submission (not an editorial rejection).',
+        rejectionReasons: [],
         keyStrengths: [],
-        improvementAreas: ['Attach working Google Doc link before requesting review.']
+        improvementAreas: ['Attach working Google Doc link when draft is complete.']
       }
     });
   }
@@ -181,8 +188,8 @@ export default async function handler(req, res) {
         oldDocWordCount: null,
         netWordDiff: null,
         docWordCountText: '🚫 Missing Old Doc',
-        justificationSummary: 'Doc Missing: Task Type is "Update/Optimization", but no baseline Old Doc link was provided in Column M. Skipped AI text evaluation to save tokens.',
-        rejectionReasons: ['Missing baseline Old Doc link for Update task in Column M.'],
+        justificationSummary: 'Doc Missing: Task Type is "SEO Optimization", but no baseline Old Doc was provided in Column M. Skipped AI text evaluation to save tokens.',
+        rejectionReasons: ['Missing baseline Old Doc link for SEO Optimization task in Column M.'],
         keyStrengths: [],
         improvementAreas: ['Attach baseline Old Doc in Column M so the diff and overhaul percentage can be audited.']
       }
@@ -425,12 +432,18 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
     const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
 
-    const isNews = taskTypeLower.includes('news') || typeLower.includes('news');
+    const isNews = taskTypeLower.includes('news') || 
+                   typeLower.includes('news') || 
+                   categoryLower.includes('news') || 
+                   classificationLower.includes('news') ||
+                   (item.pageType || '').toLowerCase().includes('blog') || 
+                   isNewsTopic ||
+                   Boolean(item.isNewsTask);
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
-    // Rule 1: News Update (Must rewrite / add 350+ words)
+    // Rule 1: News Update (Must rewrite / add 350+ words, micro news approved at 300w+)
     if (isNews && isUpdateTask) {
-      if (displayWc < 350) {
+      if (displayWc < 300) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
@@ -442,22 +455,24 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
         parsed.pointsAwarded = displayWc >= 500 ? 0.5 : 0.25;
+        parsed.suggestedClassification = displayWc >= 500 ? 'Standard News' : 'Micro News';
       }
     }
-    // Rule 2: News New (500+ Words)
+    // Rule 2: News New (350+ words for Micro News = 0.25 pts, 500+ words for Standard News = 0.5 pts)
     else if (isNews && !isUpdateTask) {
-      if (effectiveNewWc < 500) {
+      if (effectiveNewWc < 300) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `New News length shortfall: Found ${effectiveNewWc} words (minimum 500 words required).`;
+        const reason = `News length shortfall: Found ${effectiveNewWc} words (minimum 350 words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = 0.5;
+        parsed.pointsAwarded = effectiveNewWc >= 500 ? 0.5 : 0.25;
+        parsed.suggestedClassification = effectiveNewWc >= 500 ? 'Standard News' : 'Micro News';
       }
     }
     // Rule 3: Optimization / Update (Must rewrite / add 700 - 800 words)
@@ -474,24 +489,28 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
         parsed.pointsAwarded = 1.5;
+        parsed.suggestedClassification = 'SEO Optimization';
       }
     }
-    // Rule 4: New Prep / New Content (800 - 1200 Words)
+    // Rule 4: New Prep / New Content (Prep: 800w+ = 2.0 pts; Standard New Content: 600w+ = 1.0 pt)
     else {
-      const minPrepWc = 800;
-      if (effectiveNewWc < minPrepWc) {
+      const minWc = isPrep ? 800 : 600;
+      if (effectiveNewWc < minWc) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `New Content length shortfall: Delivered ${effectiveNewWc} words; minimum 800–1200 words required.`;
+        const reason = isPrep
+          ? `New Prep length shortfall: Delivered ${effectiveNewWc} words; minimum 800–1200 words required.`
+          : `New Content length shortfall: Delivered ${effectiveNewWc} words; minimum 600 words required.`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
         const isPrepWriter = ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes((item.writer || '').toLowerCase());
-        parsed.pointsAwarded = isPrepWriter ? 2.0 : 1.0;
+        parsed.pointsAwarded = (isPrep || isPrepWriter) ? 2.0 : 1.0;
+        parsed.suggestedClassification = isPrep ? 'Fresh Prep Article' : 'New Content';
       }
     }
 
@@ -500,8 +519,11 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     console.warn('AI Audit failed on backend, returning verified fallback:', err);
     const taskTypeLower = (item.taskType || '').toLowerCase();
     const typeLower = (item.type || '').toLowerCase();
-    const isNews = taskTypeLower.includes('news') || typeLower.includes('news') || (item.category || '').toLowerCase().includes('news') || Boolean(item.isNewsTask);
-    const isUpdate = !isNews && (typeLower === 'update' || taskTypeLower.includes('optimi') || hasOldDocLink);
+    const topicLower = (item.topic || '').toLowerCase();
+    const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|live update/i.test(topicLower);
+    const isNews = taskTypeLower.includes('news') || typeLower.includes('news') || (item.category || '').toLowerCase().includes('news') || (item.pageType || '').toLowerCase().includes('blog') || isNewsTopic || Boolean(item.isNewsTask);
+    const isPrep = taskTypeLower.includes('prep') || typeLower.includes('prep') || (item.category || '').toLowerCase().includes('prep');
+    const isUpdate = !isNews && !isPrep && (taskTypeLower === 'seo optimization' || taskTypeLower === 'content optimization' || taskTypeLower === 'optimization' || hasOldDocLink);
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
     const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 0);
@@ -527,12 +549,17 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       isApproved = effort >= 700;
       ptsAwarded = isApproved ? 1.5 : 0;
       if (!isApproved) rejectReason = `Optimization shortfall: Writer rewrote/added only ~${effort}w (minimum 700–800 rewritten/added words required).`;
-    } else {
+    } else if (isPrep) {
       const minPrepWc = 800;
       isApproved = estNew >= minPrepWc;
-      const isPrepWriter = ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka'].includes((item.writer || '').toLowerCase());
-      ptsAwarded = isApproved ? (isPrepWriter ? 2.0 : 1.0) : 0;
-      if (!isApproved) rejectReason = `New Content shortfall: Found ${estNew}w (minimum 800–1200 words required).`;
+      ptsAwarded = isApproved ? 2.0 : 0;
+      if (!isApproved) rejectReason = `Prep Concept shortfall: Found ${estNew}w (minimum 800–1200 words required).`;
+    } else {
+      // Standard New Content (non-prep, non-news): 600 words required for 1.0 point
+      const minNewWc = 600;
+      isApproved = estNew >= minNewWc;
+      ptsAwarded = isApproved ? 1.0 : 0;
+      if (!isApproved) rejectReason = `New Content shortfall: Found ${estNew}w (minimum 600 words required).`;
     }
 
     return res.status(200).json({

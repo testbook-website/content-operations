@@ -206,9 +206,15 @@
       const words = parseInt(item.wordCount, 10) || 0;
       wObj.totalWords += words;
 
-      const isApproved = (item.status || '').toLowerCase().includes('done') || 
-                         (item.reviewStatus || '').toLowerCase().includes('approv');
-      const isRevision = (item.reviewStatus || '').toLowerCase().includes('revision');
+      const hasDoc = Boolean((item.newDoc && String(item.newDoc).startsWith('http')) || (item.url && String(item.url).startsWith('http')));
+      const isApproved = hasDoc && (
+        (item.status || '').toLowerCase().includes('done') || 
+        (item.reviewStatus || '').toLowerCase().includes('approv')
+      );
+      const isRevision = hasDoc && (
+        (item.reviewStatus || '').toLowerCase().includes('revision') ||
+        (item.reviewStatus || '').toLowerCase().includes('reject')
+      );
 
       if (isApproved) {
         wObj.approved += 1;

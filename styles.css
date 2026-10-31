@@ -479,6 +479,12 @@ body {
   border: 1px solid #fed7aa;
 }
 
+.grid-badge.badge-new-content {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
 /* Clean Tables */
 .table-wrap {
   background: #ffffff;

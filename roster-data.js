@@ -12,6 +12,7 @@
  * 3. In Content weeks: Tasks rotate among Child Pages, SEO Optimization, High Intent.
  * 4. New Content Writers: Archana, Shilpa Singh (All Category).
  * 5. Publishing: Nandini.
+ * 6. From Week 5 onwards, 1 writer from the weekly News Team rotates to New Content.
  */
 
 const ROSTER_CONFIG = {
@@ -214,15 +215,15 @@ const ROSTER_CONFIG = {
         { day: "Mon (02 Nov)", member: "Shemaila" },
         { day: "Tue (03 Nov)", member: "Somya" },
         { day: "Wed (04 Nov)", member: "Mohit" },
-        { day: "Thu (05 Nov)", member: "Sonika" },
+        { day: "Thu (05 Nov)", member: "Somya" },
         { day: "Fri (06 Nov)", member: "Archita" },
         { day: "Sat (07 Nov)", member: "Shemaila" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Sonika": { team: "Team A", task: "New Content", nightDays: "-" },
         "Archita": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
         "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Mon, Sat" },
-        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Tue, Thu" },
         "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
@@ -245,7 +246,7 @@ const ROSTER_CONFIG = {
       nightShiftDaily: [
         { day: "Mon (09 Nov)", member: "Aditi" },
         { day: "Tue (10 Nov)", member: "Atul" },
-        { day: "Wed (11 Nov)", member: "Trishala" },
+        { day: "Wed (11 Nov)", member: "Shilpa Kohli" },
         { day: "Thu (12 Nov)", member: "Nadeem" },
         { day: "Fri (13 Nov)", member: "Shilpa Kohli" },
         { day: "Sat (14 Nov)", member: "Aditi" }
@@ -258,10 +259,10 @@ const ROSTER_CONFIG = {
         "Mohit": { team: "Team A", task: "High Intent", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
-        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Wed, Fri" },
         "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Mon, Sat" },
         "Atul": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
-        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Wed" }
+        "Trishala": { team: "Team B", task: "New Content", nightDays: "-" }
       }
     },
 
@@ -278,16 +279,16 @@ const ROSTER_CONFIG = {
         { day: "Mon (16 Nov)", member: "Somya" },
         { day: "Tue (17 Nov)", member: "Mohit" },
         { day: "Wed (18 Nov)", member: "Sonika" },
-        { day: "Thu (19 Nov)", member: "Archita" },
+        { day: "Thu (19 Nov)", member: "Mohit" },
         { day: "Fri (20 Nov)", member: "Shemaila" },
         { day: "Sat (21 Nov)", member: "Somya" }
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
-        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Archita": { team: "Team A", task: "New Content", nightDays: "-" },
         "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
         "Somya": { team: "Team A", task: "Event Pages", nightDays: "Mon, Sat" },
-        "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Tue, Thu" },
 
         "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },
@@ -307,25 +308,25 @@ const ROSTER_CONFIG = {
       newsTeam: "Team B",
       contentTeam: "Team A",
       nightShiftDaily: [
-        { day: "Mon (23 Nov)", member: "Mohit" },
-        { day: "Tue (24 Nov)", member: "Trishala" },
-        { day: "Wed (25 Nov)", member: "Nadeem" },
-        { day: "Thu (26 Nov)", member: "Shilpa Kohli" },
-        { day: "Fri (27 Nov)", member: "Aditi" },
-        { day: "Sat (28 Nov)", member: "Atul" }
+        { day: "Mon (23 Nov)", member: "Trishala" },
+        { day: "Tue (24 Nov)", member: "Nadeem" },
+        { day: "Wed (25 Nov)", member: "Shilpa Kohli" },
+        { day: "Thu (26 Nov)", member: "Aditi" },
+        { day: "Fri (27 Nov)", member: "Nadeem" },
+        { day: "Sat (28 Nov)", member: "Trishala" }
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Archita": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Shemaila": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
         "Somya": { team: "Team A", task: "Child Pages", nightDays: "-" },
-        "Mohit": { team: "Team A", task: "SEO Optimization", nightDays: "Mon" },
+        "Mohit": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
-        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
-        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
-        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
-        "Atul": { team: "Team B", task: "Event Pages", nightDays: "Sat" },
-        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Tue" }
+        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Tue, Fri" },
+        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
+        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Atul": { team: "Team B", task: "New Content", nightDays: "-" },
+        "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Mon, Sat" }
       }
     },
 
@@ -339,24 +340,24 @@ const ROSTER_CONFIG = {
       newsTeam: "Team A",
       contentTeam: "Team B",
       nightShiftDaily: [
-        { day: "Mon (30 Nov)", member: "Atul" },
+        { day: "Mon (30 Nov)", member: "Mohit" },
         { day: "Tue (01 Dec)", member: "Sonika" },
         { day: "Wed (02 Dec)", member: "Archita" },
-        { day: "Thu (03 Dec)", member: "Shemaila" },
-        { day: "Fri (04 Dec)", member: "Somya" },
+        { day: "Thu (03 Dec)", member: "Somya" },
+        { day: "Fri (04 Dec)", member: "Sonika" },
         { day: "Sat (05 Dec)", member: "Mohit" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Tue, Fri" },
         "Archita": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
-        "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
-        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
-        "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Sat" },
+        "Shemaila": { team: "Team A", task: "New Content", nightDays: "-" },
+        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Mon, Sat" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "Child Pages", nightDays: "-" },
         "Aditi": { team: "Team B", task: "High Intent", nightDays: "-" },
-        "Atul": { team: "Team B", task: "High Intent", nightDays: "Mon" },
+        "Atul": { team: "Team B", task: "High Intent", nightDays: "-" },
         "Trishala": { team: "Team B", task: "SEO Optimization", nightDays: "-" }
       }
     },
@@ -374,7 +375,7 @@ const ROSTER_CONFIG = {
         { day: "Mon (07 Dec)", member: "Trishala" },
         { day: "Tue (08 Dec)", member: "Nadeem" },
         { day: "Wed (09 Dec)", member: "Shilpa Kohli" },
-        { day: "Thu (10 Dec)", member: "Aditi" },
+        { day: "Thu (10 Dec)", member: "Nadeem" },
         { day: "Fri (11 Dec)", member: "Atul" },
         { day: "Sat (12 Dec)", member: "Trishala" }
       ],
@@ -385,9 +386,9 @@ const ROSTER_CONFIG = {
         "Somya": { team: "Team A", task: "High Intent", nightDays: "-" },
         "Mohit": { team: "Team A", task: "Child Pages", nightDays: "-" },
 
-        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Tue, Thu" },
         "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
-        "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Aditi": { team: "Team B", task: "New Content", nightDays: "-" },
         "Atul": { team: "Team B", task: "Event Pages", nightDays: "Fri" },
         "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Mon, Sat" }
       }
@@ -406,15 +407,15 @@ const ROSTER_CONFIG = {
         { day: "Mon (14 Dec)", member: "Sonika" },
         { day: "Tue (15 Dec)", member: "Archita" },
         { day: "Wed (16 Dec)", member: "Shemaila" },
-        { day: "Thu (17 Dec)", member: "Somya" },
+        { day: "Thu (17 Dec)", member: "Archita" },
         { day: "Fri (18 Dec)", member: "Mohit" },
         { day: "Sat (19 Dec)", member: "Sonika" }
       ],
       tasks: {
         "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Mon, Sat" },
-        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
+        "Archita": { team: "Team A", task: "Event Pages", nightDays: "Tue, Thu" },
         "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
-        "Somya": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Somya": { team: "Team A", task: "New Content", nightDays: "-" },
         "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Fri" },
 
         "Nadeem": { team: "Team B", task: "High Intent", nightDays: "-" },
@@ -436,7 +437,7 @@ const ROSTER_CONFIG = {
       contentTeam: "Team A",
       nightShiftDaily: [
         { day: "Mon (21 Dec)", member: "Nadeem" },
-        { day: "Tue (22 Dec)", member: "Shilpa Kohli" },
+        { day: "Tue (22 Dec)", member: "Atul" },
         { day: "Wed (23 Dec)", member: "Aditi" },
         { day: "Thu (24 Dec)", member: "Atul" },
         { day: "Fri (25 Dec)", member: "Trishala" },
@@ -450,9 +451,9 @@ const ROSTER_CONFIG = {
         "Mohit": { team: "Team A", task: "SEO Optimization", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "Event Pages", nightDays: "Mon, Sat" },
-        "Shilpa Kohli": { team: "Team B", task: "Event Pages", nightDays: "Tue" },
+        "Shilpa Kohli": { team: "Team B", task: "New Content", nightDays: "-" },
         "Aditi": { team: "Team B", task: "Event Pages", nightDays: "Wed" },
-        "Atul": { team: "Team B", task: "Event Pages", nightDays: "Thu" },
+        "Atul": { team: "Team B", task: "Event Pages", nightDays: "Tue, Thu" },
         "Trishala": { team: "Team B", task: "Event Pages", nightDays: "Fri" }
       }
     },
@@ -470,14 +471,14 @@ const ROSTER_CONFIG = {
         { day: "Mon (28 Dec)", member: "Archita" },
         { day: "Tue (29 Dec)", member: "Shemaila" },
         { day: "Wed (30 Dec)", member: "Somya" },
-        { day: "Thu (31 Dec)", member: "Mohit" }
+        { day: "Thu (31 Dec)", member: "Sonika" }
       ],
       tasks: {
-        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "-" },
+        "Sonika": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
         "Archita": { team: "Team A", task: "Event Pages", nightDays: "Mon" },
         "Shemaila": { team: "Team A", task: "Event Pages", nightDays: "Tue" },
         "Somya": { team: "Team A", task: "Event Pages", nightDays: "Wed" },
-        "Mohit": { team: "Team A", task: "Event Pages", nightDays: "Thu" },
+        "Mohit": { team: "Team A", task: "New Content", nightDays: "-" },
 
         "Nadeem": { team: "Team B", task: "SEO Optimization", nightDays: "-" },
         "Shilpa Kohli": { team: "Team B", task: "High Intent", nightDays: "-" },

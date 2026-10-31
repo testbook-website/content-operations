@@ -206,7 +206,7 @@ function findWorkflowSheet(ss) {
 /**
  * Action: Updates Review Status on Workflow tab
  */
-function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
+function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes, writer, date) {
   try {
     const ss = getTargetSpreadsheet();
     const sheet = findWorkflowSheet(ss);
@@ -220,6 +220,8 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     let reviewStatusCol = 16; // Default Column P
     let statusCol = 17;       // Default Column Q
     let notesCol = 19;        // Default Column S (Index 19 in 1-based indexing)
+    let writerCol = 10;       // Default Column J
+    let dateCol = 1;          // Default Column A
 
     for (let c = 0; c < headers.length; c++) {
       const h = String(headers[c] || '').trim().toLowerCase();
@@ -229,6 +231,10 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
         statusCol = c + 1;
       } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
         notesCol = c + 1;
+      } else if (h === 'writer' || h === 'assignee' || h === 'content writer') {
+        writerCol = c + 1;
+      } else if (h === 'date') {
+        dateCol = c + 1;
       }
     }
 
@@ -243,126 +249,96 @@ function handleUpdateReviewStatus(rowIndex, topic, reviewStatus, notes) {
     const shortNoteVal = formatShortNote(notes);
 
     const cleanTopic = topic ? String(topic).trim().toLowerCase() : '';
+    const cleanWriter = writer ? String(writer).trim().toLowerCase() : '';
+    const cleanDate = date ? String(date).trim().toLowerCase() : '';
     const data = sheet.getDataRange().getValues();
     const rIdx = parseInt(rowIndex, 10);
 
-    // 0. If rowIndex is provided and valid, verify exact row match first
-    if (rIdx && rIdx >= 2 && rIdx <= data.length) {
-      const directTopic = String(data[rIdx - 1][1] || '').trim().toLowerCase();
-      if (!cleanTopic || directTopic === cleanTopic || directTopic.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(directTopic) !== -1) {
-        const targetRow = rIdx;
-        sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
-        if (statusCol > 0 && statusCol !== reviewStatusCol) {
-          sheet.getRange(targetRow, statusCol).setValue('Done');
-        }
-        if (notesCol > 0 && notes !== undefined) {
-          if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
-            sheet.getRange(targetRow, notesCol).setValue('');
-          } else if (shortNoteVal) {
-            sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
-          }
-        }
-        return ContentService.createTextOutput(JSON.stringify({
-          success: true,
-          sheetName: sheet.getName(),
-          matchedBy: 'verified_rowIndex',
-          row: targetRow,
-          topic: topic,
-          reviewStatusCol: reviewStatusCol,
-          notesCol: notesCol,
-          status: statusVal,
-          notes: shortNoteVal
-        })).setMimeType(ContentService.MimeType.JSON);
-      }
-    }
-
-    // 1. TOPIC-FIRST SEARCH: Finds exact row matching Column B (Topic) across all rows
-    if (cleanTopic) {
-      // Pass 1: EXACT Column B (Topic) match
-      for (let i = 1; i < data.length; i++) {
-        const rowTopicB = String(data[i][1] || '').trim().toLowerCase();
-        if (rowTopicB && rowTopicB === cleanTopic) {
-          const targetRow = i + 1;
-          sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
-          if (statusCol > 0 && statusCol !== reviewStatusCol) {
-            sheet.getRange(targetRow, statusCol).setValue('Done');
-          }
-          if (notesCol > 0 && notes !== undefined) {
-            if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
-              sheet.getRange(targetRow, notesCol).setValue('');
-            } else if (shortNoteVal) {
-              sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
-            }
-          }
-          return ContentService.createTextOutput(JSON.stringify({
-            success: true,
-            sheetName: sheet.getName(),
-            matchedBy: 'exact_topic_colB',
-            row: targetRow,
-            topic: topic,
-            reviewStatusCol: reviewStatusCol,
-            notesCol: notesCol,
-            status: statusVal,
-            notes: shortNoteVal
-          })).setMimeType(ContentService.MimeType.JSON);
-        }
-      }
-
-      // Pass 2: Fuzzy / Substring fallback match
-      for (let j = 1; j < data.length; j++) {
-        const rowTopicB = String(data[j][1] || '').trim().toLowerCase();
-        if (rowTopicB && cleanTopic.length >= 5 && rowTopicB.length >= 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1)) {
-          const targetRow = j + 1;
-          sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
-          if (statusCol > 0 && statusCol !== reviewStatusCol) {
-            sheet.getRange(targetRow, statusCol).setValue('Done');
-          }
-          if (notesCol > 0 && notes !== undefined) {
-            if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
-              sheet.getRange(targetRow, notesCol).setValue('');
-            } else if (shortNoteVal) {
-              sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
-            }
-          }
-          return ContentService.createTextOutput(JSON.stringify({
-            success: true,
-            sheetName: sheet.getName(),
-            matchedBy: 'fuzzy_topic',
-            row: targetRow,
-            topic: topic,
-            reviewStatusCol: reviewStatusCol,
-            notesCol: notesCol,
-            status: statusVal,
-            notes: shortNoteVal
-          })).setMimeType(ContentService.MimeType.JSON);
-        }
-      }
-    }
-
-    // 2. Fallback to rowIndex if given and valid
-    const r = parseInt(rowIndex, 10);
-    if (r && r >= 2) {
-      sheet.getRange(r, reviewStatusCol).setValue(statusVal);
+    const applyUpdateToRow = function(targetRow, matchedBy) {
+      sheet.getRange(targetRow, reviewStatusCol).setValue(statusVal);
       if (statusCol > 0 && statusCol !== reviewStatusCol) {
-        sheet.getRange(r, statusCol).setValue('Done');
+        sheet.getRange(targetRow, statusCol).setValue('Done');
       }
       if (notesCol > 0 && notes !== undefined) {
         if (notes === '' || notes === 'CLEAR' || notes === null || notes === 'REMOVE' || notes === 'EMPTY') {
-          sheet.getRange(r, notesCol).setValue('');
+          sheet.getRange(targetRow, notesCol).setValue('');
         } else if (shortNoteVal) {
-          sheet.getRange(r, notesCol).setValue(shortNoteVal);
+          sheet.getRange(targetRow, notesCol).setValue(shortNoteVal);
         }
       }
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
         sheetName: sheet.getName(),
-        matchedBy: 'rowIndex',
-        row: r,
+        matchedBy: matchedBy,
+        row: targetRow,
+        topic: topic,
+        writer: writer,
+        date: date,
         reviewStatusCol: reviewStatusCol,
         notesCol: notesCol,
         status: statusVal,
         notes: shortNoteVal
       })).setMimeType(ContentService.MimeType.JSON);
+    };
+
+    // 0. If rowIndex is provided and valid, verify exact row match first
+    if (rIdx && rIdx >= 2 && rIdx <= data.length) {
+      const directTopic = String(data[rIdx - 1][1] || '').trim().toLowerCase();
+      const directWriter = String(data[rIdx - 1][writerCol - 1] || '').trim().toLowerCase();
+      const directDate = String(data[rIdx - 1][dateCol - 1] || '').trim().toLowerCase();
+      
+      const topicMatches = !cleanTopic || directTopic === cleanTopic || directTopic.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(directTopic) !== -1;
+      const writerMatches = !cleanWriter || directWriter.indexOf(cleanWriter) !== -1;
+      const dateMatches = !cleanDate || directDate.indexOf(cleanDate) !== -1;
+
+      if (topicMatches && (writerMatches || !cleanWriter)) {
+        return applyUpdateToRow(rIdx, 'verified_rowIndex');
+      }
+    }
+
+    // 1. TOPIC + WRITER + DATE SEARCH (Guarantees exact article row even with duplicate exam topics)
+    if (cleanTopic) {
+      // Pass 1: EXACT Topic AND matching Writer (and Date if given)
+      if (cleanWriter || cleanDate) {
+        for (let i = 1; i < data.length; i++) {
+          const rowTopicB = String(data[i][1] || '').trim().toLowerCase();
+          const rowWriter = String(data[i][writerCol - 1] || '').trim().toLowerCase();
+          const rowDate = String(data[i][dateCol - 1] || '').trim().toLowerCase();
+
+          const topicExact = rowTopicB === cleanTopic;
+          const writerMatches = !cleanWriter || rowWriter.indexOf(cleanWriter) !== -1;
+          const dateMatches = !cleanDate || rowDate.indexOf(cleanDate) !== -1;
+
+          if (topicExact && writerMatches && dateMatches) {
+            return applyUpdateToRow(i + 1, 'exact_topic_and_writer');
+          }
+        }
+      }
+
+      // Pass 2: EXACT Column B (Topic) match
+      for (let i = 1; i < data.length; i++) {
+        const rowTopicB = String(data[i][1] || '').trim().toLowerCase();
+        if (rowTopicB && rowTopicB === cleanTopic) {
+          return applyUpdateToRow(i + 1, 'exact_topic_colB');
+        }
+      }
+
+      // Pass 3: Fuzzy / Substring fallback match (only if cleanTopic is at least 5 chars)
+      for (let j = 1; j < data.length; j++) {
+        const rowTopicB = String(data[j][1] || '').trim().toLowerCase();
+        const rowWriter = String(data[j][writerCol - 1] || '').trim().toLowerCase();
+        const writerMatches = !cleanWriter || rowWriter.indexOf(cleanWriter) !== -1;
+        if (rowTopicB && cleanTopic.length >= 5 && rowTopicB.length >= 5 && (rowTopicB.indexOf(cleanTopic) !== -1 || cleanTopic.indexOf(rowTopicB) !== -1)) {
+          if (writerMatches) {
+            return applyUpdateToRow(j + 1, 'fuzzy_topic_and_writer');
+          }
+        }
+      }
+    }
+
+    // 2. Direct Fallback to rowIndex if given and valid
+    if (rIdx && rIdx >= 2) {
+      return applyUpdateToRow(rIdx, 'rowIndex_direct');
     }
 
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Row or topic not found in sheet: ' + sheet.getName() }))
@@ -432,7 +408,7 @@ function handlePopulateAllRevisionNotes() {
         const hasDoc = newDoc.indexOf('http') !== -1;
         const hasOld = oldDoc.indexOf('http') !== -1;
 
-        // News / Event / Alert / Blog indicators (350w - 500w min)
+        // News / Event / Alert / Blog indicators (300w - 500w min)
         const isNewsOrAlert = taskType.indexOf('news') !== -1 || 
                               type.indexOf('news') !== -1 || 
                               pageType.indexOf('blog') !== -1 ||
@@ -443,37 +419,46 @@ function handlePopulateAllRevisionNotes() {
                               topic.indexOf('cut off') !== -1 || 
                               topic.indexOf('exam date') !== -1 ||
                               topic.indexOf('merit list') !== -1 ||
+                              topic.indexOf('notification') !== -1 ||
+                              topic.indexOf('recruitment') !== -1 ||
+                              topic.indexOf('vacancy') !== -1 ||
+                              topic.indexOf('city slip') !== -1 ||
+                              topic.indexOf('city intimation') !== -1 ||
+                              topic.indexOf('syllabus') !== -1 ||
+                              topic.indexOf('eligibility') !== -1 ||
                               topic.indexOf('colour') !== -1;
 
         // Hindi Team writers (Anshika, Vidit, Prabodh) write fresh Hindi content
         const hindiWriters = ['anshika', 'vidit', 'prabodh'];
         const isHindiWriter = hindiWriters.some(function(w) { return writer.indexOf(w) !== -1; });
-        const isExplicitNew = type.indexOf('new') !== -1 || taskType.indexOf('new') !== -1;
-        const isOpt = !isHindiWriter && !isExplicitNew && (
-          type === 'update' || 
-          type === 'optimization' || 
-          type === 'optimi' || 
-          type === 'refresh' || 
+        const newContentWriters = ['archana', 'shilpa singh'];
+        const isNewContentWriter = newContentWriters.some(function(w) { return writer.indexOf(w) !== -1; });
+        const isPrep = taskType.indexOf('prep') !== -1 || type.indexOf('prep') !== -1;
+        const isExplicitNew = type.indexOf('new') !== -1 || taskType.indexOf('new') !== -1 || isHindiWriter || isNewContentWriter || isPrep;
+
+        // Strictly only SEO Optimization tasks on existing non-news/non-prep pages require Old Doc
+        const isOpt = !isHindiWriter && !isNewContentWriter && !isNewsOrAlert && !isExplicitNew && !isPrep && (
           taskType === 'seo optimization' || 
-          taskType === 'content optimization'
+          taskType === 'content optimization' ||
+          taskType === 'optimization'
         );
         const isHighIntent = taskType.indexOf('high in') !== -1 || taskType.indexOf('pyp') !== -1;
 
         let note = '';
         if (!hasDoc) {
-          note = 'AI Rev: Missing Google Doc link in Col N';
+          note = 'Pending: Awaiting Google Doc in Col N';
         } else if (isOpt && !hasOld) {
           note = 'AI Rev: Missing baseline Old Doc in Col M for diff';
         } else if (wc > 0 && wc < 250) {
           note = `AI Rev: Word count deficit (${wc}w; min 350w required)`;
-        } else if (isNewsOrAlert && wc > 0 && wc < 350) {
-          note = `AI Rev: Alert/News below threshold (${wc}/350w)`;
+        } else if (isNewsOrAlert && wc > 0 && wc < 300) {
+          note = `AI Rev: Alert/News below threshold (${wc}/300w)`;
         } else if (isOpt && wc > 0 && wc < 300) {
           note = `AI Rev: Net addition below +300w threshold (${wc}w)`;
         } else if (isHighIntent && wc > 0 && wc < 650) {
           note = `AI Rev: Word count deficit (${wc}/700w for High-Intent)`;
-        } else if (wc > 0 && wc < 600 && !isNewsOrAlert) {
-          note = `AI Rev: Word count deficit (${wc}/700w min)`;
+        } else if (wc > 0 && wc < 600 && !isNewsOrAlert && !isPrep) {
+          note = `AI Rev: Word count deficit (${wc}/600w min)`;
         } else if (wc === 0) {
           note = 'AI Rev: Zero word count reported; verify content draft';
         } else {
@@ -504,6 +489,87 @@ function handlePopulateAllRevisionNotes() {
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ success: false, error: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Standalone utility function:
+ * Clears erroneously added "Missing baseline Old Doc" notes from Column S for all News, Alert, Prep, Fresh/New, and Hindi tasks.
+ * Also resets Column P from 'Needs Revision' to 'Pending Review' (or 'Doc Missing' if no doc) for these false rejections.
+ */
+function clearContaminatedOldDocNotes() {
+  try {
+    const ss = getTargetSpreadsheet();
+    const sheet = findWorkflowSheet(ss);
+    if (!sheet) return 'Workflow sheet not found';
+
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return 'Sheet is empty';
+
+    const headers = data[0] || [];
+    let reviewStatusCol = 16; // Default Column P
+    let notesCol = 19;        // Default Column S
+    let writerCol = 10;       // Default Column J
+    let taskTypeCol = 7;      // Default Column G
+    let typeCol = 8;          // Default Column H
+    let pageTypeCol = 9;      // Default Column I
+
+    for (let c = 0; c < headers.length; c++) {
+      const h = String(headers[c] || '').trim().toLowerCase();
+      if (h === 'review status' || h === 'review_status') {
+        reviewStatusCol = c + 1;
+      } else if (h.indexOf('review note') !== -1 || h === 'notes' || h.indexOf('audit note') !== -1 || h.indexOf('rejection note') !== -1) {
+        notesCol = c + 1;
+      } else if (h === 'writer' || h === 'assignee' || h === 'content writer') {
+        writerCol = c + 1;
+      } else if (h === 'task type' || h === 'tasktype') {
+        taskTypeCol = c + 1;
+      } else if (h === 'type') {
+        typeCol = c + 1;
+      } else if (h === 'page type' || h === 'pagetype') {
+        pageTypeCol = c + 1;
+      }
+    }
+
+    let clearedCount = 0;
+    for (let i = 1; i < data.length; i++) {
+      const val = String(data[i][notesCol - 1] || '').trim();
+      const st = String(data[i][reviewStatusCol - 1] || '').trim().toLowerCase();
+      const oldDoc = String(data[i][12] || '').trim();
+      const newDoc = String(data[i][13] || '').trim();
+      const topic = String(data[i][1] || '').trim().toLowerCase();
+      const writer = String(data[i][writerCol - 1] || '').trim().toLowerCase();
+      const taskType = String(data[i][taskTypeCol - 1] || '').trim().toLowerCase();
+      const type = String(data[i][typeCol - 1] || '').trim().toLowerCase();
+      const pageType = String(data[i][pageTypeCol - 1] || '').trim().toLowerCase();
+
+      const hasOldDoc = oldDoc.indexOf('http') !== -1;
+      const hasNewDoc = newDoc.indexOf('http') !== -1;
+
+      const isNews = taskType.indexOf('news') !== -1 || 
+                     type.indexOf('news') !== -1 || 
+                     pageType.indexOf('blog') !== -1 ||
+                     /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topic);
+
+      const isHindiOrNewWriter = ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(function(w) { return writer.indexOf(w) !== -1; });
+      const isPrep = taskType.indexOf('prep') !== -1 || type.indexOf('prep') !== -1;
+      const isExplicitNew = type.indexOf('new') !== -1 || taskType.indexOf('new') !== -1 || isHindiOrNewWriter || isPrep;
+
+      if (/missing.*old doc/i.test(val) && (hasOldDoc || isNews || isExplicitNew)) {
+        sheet.getRange(i + 1, notesCol).setValue('');
+        if (st.indexOf('revis') !== -1 || st.indexOf('reject') !== -1 || !st) {
+          const resetStatus = hasNewDoc ? 'Pending Review' : 'Doc Missing';
+          sheet.getRange(i + 1, reviewStatusCol).setValue(resetStatus);
+        }
+        clearedCount++;
+      }
+    }
+
+    Logger.log('Successfully cleared ' + clearedCount + ' contaminated Old Doc notes');
+    return 'Cleared ' + clearedCount + ' contaminated Old Doc notes';
+  } catch (err) {
+    Logger.log('Error in clearContaminatedOldDocNotes: ' + err.toString());
+    return err.toString();
   }
 }
 
@@ -571,11 +637,17 @@ function doGet(e) {
     }
 
     if (action === 'update_review_status') {
-      return handleUpdateReviewStatus(p.rowIndex, p.topic, p.reviewStatus, p.notes);
+      return handleUpdateReviewStatus(p.rowIndex, p.topic, p.reviewStatus, p.notes, p.writer, p.date);
     }
 
     if (action === 'populate_all_revision_notes' || action === 'populate_revision_notes') {
       return handlePopulateAllRevisionNotes();
+    }
+
+    if (action === 'clear_contaminated_notes' || action === 'clear_old_doc_notes') {
+      const res = clearContaminatedOldDocNotes();
+      return ContentService.createTextOutput(JSON.stringify({ success: true, result: res }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
 
     if (action === 'clear_generic_notes' || action === 'clean_notes' || action === 'clear_tables_faqs') {
@@ -618,7 +690,7 @@ function doPost(e) {
     }
 
     if (action === 'update_review_status') {
-      return handleUpdateReviewStatus(body.rowIndex, body.topic, body.reviewStatus, body.notes);
+      return handleUpdateReviewStatus(body.rowIndex, body.topic, body.reviewStatus, body.notes, body.writer, body.date);
     }
 
     if (action === 'populate_all_revision_notes' || action === 'populate_revision_notes') {
