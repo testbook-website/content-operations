@@ -284,6 +284,7 @@
       const isPrep = tt.includes('prep') || type.includes('prep') || cat.includes('prep');
       const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
       const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
+      const isOpt = !isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || hasOldDoc || (item.oldDocWordCount > 0));
 
       // If the item now has a valid Old Doc, or is News, or is an explicit New article, purge any stale "Missing Old Doc" cache
       if (hasOldDoc || isExplicitNew || isNews) {
@@ -1203,16 +1204,20 @@
     if (els.sectionWorkflow) els.sectionWorkflow.style.display = tab === 'workflow' ? 'block' : 'none';
     if (els.sectionCalendar) els.sectionCalendar.style.display = tab === 'calendar' ? 'block' : 'none';
 
-    if (tab === 'roster') renderRoster();
-    if (tab === 'team_dashboard') renderTeamDashboard();
-    if (tab === 'kpi') renderKpiDashboard();
-    if (tab === 'news') renderNews();
-    if (tab === 'review') renderReviewHub();
-    if (tab === 'productivity') renderProductivity();
-    if (tab === 'category') renderCategoryGrid();
-    if (tab === 'upcoming') renderUpcomingEvents();
-    if (tab === 'workflow') renderWorkflow();
-    if (tab === 'calendar') renderCalendar();
+    try {
+      if (tab === 'roster') renderRoster();
+      else if (tab === 'team_dashboard') renderTeamDashboard();
+      else if (tab === 'kpi') renderKpiDashboard();
+      else if (tab === 'news') renderNews();
+      else if (tab === 'review') renderReviewHub();
+      else if (tab === 'productivity') renderProductivity();
+      else if (tab === 'category') renderCategoryGrid();
+      else if (tab === 'upcoming') renderUpcomingEvents();
+      else if (tab === 'workflow') renderWorkflow();
+      else if (tab === 'calendar') renderCalendar();
+    } catch (err) {
+      console.error(`Error rendering active tab ${tab}:`, err);
+    }
   }
 
   function switchProdSubTab(subtab) {
@@ -6372,22 +6377,22 @@
   // Master Initialization
   // =========================================================================
   function renderApp() {
-    renderRoster();
-    renderTeamDashboard();
-    renderKpiDashboard();
-    renderNews();
-    renderReviewHub();
-    renderProductivity();
-    renderCategoryGrid();
-    renderUpcomingEvents();
-    renderWorkflow();
-    renderCalendar();
+    try { renderRoster(); } catch (e) { console.error('Error in renderRoster:', e); }
+    try { renderTeamDashboard(); } catch (e) { console.error('Error in renderTeamDashboard:', e); }
+    try { renderKpiDashboard(); } catch (e) { console.error('Error in renderKpiDashboard:', e); }
+    try { renderNews(); } catch (e) { console.error('Error in renderNews:', e); }
+    try { renderReviewHub(); } catch (e) { console.error('Error in renderReviewHub:', e); }
+    try { renderProductivity(); } catch (e) { console.error('Error in renderProductivity:', e); }
+    try { renderCategoryGrid(); } catch (e) { console.error('Error in renderCategoryGrid:', e); }
+    try { renderUpcomingEvents(); } catch (e) { console.error('Error in renderUpcomingEvents:', e); }
+    try { renderWorkflow(); } catch (e) { console.error('Error in renderWorkflow:', e); }
+    try { renderCalendar(); } catch (e) { console.error('Error in renderCalendar:', e); }
   }
 
   function init() {
-    initAuth();
-    initLiveSync();
-    initNavigation();
+    try { initAuth(); } catch (e) { console.error('Error in initAuth:', e); }
+    try { initNavigation(); } catch (e) { console.error('Error in initNavigation:', e); }
+    try { initLiveSync(); } catch (e) { console.error('Error in initLiveSync:', e); }
     if (state.isAuthenticated) renderApp();
   }
 

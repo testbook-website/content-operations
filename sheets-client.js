@@ -72,7 +72,11 @@ class SheetsClient {
   onUpdate(callback) {
     this.subscribers.push(callback);
     if (this.data) {
-      callback(this.data, this.lastSync, this.syncStatus);
+      try {
+        callback(this.data, this.lastSync, this.syncStatus);
+      } catch (err) {
+        console.error("Error in onUpdate initial callback:", err);
+      }
     }
   }
 
