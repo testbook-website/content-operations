@@ -261,9 +261,10 @@ Evaluate this content submission under the official OND Point-Based Framework wi
 1. Micro News Brief (350–450 words): 0.25 Points (Fast breaking alerts, result/admit card drops).
 2. Standard News & Updates (500+ words unique): 0.5 Points (In-depth notices with tables, official context).
 3. Standard New Content / Child Page (Fresh writing): 1.0 Point (Standard fresh article, syllabus notes, child pages, 700+ words).
-4. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
-5. Data-Backed Content Optimization / Update (Must rewrite/add at least 500+ words): 1.5 Points (Award 1.5 pts if rewritten/added words >= 500 words).
-6. Fresh Exam Prep Article (Category/Task is Prep, Type is 'New', 800–1200 words): 2.0 Points (In-depth subject/exam preparation guides, pedagogical notes).
+4. Discover Articles (Task Type is 'Discover'): 1.5 Points (Google Discover informative pieces, 500+ words).
+5. High-Intent Child Page / PYP / Mock Test Landing Page: 1.5 Points (Structured Q&A, exam patterns, direct resources).
+6. Data-Backed Content Optimization / Update (Must rewrite/add at least 500+ words): 1.5 Points (Award 1.5 pts if rewritten/added words >= 500 words).
+7. Fresh Exam Prep Article (Category/Task is Prep, Type is 'New', 800–1200 words): 2.0 Points (In-depth subject/exam preparation guides, pedagogical notes).
 
 📝 ADVANCE PREPARATION & PLACEHOLDER RULES:
 - Testbook editorial teams routinely create exam articles and syllabus guides IN ADVANCE of official notifications.
@@ -432,17 +433,35 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
     const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
 
-    const isNews = taskTypeLower.includes('news') || 
+    const isDiscover = taskTypeLower.includes('discover') || classificationLower.includes('discover');
+    const isNews = !isDiscover && (taskTypeLower.includes('news') || 
                    typeLower.includes('news') || 
                    categoryLower.includes('news') || 
                    classificationLower.includes('news') ||
                    (item.pageType || '').toLowerCase().includes('blog') || 
                    isNewsTopic ||
-                   Boolean(item.isNewsTask);
+                   Boolean(item.isNewsTask));
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
+    // Rule 0: Discover Article (500+ words = 1.5 pts)
+    if (isDiscover) {
+      if (effectiveNewWc < 500) {
+        parsed.isApproved = false;
+        parsed.qualityVerdict = 'Needs Revision';
+        parsed.editorialScore = 4;
+        parsed.pointsAwarded = 0;
+        const reason = `Discover length shortfall: Found ${effectiveNewWc} words (minimum 500 words required).`;
+        parsed.rejectionReasons = [reason];
+        parsed.justificationSummary = `Needs Revision: ${reason}`;
+      } else {
+        parsed.isApproved = true;
+        parsed.qualityVerdict = 'Approved';
+        parsed.pointsAwarded = 1.5;
+        parsed.suggestedClassification = 'Discover Article';
+      }
+    }
     // Rule 1: News Update (Must rewrite / add 350+ words, micro news approved at 300w+)
-    if (isNews && isUpdateTask) {
+    else if (isNews && isUpdateTask) {
       if (displayWc < 300) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
@@ -521,9 +540,10 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     const typeLower = (item.type || '').toLowerCase();
     const topicLower = (item.topic || '').toLowerCase();
     const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|live update/i.test(topicLower);
-    const isNews = taskTypeLower.includes('news') || typeLower.includes('news') || (item.category || '').toLowerCase().includes('news') || (item.pageType || '').toLowerCase().includes('blog') || isNewsTopic || Boolean(item.isNewsTask);
-    const isPrep = taskTypeLower.includes('prep') || typeLower.includes('prep') || (item.category || '').toLowerCase().includes('prep');
-    const isUpdate = !isNews && !isPrep && (taskTypeLower === 'seo optimization' || taskTypeLower === 'content optimization' || taskTypeLower === 'optimization' || hasOldDocLink);
+    const isDiscover = taskTypeLower.includes('discover') || (item.classification || '').toLowerCase().includes('discover');
+    const isNews = !isDiscover && (taskTypeLower.includes('news') || typeLower.includes('news') || (item.category || '').toLowerCase().includes('news') || (item.pageType || '').toLowerCase().includes('blog') || isNewsTopic || Boolean(item.isNewsTask));
+    const isPrep = !isDiscover && (taskTypeLower.includes('prep') || typeLower.includes('prep') || (item.category || '').toLowerCase().includes('prep'));
+    const isUpdate = !isDiscover && !isNews && !isPrep && (taskTypeLower === 'seo optimization' || taskTypeLower === 'content optimization' || taskTypeLower === 'optimization' || hasOldDocLink);
     const isTargetPillar = ((item.pageType || '').toLowerCase().includes('target') || (item.pageType || '').toLowerCase().includes('pillar')) && typeLower === 'new';
 
     const estNew = (docExtraction && docExtraction.newDoc?.wordCount) ? docExtraction.newDoc.wordCount : (parseInt(item.wordCount, 10) || 0);
@@ -537,7 +557,11 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     let ptsAwarded = 0;
     let rejectReason = '';
 
-    if (isNews && (isUpdate || hasOldDocLink)) {
+    if (isDiscover) {
+      isApproved = estNew >= 500;
+      ptsAwarded = isApproved ? 1.5 : 0;
+      if (!isApproved) rejectReason = `Discover shortfall: Found ${estNew}w (minimum 500 words required).`;
+    } else if (isNews && (isUpdate || hasOldDocLink)) {
       isApproved = effort >= 300;
       ptsAwarded = isApproved ? (effort >= 500 ? 0.5 : 0.25) : 0;
       if (!isApproved) rejectReason = `News Update shortfall: Writer rewrote/added only ~${effort}w (minimum 300–350+ rewritten/added words required).`;

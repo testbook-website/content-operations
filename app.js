@@ -75,11 +75,12 @@
           }
 
           const topicStr = (k || '').toLowerCase();
-          const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicStr);
-          const isNews = item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news') || isNewsTopic;
-          const isPrep = item.classification === 'Fresh Prep Article' || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => item.writer.toLowerCase().includes(p)));
-          const isExplicitNew = item.classification === 'New Content' || isPrep || summaryStr.includes('new content');
-          const isOpt = !isNews && !isExplicitNew && !isPrep && (item.classification === 'SEO Optimization' || item.classification === 'Deep Optimization' || (item.oldDocWordCount > 0));
+          const isDiscover = (item.taskType && item.taskType.toLowerCase().includes('discover')) || item.classification === 'Discover Article' || summaryStr.includes('discover');
+          const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicStr);
+          const isNews = !isDiscover && (item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news') || isNewsTopic);
+          const isPrep = !isDiscover && (item.classification === 'Fresh Prep Article' || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => item.writer.toLowerCase().includes(p))));
+          const isExplicitNew = !isDiscover && (item.classification === 'New Content' || isPrep || summaryStr.includes('new content'));
+          const isOpt = !isDiscover && !isNews && !isExplicitNew && !isPrep && (item.classification === 'SEO Optimization' || item.classification === 'Deep Optimization' || (item.oldDocWordCount > 0));
           const rwMatch = (item.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (item.docWordCountText || '').match(/~(\d+)w Revamped/i);
           const effectiveRewritten = item.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
           const netDiff = item.netWordDiff !== undefined ? item.netWordDiff : 0;
@@ -87,7 +88,24 @@
           const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
           const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
 
-          if (isNews && (isOpt || item.oldDocWordCount > 0)) {
+          if (isDiscover) {
+            // Rule: Discover Articles (500+ Words = 1.5 Points)
+            if (effectiveNewWc < 500) {
+              item.isApproved = false;
+              item.verdict = 'Needs Revision';
+              item.score = 4;
+              item.points = 0;
+              item.pointsAwarded = 0;
+              item.justificationSummary = `Needs Revision: Discover article length shortfall (${effectiveNewWc}w). Minimum 500 words required.`;
+              item.rejectionReasons = [`Discover article length shortfall (${effectiveNewWc}w). Minimum 500 words required.`];
+            } else {
+              item.isApproved = true;
+              item.verdict = 'Approved';
+              item.points = 1.5;
+              item.pointsAwarded = 1.5;
+              item.rejectionReasons = [];
+            }
+          } else if (isNews && (isOpt || item.oldDocWordCount > 0)) {
             // Rule 1: News Update (Must rewrite/add 300–350+ words)
             if (displayWc < 300) {
               item.isApproved = false;
@@ -279,12 +297,13 @@
       const cat = (item.category || '').toLowerCase();
       const cl = (item.classification || '').toLowerCase();
       const wLower = (item.writer || '').toLowerCase();
-      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(item.topic || '');
-      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask) || isNewsTopic;
-      const isPrep = tt.includes('prep') || type.includes('prep') || cat.includes('prep');
-      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+      const isDiscover = tt.includes('discover') || cl.includes('discover');
+      const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(item.topic || '');
+      const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask) || isNewsTopic);
+      const isPrep = !isDiscover && (tt.includes('prep') || type.includes('prep') || cat.includes('prep'));
+      const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
       const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
-      const isOpt = !isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || hasOldDoc || (item.oldDocWordCount > 0));
+      const isOpt = !isDiscover && !isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || hasOldDoc || (item.oldDocWordCount > 0));
 
       // If the item now has a valid Old Doc, or is News, or is an explicit New article, purge any stale "Missing Old Doc" cache
       if (hasOldDoc || isExplicitNew || isNews) {
@@ -3934,10 +3953,11 @@
     const pt = (item.pageType || '').toLowerCase();
     const wLower = (item.writer || '').toLowerCase();
     const topicLower = (item.topic || '').toLowerCase();
-    const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
-    const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask);
-    const isPrep = tt.includes('prep') || type.includes('prep') || cat.includes('prep');
-    const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+    const isDiscover = tt.includes('discover') || cl.includes('discover');
+    const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
+    const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask));
+    const isPrep = !isDiscover && (tt.includes('prep') || type.includes('prep') || cat.includes('prep'));
+    const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
 
     // 1. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
     const ai = (state.aiReviewCache && state.aiReviewCache[item.topic]) ? state.aiReviewCache[item.topic] : null;
@@ -3984,9 +4004,10 @@
         if (itemDate !== state.reviewDateFilter) return false;
       }
 
-      // Task Type Filter (Prep, Optimization, High Intent, New Content, News)
+      // Task Type Filter (Discover, Prep, Optimization, High Intent, New Content, News)
       if (state.reviewTaskTypeFilter !== 'all') {
         const tf = state.reviewTaskTypeFilter;
+        if (tf === 'discover' && !tt.includes('discover') && !cl.includes('discover')) return false;
         if (tf === 'prep' && !cat.includes('prep') && !tt.includes('prep') && !domain.includes('prep') && !['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) return false;
         if (tf === 'optimization' && !tt.includes('optimi') && !cl.includes('optimization') && !cl.includes('refresh') && !(item.oldDoc && item.oldDoc.startsWith('http'))) return false;
         if (tf === 'high_intent' && !tt.includes('high in') && !tt.includes('pyp') && !pt.includes('ts') && !cl.includes('high intent')) return false;
@@ -4289,13 +4310,14 @@
       const domain = (item.domain || '').toLowerCase();
 
       const topicLower = (item.topic || '').toLowerCase();
-      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
-      const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask);
-      const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha') && !isNews;
-      const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
-      const isOpt = !isNews && !isExplicitNew && !isPrep && (tt.includes('optimi') || type.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
-      const isHighIntent = (tt.includes('high in') || tt.includes('pyp') || pt.includes('ts')) && !isNews;
+      const isDiscover = tt.includes('discover') || (item.classification || '').toLowerCase().includes('discover');
+      const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
+      const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask));
+      const isPrep = !isDiscover && ((cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha') && !isNews);
+      const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+      const isOpt = !isDiscover && !isNews && !isExplicitNew && !isPrep && (tt.includes('optimi') || type.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
+      const isHighIntent = !isDiscover && ((tt.includes('high in') || tt.includes('pyp') || pt.includes('ts')) && !isNews);
       const isFresh = (isPrep && !isOpt) || isExplicitNew;
 
       const points = getItemKpiPointsNumber(item);
@@ -4532,14 +4554,17 @@
           const domain = (item.domain || '').toLowerCase();
           const rawTaskType = item.taskType || item.classification || 'New Content';
 
-          const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || Boolean(item.isNewsTask) || rawTaskType.toLowerCase().includes('news');
-          const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
-          const isHighIntent = (tt.includes('high in') || tt.includes('pyp') || type.includes('high in')) && !isNews;
-          const isOpt = !isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
-          const isPrep = (cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || type.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) && !isNews;
+          const isDiscover = tt.includes('discover') || (item.classification || '').toLowerCase().includes('discover') || rawTaskType.toLowerCase().includes('discover');
+          const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || Boolean(item.isNewsTask) || rawTaskType.toLowerCase().includes('news'));
+          const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+          const isHighIntent = !isDiscover && ((tt.includes('high in') || tt.includes('pyp') || type.includes('high in')) && !isNews);
+          const isOpt = !isDiscover && (!isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))));
+          const isPrep = !isDiscover && ((cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || type.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) && !isNews);
           
           let tierBadge = '';
-          if (isNews) {
+          if (isDiscover) {
+            tierBadge = `<span style="background:#f5f3ff; color:#7c3aed; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✨ ${escapeHtml(rawTaskType)} (1.5p)</span>`;
+          } else if (isNews) {
             tierBadge = item.wordCount >= 500
               ? `<span style="background:#f1f5f9; color:#475569; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">🚨 ${escapeHtml(rawTaskType)} (0.5p)</span>`
               : `<span style="background:#f8fafc; color:#64748b; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⚡ ${escapeHtml(rawTaskType)} (0.25p)</span>`;
@@ -5260,6 +5285,12 @@
     const domain = (item.domain || '').toString().toLowerCase().trim();
     const writer = (item.writer || '').toString().toLowerCase().trim();
     const wc = parseInt(item.wordCount, 10) || 0;
+
+    // Rule: Discover Articles in Task Type = 1.5 Points
+    const isDiscover = tt.includes('discover') || cl.includes('discover');
+    if (isDiscover) {
+      return makePtResult(1.50, 'Discover Article', '#7c3aed', '#f5f3ff', 'discover');
+    }
 
     // Rule: Everything which comes as News in Task Type, Category, Type, or Classification is News
     const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || topic.includes('news') || pt.includes('news') || Boolean(item.isNewsTask);

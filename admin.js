@@ -103,6 +103,11 @@
 
     if (!isApproved) return 0;
 
+    // 0. Discover Articles in Task Type = 1.5 Points
+    if (tt.includes('discover') || (item.classification || '').toLowerCase().includes('discover')) {
+      return 1.5;
+    }
+
     // 1. News & Updates
     if (tt.includes('news')) {
       return words < 500 ? 0.25 : 0.5;
