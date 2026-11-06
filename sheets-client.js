@@ -202,24 +202,19 @@ class SheetsClient {
     // Prep concept tasks (engineering concepts, pedagogy notes) - NEVER require Old Doc
     const isPrep = taskTypeLower.includes('prep') || typeLower.includes('prep') || categoryLower.includes('prep');
 
-    // Explicit new article indicators: Type or Task Type contains 'new' or 'fresh' - NEVER require Old Doc
-    const isExplicitNew = typeLower.includes('new') || 
-                          taskTypeLower.includes('new') || 
-                          typeLower.includes('fresh') || 
-                          taskTypeLower.includes('fresh') ||
-                          classificationLower.includes('new') ||
-                          classificationLower.includes('fresh') ||
-                          categoryLower.includes('new') ||
-                          isHindiWriter ||
-                          isNewContentWriter ||
-                          isPrep;
+    // Explicit new article indicators: Type or Task Type contains 'new' or 'fresh' (and NOT 'news')
+    const isTypeNew = (typeLower.includes('new') && !typeLower.includes('news')) || typeLower.includes('fresh');
+    const isTtNew = (taskTypeLower.includes('new') && !taskTypeLower.includes('news')) || taskTypeLower.includes('fresh');
+    const isClNew = (classificationLower.includes('new') && !classificationLower.includes('news')) || classificationLower.includes('fresh');
+    const isExplicitNew = isTypeNew || isTtNew || isClNew || isHindiWriter || isNewContentWriter || isPrep;
 
-    // An update task requiring Old Doc is strictly ONLY when:
-    // 1. NOT News or Event page
-    // 2. NOT New or Fresh content
-    // 3. NOT Hindi, New Content, or Prep concept writers
-    // 4. Task Type is strictly SEO Optimization or Content Optimization
-    const isUpdateTask = !isNews && !isExplicitNew && !isHindiWriter && !isNewContentWriter && !isPrep && (
+    // An update task requiring Old Doc is when:
+    // 1. NOT explicit New or Fresh content
+    // 2. Type is explicitly 'Update' OR Task Type is SEO/Content Optimization
+    const isUpdateTask = !isExplicitNew && (
+      typeLower === 'update' ||
+      typeLower.includes('update') ||
+      taskTypeLower.includes('optimi') ||
       taskTypeLower === 'seo optimization' ||
       taskTypeLower === 'content optimization' ||
       taskTypeLower === 'optimization'
@@ -258,10 +253,10 @@ class SheetsClient {
           oldDocWordCount: null,
           netWordDiff: null,
           docWordCountText: '🚫 Missing Old Doc',
-          justificationSummary: 'Doc Missing: Task Type is "SEO Optimization", but no baseline Old Doc was provided in Column M. Skipped AI text evaluation to save tokens.',
-          rejectionReasons: ['Missing baseline Old Doc link for SEO Optimization task in Column M.'],
+          justificationSummary: 'Doc Missing: Task is marked as "Update", but no baseline Old Doc was provided in Column M. An Old Doc baseline is strictly required for update tasks to verify rewritten content.',
+          rejectionReasons: ['Missing baseline Old Doc in Column M for Update task.'],
           keyStrengths: [],
-          improvementAreas: ['Attach baseline Old Doc in Column M so the diff and overhaul percentage can be audited.']
+          improvementAreas: ['Attach baseline Old Doc in Column M so the update diff can be audited.']
         }
       };
     }

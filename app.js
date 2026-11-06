@@ -301,12 +301,16 @@
       const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(item.topic || '');
       const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask) || isNewsTopic);
       const isPrep = !isDiscover && (tt.includes('prep') || type.includes('prep') || cat.includes('prep'));
-      const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+      const isTypeNew = (type.includes('new') && !type.includes('news')) || type.includes('fresh');
+      const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
+      const isClNew = (cl.includes('new') && !cl.includes('news')) || cl.includes('fresh');
+      const isExplicitNew = isDiscover || isTypeNew || isTtNew || isClNew || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
       const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
-      const isOpt = !isDiscover && !isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || hasOldDoc || (item.oldDocWordCount > 0));
+      const isUpdateTask = (type === 'update' || type.includes('update') || tt.includes('optimi') || cl.includes('optimization')) && !isExplicitNew;
+      const isOpt = isUpdateTask;
 
-      // If the item now has a valid Old Doc, or is News, or is an explicit New article, purge any stale "Missing Old Doc" cache
-      if (hasOldDoc || isExplicitNew || isNews) {
+      // If the item now has a valid Old Doc, or is an explicit New article, purge any stale "Missing Old Doc" cache
+      if (hasOldDoc || isExplicitNew) {
         const existingCache = state.aiReviewCache[item.topic];
         if (existingCache) {
           const cText = (existingCache.docWordCountText || '') + (existingCache.justificationSummary || '') + JSON.stringify(existingCache.rejectionReasons || []);
@@ -3954,17 +3958,28 @@
     const wLower = (item.writer || '').toLowerCase();
     const topicLower = (item.topic || '').toLowerCase();
     const isDiscover = tt.includes('discover') || cl.includes('discover');
-    const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
-    const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask));
     const isPrep = !isDiscover && (tt.includes('prep') || type.includes('prep') || cat.includes('prep'));
-    const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+    
+    // Strict check: 'new' must NOT match 'news'
+    const isTypeNew = (type.includes('new') && !type.includes('news')) || type.includes('fresh');
+    const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
+    const isClNew = (cl.includes('new') && !cl.includes('news')) || cl.includes('fresh');
+    const isDedicatedFreshWriter = ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+    const isExplicitNew = isDiscover || isTypeNew || isTtNew || isClNew || isDedicatedFreshWriter || isPrep;
+    const isUpdateTask = (type === 'update' || type.includes('update') || tt.includes('optimi') || cl.includes('optimization')) && !isExplicitNew;
+
+    // Absolute Rule 2: Any task marked as 'Update' or 'Optimization' MUST have an Old Doc baseline in Column M!
+    // If Old Doc is missing, it CANNOT be Approved under any circumstances (even if sheet has legacy Approved).
+    if (isUpdateTask && !hasOldDoc) {
+      return 'Doc Missing';
+    }
 
     // 1. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
     const ai = (state.aiReviewCache && state.aiReviewCache[item.topic]) ? state.aiReviewCache[item.topic] : null;
     if (ai && ai.verdict && !ai.running) {
       const cText = (ai.docWordCountText || '') + (ai.justificationSummary || '') + JSON.stringify(ai.rejectionReasons || []);
-      if (/missing.*old doc/i.test(cText) && (hasOldDoc || isExplicitNew || isNews || isPrep)) {
-        // Cache contains stale Missing Old Doc error, but item has Old Doc, is New, is News, or is Prep -> invalidate
+      if (/missing.*old doc/i.test(cText) && (hasOldDoc || isExplicitNew)) {
+        // Cache contains stale Missing Old Doc error, but item now has Old Doc or is New -> invalidate
         delete state.aiReviewCache[item.topic];
       } else {
         return ai.verdict;
@@ -4348,8 +4363,11 @@
       const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask));
       const isPrep = !isDiscover && ((cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
                      wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha') && !isNews);
-      const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
-      const isOpt = !isDiscover && !isNews && !isExplicitNew && !isPrep && (tt.includes('optimi') || type.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
+      const isTypeNew = (type.includes('new') && !type.includes('news')) || type.includes('fresh');
+      const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
+      const isClNew = ((item.classification || '').toLowerCase().includes('new') && !(item.classification || '').toLowerCase().includes('news')) || (item.classification || '').toLowerCase().includes('fresh');
+      const isExplicitNew = isDiscover || isTypeNew || isTtNew || isClNew || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+      const isOpt = !isDiscover && !isExplicitNew && (type === 'update' || type.includes('update') || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
       const isHighIntent = !isDiscover && ((tt.includes('high in') || tt.includes('pyp') || pt.includes('ts')) && !isNews);
       const isFresh = (isPrep && !isOpt) || isExplicitNew;
 
@@ -4589,9 +4607,13 @@
 
           const isDiscover = tt.includes('discover') || (item.classification || '').toLowerCase().includes('discover') || rawTaskType.toLowerCase().includes('discover');
           const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || (item.classification || '').toLowerCase().includes('news') || pt.includes('news') || Boolean(item.isNewsTask) || rawTaskType.toLowerCase().includes('news'));
-          const isExplicitNew = isDiscover || type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh') || cat.includes('new') || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+          const isTypeNew = (type.includes('new') && !type.includes('news')) || type.includes('fresh');
+          const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
+          const isClNew = ((item.classification || '').toLowerCase().includes('new') && !(item.classification || '').toLowerCase().includes('news')) || (item.classification || '').toLowerCase().includes('fresh');
+          const isExplicitNew = isDiscover || isTypeNew || isTtNew || isClNew || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p));
+          const isUpdateTask = (type === 'update' || type.includes('update') || tt.includes('optimi') || cl.includes('optimization')) && !isExplicitNew;
           const isHighIntent = !isDiscover && ((tt.includes('high in') || tt.includes('pyp') || type.includes('high in')) && !isNews);
-          const isOpt = !isDiscover && (!isExplicitNew && !isNews && (type === 'update' || type.includes('optimi') || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http'))));
+          const isOpt = isUpdateTask;
           const isPrep = !isDiscover && ((cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || type.includes('prep') || ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => wLower.includes(p))) && !isNews);
           
           let tierBadge = '';
@@ -4644,10 +4666,10 @@
 
           if (!hasValidDoc) {
             docWordCountColHtml = `<div style="color:#dc2626; font-size:0.72rem; font-weight:700; text-align:center;">🚫 No Doc</div>`;
-          } else if (isOpt && !hasOldDoc && !isNews && !isExplicitNew) {
+          } else if (isUpdateTask && !hasOldDoc) {
             docWordCountColHtml = `
               <div style="color:#b91c1c; font-size:0.78rem; font-weight:800; text-align:center;">🚫 Missing Old Doc</div>
-              <div style="color:#991b1b; font-size:0.68rem; font-weight:600; text-align:center;">Required for Update</div>
+              <div style="color:#991b1b; font-size:0.68rem; font-weight:600; text-align:center;">Required for Update in Col M</div>
             `;
           } else if (aiRecord) {
             if (aiRecord.running) {
@@ -4657,8 +4679,7 @@
             } else if (hasOldDoc || tt.includes('optimi')) {
               const diff = (aiRecord.netWordDiff !== undefined && aiRecord.netWordDiff !== null)
                 ? aiRecord.netWordDiff
-                : (aiRecord.oldDocWordCount ? (aiRecord.newDocWordCount - aiRecord.oldDocWordCount) : 0);
-              const sign = diff >= 0 ? '+' : '';
+                : (aiRecord.oldDocWordCount ? (aiRecord.newDocWordCount - aiRecord.oldDocWordCount) : null);
               const textStr = aiRecord.docWordCountText || '';
               const rwMatch = textStr.match(/~(\d+)w Rewritten/i) || textStr.match(/~(\d+)w Revamped/i);
               const rewrittenWc = aiRecord.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : null);
@@ -4666,20 +4687,28 @@
               const overhaulPct = aiRecord.overhaulPercent || (ovMatch ? ovMatch[1] : null);
 
               if (rewrittenWc) {
+                const sign = (diff !== null && diff >= 0) ? '+' : '';
                 docWordCountColHtml = `
-                  <div style="font-weight:800; color:#15803d; font-size:0.92rem; text-align:center;" title="Old: ${aiRecord.oldDocWordCount || 0}w ➔ New: ${aiRecord.newDocWordCount || 0}w (${sign}${diff}w Net | ${overhaulPct || 91}% Overhaul)">
+                  <div style="font-weight:800; color:#15803d; font-size:0.92rem; text-align:center;" title="Old: ${aiRecord.oldDocWordCount || 0}w ➔ New: ${aiRecord.newDocWordCount || 0}w (${diff !== null ? `${sign}${diff}w Net | ` : ''}${overhaulPct || 91}% Overhaul)">
                     ~${rewrittenWc.toLocaleString()} words
                   </div>
                   <div style="font-size:0.68rem; color:#047857; font-weight:700; text-align:center; white-space:nowrap; margin-top:1px;">
                     Rewritten &amp; Added ${overhaulPct ? `(${overhaulPct}%)` : ''}
                   </div>
                 `;
-              } else {
+              } else if (diff !== null) {
+                const sign = diff >= 0 ? '+' : '';
                 const clr = diff >= 300 ? '#16a34a' : (diff > 0 ? '#d97706' : '#dc2626');
                 docWordCountColHtml = `
                   <div style="font-weight:800; color:${clr}; font-size:0.88rem; text-align:center;" title="New: ${aiRecord.newDocWordCount}w | Old: ${aiRecord.oldDocWordCount || 0}w">
                     ${sign}${diff.toLocaleString()} words
                   </div>
+                `;
+              } else {
+                const repWc = aiRecord.newDocWordCount || item.wordCount || 0;
+                docWordCountColHtml = `
+                  <div style="font-weight:800; color:#0f172a; font-size:0.88rem; text-align:center;">${repWc.toLocaleString()} words</div>
+                  <div style="font-size:0.65rem; color:#475569; text-align:center;">Draft Word Count</div>
                 `;
               }
             } else {
@@ -4692,17 +4721,17 @@
 
           // Verdict / AI Status Column
           let verdictHtml = '';
-          if (aiRecord && aiRecord.running) {
+          if (isUpdateTask && !hasOldDoc) {
+            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Missing Old Doc</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">Old Doc link required in Col M</span></div>`;
+          } else if (aiRecord && aiRecord.running) {
             verdictHtml = `<span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:2px 6px; border-radius:5px; font-size:0.7rem;">⏳ In Progress...</span>`;
           } else if (status === 'Approved' || (aiRecord && aiRecord.isApproved !== false && aiRecord.verdict === 'Approved')) {
             const noteText = (!aiRecord?.fromSheetSync && aiRecord?.justificationSummary) ? aiRecord.justificationSummary : (item.reviewNotes || 'Passed Quality & Word Count Review');
             verdictHtml = `<div style="display:flex; align-items:center; gap:0.35rem;"><span style="background:#dcfce7; color:#15803d; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">✅ Approved</span><span style="color:#15803d; font-size:0.75rem; font-weight:600;">${escapeHtml(noteText)}</span></div>`;
           } else if (!hasValidDoc) {
             verdictHtml = `<span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem;">🚫 No Doc Attached</span>`;
-          } else if (isOpt && !hasOldDoc && !isNews && !isExplicitNew && (!aiRecord || aiRecord.verdict !== 'Approved')) {
-            verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef3c7; color:#b45309; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">⏳ Awaiting Old Doc</span><span style="color:#b45309; font-size:0.72rem; font-weight:600; line-height:1.25;">Required for Update in Col M</span></div>`;
           } else if (status === 'Doc Missing' || aiRecord?.verdict === 'Doc Missing') {
-            const missingMsg = (isOpt && !hasOldDoc && !isNews && !isExplicitNew) ? 'Old Doc required for update in Col M' : 'New Doc link required in Col N';
+            const missingMsg = (isUpdateTask && !hasOldDoc) ? 'Old Doc required for update in Col M' : 'New Doc link required in Col N';
             verdictHtml = `<div style="display:flex; flex-direction:column; gap:2px;"><span style="background:#fef2f2; color:#b91c1c; font-weight:800; padding:2px 6px; border-radius:5px; font-size:0.7rem; width:fit-content;">🚫 Doc Missing</span><span style="color:#b91c1c; font-size:0.72rem; font-weight:600;">${missingMsg}</span></div>`;
           } else if (status === 'Needs Revision' || (aiRecord && aiRecord.verdict === 'Needs Revision')) {
             let reason = (aiRecord && aiRecord.rejectionReasons && aiRecord.rejectionReasons[0]) || (!aiRecord?.fromSheetSync && aiRecord?.justificationSummary ? aiRecord.justificationSummary : '') || item.reviewNotes || '';
@@ -4956,9 +4985,12 @@
     if (cached) {
       const cText = (cached.docWordCountText || '') + (cached.justificationSummary || '') + JSON.stringify(cached.rejectionReasons || []);
       const hasOldDocNow = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
-      const isNews = (item.taskType || '').toLowerCase().includes('news') || (item.type || '').toLowerCase().includes('news') || (item.category || '').toLowerCase().includes('news') || (item.classification || '').toLowerCase().includes('news') || Boolean(item.isNewsTask);
-      const isExplicitNew = (item.type || '').toLowerCase().includes('new') || (item.taskType || '').toLowerCase().includes('new') || (item.type || '').toLowerCase().includes('fresh') || (item.taskType || '').toLowerCase().includes('fresh') || (item.classification || '').toLowerCase().includes('new') || (item.classification || '').toLowerCase().includes('fresh');
-      if (/missing.*old doc/i.test(cText) && (hasOldDocNow || isExplicitNew || isNews)) {
+      const typeLower = (item.type || '').toLowerCase();
+      const ttLower = (item.taskType || '').toLowerCase();
+      const isTypeNew = (typeLower.includes('new') && !typeLower.includes('news')) || typeLower.includes('fresh');
+      const isTtNew = (ttLower.includes('new') && !ttLower.includes('news')) || ttLower.includes('fresh');
+      const isExplicitNew = isTypeNew || isTtNew || (item.classification || '').toLowerCase().includes('fresh');
+      if (/missing.*old doc/i.test(cText) && (hasOldDocNow || isExplicitNew)) {
         delete state.aiReviewCache[item.topic];
         saveAiReviewCache(state.aiReviewCache);
         cached = null;
@@ -5336,8 +5368,8 @@
       }
     }
 
-    // Explicit new indicators
-    const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh');
+    // Explicit new indicators (Strict check: 'new' must NOT match 'news')
+    const isExplicitNew = (type.includes('new') && !type.includes('news')) || (tt.includes('new') && !tt.includes('news')) || type.includes('fresh') || tt.includes('fresh') || cl.includes('fresh');
 
     // Prep check: Category/task/domain contains 'prep' (e.g. IAS Prep, Exam Prep), or assigned to Prep Writer
     const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
@@ -5480,7 +5512,7 @@
     const cl = (item.classification || '').toLowerCase();
     const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask);
     const isExplicitNew = type.includes('new') || tt.includes('new') || type.includes('fresh') || tt.includes('fresh') || cl.includes('new') || cl.includes('fresh');
-    const isUpdateOrOpt = !isNews && !isExplicitNew && (type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
+    const isUpdateOrOpt = !isExplicitNew && (type.includes('update') || type.includes('optimi') || type.includes('refresh') ||
                           tt.includes('update') || tt.includes('optimi') || tt.includes('refresh'));
     const hasOldDoc = item.oldDoc && item.oldDoc.startsWith('http');
     const hasNewDoc = item.newDoc && item.newDoc.startsWith('http');
