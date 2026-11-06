@@ -864,29 +864,35 @@ Use these exact extracted word counts in your evaluation.`;
       // Prep concept tasks: engineering concepts, pedagogy, formulas
       const isPrep = tt.includes('prep') || typeStr.includes('prep') || catStr.includes('prep');
 
-      // New check: Type or Task Type contains 'new' or 'fresh' or Hindi/New Content writer or Prep concept
-      const isNew = typeStr.includes('new') || tt.includes('new') || typeStr.includes('fresh') || tt.includes('fresh') ||
+      // New check: Type or Task Type contains 'new' or 'fresh' (and NOT 'news') or Hindi/New Content writer or Prep concept
+      const isTypeNew = (typeStr.includes('new') && !typeStr.includes('news')) || typeStr.includes('fresh');
+      const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
+      const isNew = isTypeNew || isTtNew ||
                     ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
       const hasOldDoc = Boolean(oldDoc && oldDoc.startsWith('http'));
 
-      // An update task requiring Old Doc is strictly ONLY when:
-      const isUpdateTask = !isNews && !isNew && !isPrep && (
+      // An update task requiring Old Doc is when Type is Update or Task Type is Optimization:
+      const isUpdateTask = !isNew && (
+        typeStr === 'update' ||
+        typeStr.includes('update') ||
+        tt.includes('optimi') ||
         tt === 'seo optimization' ||
         tt === 'content optimization' ||
         tt === 'optimization'
       );
 
-      // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, is News, is Prep, or not an update task:
-      if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (!isUpdateTask || hasOldDoc || !newDoc)) {
+      // Mandatory Old Doc check for all Update tasks:
+      if (isUpdateTask && !hasOldDoc) {
+        reviewStatus = 'Doc Missing';
+        reviewNotes = 'Missing baseline Old Doc link in Column M';
+      } else if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (!isUpdateTask || hasOldDoc || !newDoc)) {
+        // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, is Prep, or not an update task:
         reviewNotes = '';
         if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
           reviewStatus = (!newDoc && !url) ? 'Doc Missing' : 'Pending Review';
         }
-      }
-
-      // News items strictly require only 350 words (300+ for micro news). They NEVER trigger 700-800w rules.
-      // Purge false 700-800w triggers or shortfall notes from News items:
-      if (isNews && reviewNotes && (/700|800|new prep length|optimization shortfall/i.test(reviewNotes) || (/shortfall|deficit/i.test(reviewNotes) && wordCount >= 300))) {
+      } else if (isNews && reviewNotes && (/700|800|new prep length|optimization shortfall/i.test(reviewNotes) || (/shortfall|deficit/i.test(reviewNotes) && wordCount >= 300))) {
+        // News items strictly require only 350 words (300+ for micro news). They NEVER trigger 700-800w rules.
         reviewNotes = '';
         if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
           reviewStatus = (newDoc || url) ? 'Approved' : 'Doc Missing';
