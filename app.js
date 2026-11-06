@@ -4169,6 +4169,31 @@
     const filterSummary = getActiveFilterSummary();
     const filterTag = filterSummary.length > 0 ? ` [${filterSummary.join(' | ')}]` : '';
 
+    // Safety Audit Pre-check: Calculate articles that actually need AI audit
+    const itemsWithDoc = filteredItems.filter(item => Boolean((item.newDoc && String(item.newDoc).startsWith('http')) || (item.url && String(item.url).startsWith('http'))));
+    const itemsNeedingReview = itemsWithDoc.filter(item => {
+      const cached = state.aiReviewCache && state.aiReviewCache[item.topic];
+      const isAlreadyApproved = (cached && cached.isApproved) || item.reviewStatus === 'Approved';
+      return !isAlreadyApproved;
+    });
+
+    if (itemsWithDoc.length === 0) {
+      alert("⚠️ None of the filtered articles have a working Google Doc link attached yet. Please make sure Google Doc links are added before running AI review.");
+      return;
+    }
+
+    // Safety Cost Safeguard: Always ask confirmation before making API calls
+    let forceReAuditAll = false;
+    if (itemsNeedingReview.length === 0) {
+      const reAuditConfirm = window.confirm(`ℹ️ All ${itemsWithDoc.length} filtered article(s) are already Approved!\n\nDo you want to re-audit them with AI anyway?\n(Click Cancel to avoid consuming API tokens)`);
+      if (!reAuditConfirm) return;
+      forceReAuditAll = true;
+    } else {
+      const filterDesc = filterSummary.length > 0 ? `Filters: ${filterSummary.join(' | ')}` : '⚠️ WARNING: No filters applied (All Sheet Articles)';
+      const msg = `⚡ Confirm AI Auto-Review:\n\n• Target to Audit: ${itemsNeedingReview.length} unreviewed article(s)\n• Total in Filter: ${filteredItems.length} article(s)\n• ${filterDesc}\n\nThis will run AI review STRICTLY for these ${itemsNeedingReview.length} filtered article(s) and stop automatically. Nothing outside this filter will run.\n\nDo you want to proceed?`;
+      if (!window.confirm(msg)) return;
+    }
+
     state.aiRunnerActive = true;
     updateAiRunnerUI();
 
@@ -4187,6 +4212,14 @@
       // Strict Rule: Skip items awaiting draft submission; never fail or mark as Needs Revision
       if (!hasDoc) {
         item.reviewStatus = 'Doc Missing';
+        processed++;
+        continue;
+      }
+
+      // Safety: Skip already approved articles to save API tokens unless user forced re-audit
+      const cached = state.aiReviewCache && state.aiReviewCache[item.topic];
+      const isAlreadyApproved = (cached && cached.isApproved) || item.reviewStatus === 'Approved';
+      if (isAlreadyApproved && !forceReAuditAll) {
         processed++;
         continue;
       }
