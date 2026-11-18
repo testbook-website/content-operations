@@ -59,6 +59,9 @@ class SheetsClient {
     if (typeof CATEGORY_GRID_DATA !== 'undefined') {
       this.data.category_grid = CATEGORY_GRID_DATA;
     }
+    if (typeof BASELINE_HINDI_NEW_CONTENT_DATA !== 'undefined') {
+      this.data.hindi_new_content = BASELINE_HINDI_NEW_CONTENT_DATA;
+    }
     this.lastSync = this.data && this.data.timestamp ? new Date(this.data.timestamp) : new Date();
     this.subscribers = [];
     this.countdownSeconds = 30;
@@ -1459,6 +1462,21 @@ Use these exact extracted word counts in your evaluation.`;
         // Soft fail
       }
 
+      // 8. Fetch Hindi SEO Requirement (New Content gid: 557440598) via /api/discover-sheet
+      let liveHindiNewContent = null;
+      try {
+        const respHindi = await fetch('/api/discover-sheet');
+        if (respHindi.ok) {
+          const resJson = await respHindi.json();
+          if (resJson.success && Array.isArray(resJson.rows) && resJson.rows.length > 0) {
+            liveHindiNewContent = resJson.rows;
+            console.log(`✓ Live Hindi SEO New Content fetched (${liveHindiNewContent.length} rows)`);
+          }
+        }
+      } catch (hErr) {
+        // Soft fail
+      }
+
       // Update data store with fresh data or preserve previous
       const activeWorkflow = (workflow && workflow.length > 0) ? workflow : (this.data.workflow_ond || this.data.workflow_jas || []);
       const activeNews = (newsDaily && newsDaily.length > 0) ? newsDaily : (this.data.news_daily || []);
@@ -1468,6 +1486,7 @@ Use these exact extracted word counts in your evaluation.`;
         sheet2_wordcount: s2 || this.data.sheet2_wordcount,
         sheet3_picked: s3 || this.data.sheet3_picked,
         upcoming_events: upcoming && upcoming.length > 0 ? upcoming : (this.data.upcoming_events || []),
+        hindi_new_content: (liveHindiNewContent && liveHindiNewContent.length > 0) ? liveHindiNewContent : (this.data.hindi_new_content || []),
         workflow_ond: activeWorkflow,
         workflow_jas: activeWorkflow,
         news_daily: activeNews,

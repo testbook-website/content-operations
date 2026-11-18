@@ -519,7 +519,7 @@
     discoverDateFilter: 'all', // 'all' | 'today' | 'yesterday' | 'last7days' | 'last14days' | 'last30days'
     discoverCategoryFilter: 'all',
     discoverStatusFilter: 'all', // 'all' | 'picked' | 'unpicked'
-    discoverSourceFilter: 'all', // 'all' | 'workflow' | 'upcoming'
+    discoverSourceFilter: 'all', // 'all' | 'hindi' | 'upcoming'
     discoverSearch: '',
     discoverViewMode: 'matrix', // 'matrix' | 'summary' | 'articles'
     sheetsData: null,
@@ -2826,7 +2826,7 @@
   }
 
   // =========================================================================
-  // TAB: DISCOVER DASHBOARD (Live Tracking: Workflow <OND> & Upcoming Events)
+  // TAB: DISCOVER DASHBOARD (Live Tracking: Hindi SEO & New Content Sheets)
   // =========================================================================
   function normalizeDiscoverCategory(cat) {
     if (!cat) return 'Others';
@@ -2836,14 +2836,15 @@
     if (lower === 'state' || lower === 'state exams' || lower === 'state exam') return 'State Exams';
     if (lower === 'state psc' || lower === 'psc') return 'State PSC';
     if (lower === 'teaching') return 'Teaching';
-    if (lower === 'police') return 'Police';
+    if (lower === 'police' || lower === 'police exam') return 'Police';
     if (lower === 'ssc') return 'SSC';
     if (lower === 'defence' || lower === 'defense') return 'Defence';
     if (lower === 'banking' || lower === 'bank') return 'Banking';
     if (lower === 'engineering') return 'Engineering';
     if (lower === 'entrance') return 'Entrance';
     if (lower === 'regulatory') return 'Regulatory';
-    if (lower === 'other' || lower === 'others' || lower === 'general') return 'Others';
+    if (lower === 'ugc net' || lower === 'ugc') return 'Teaching';
+    if (lower === 'other' || lower === 'others' || lower === 'general' || lower === 'hindi') return 'Others';
     return c;
   }
 
@@ -2862,10 +2863,20 @@
     return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
+  function getHindiNewContentList() {
+    if (client && client.data && client.data.hindi_new_content && client.data.hindi_new_content.length > 0) {
+      return client.data.hindi_new_content;
+    }
+    if (typeof BASELINE_HINDI_NEW_CONTENT_DATA !== 'undefined' && Array.isArray(BASELINE_HINDI_NEW_CONTENT_DATA)) {
+      return BASELINE_HINDI_NEW_CONTENT_DATA;
+    }
+    return [];
+  }
+
   function getDiscoverList() {
     const items = [];
 
-    // Source 1: Upcoming Events (gid: 1107724151)
+    // Source 1: New Content Sheet (gid: 1107724151 inside 1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A)
     // Rule: column H discover in this sheet in column D if it is Picked then it means it is done
     const upcomingList = getUpcomingEventsList();
     upcomingList.forEach((item, idx) => {
@@ -2875,13 +2886,13 @@
       if (!isDiscover) return;
 
       const rawPicked = (item.pickedBy || '').toString().trim();
-      const isPicked = Boolean(rawPicked && !['ditch', 'not required', 'event passed'].includes(rawPicked.toLowerCase()));
+      const isPicked = Boolean(rawPicked && !['ditch', 'not required', 'event passed', '-', 'none', 'unassigned'].includes(rawPicked.toLowerCase()));
       const datePicked = item.datePicked || (isPicked ? item.date : '');
       const pDate = parseUpcomingDate(datePicked || item.date);
 
       items.push({
-        id: `up_${idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`,
-        source: 'Upcoming Events (gid: 1107724151)',
+        id: `nc_${idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`,
+        source: 'New Content Sheet (gid: 1107724151)',
         sourceTag: 'Upcoming',
         sourceUrl: 'https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=1107724151#gid=1107724151',
         rawDate: item.date,
@@ -2898,37 +2909,35 @@
       });
     });
 
-    // Source 2: Workflow <OND> (gid: 436581067)
-    // Rule: task type filter with Discover
-    const workflowList = getWorkflowList();
-    workflowList.forEach((item, idx) => {
-      const tt = (item.taskType || '').toString().toLowerCase().trim();
-      const cl = (item.classification || '').toString().toLowerCase().trim();
-      const type = (item.type || '').toString().toLowerCase().trim();
-      const isDiscover = tt.includes('discover') || cl.includes('discover') || type.includes('discover');
+    // Source 2: Hindi SEO Requirement - "New Content" (gid: 557440598 inside 18imVb9swd70AiRbQEyEgLoqOrxOzZSpuqiwbUcfmUHs)
+    // Rule: in column H Type = Discover which are assigned, and if in column D any name is marked it is picked
+    const hindiList = getHindiNewContentList();
+    hindiList.forEach((item, idx) => {
+      const colH = (item.type || '').toString().toLowerCase().trim();
+      const isDiscover = colH.includes('discover');
       if (!isDiscover) return;
 
-      const writer = (item.writer || '').toString().trim();
-      const isPicked = Boolean(writer && writer.toLowerCase() !== 'unassigned' && writer !== '-');
-      const pDate = parseWorkflowDate(item.date);
+      const rawPicked = (item.pickedBy || '').toString().trim();
+      const isPicked = Boolean(rawPicked && !['-', 'none', 'unassigned'].includes(rawPicked.toLowerCase()));
+      const datePicked = item.datePicked || (isPicked ? item.date : '');
+      const pDate = parseUpcomingDate(datePicked || item.date);
 
       items.push({
-        id: `wf_${item.rowIndex || idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`,
-        source: 'Workflow <OND> (gid: 436581067)',
-        sourceTag: 'Workflow',
-        sourceUrl: 'https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=436581067#gid=436581067',
+        id: `hi_${idx}_${(item.topic || item.page || '').replace(/\W/g, '').substring(0, 15)}`,
+        source: 'Hindi SEO Requirement (gid: 557440598)',
+        sourceTag: 'Hindi',
+        sourceUrl: 'https://docs.google.com/spreadsheets/d/18imVb9swd70AiRbQEyEgLoqOrxOzZSpuqiwbUcfmUHs/edit?gid=557440598#gid=557440598',
         rawDate: item.date,
         pDate: pDate,
-        topic: item.topic || '(Untitled Discover Article)',
+        topic: item.page || item.seoSuggestion || item.topic || '(Untitled Discover Article)',
         category: normalizeDiscoverCategory(item.category),
-        assignedBy: 'Editorial Team',
-        pickedBy: isPicked ? normalizeWriterName(writer) : '',
+        assignedBy: item.assignedBy || 'Editorial Team',
+        pickedBy: isPicked ? normalizeWriterName(rawPicked) : '',
         isPicked: isPicked,
         status: item.status || (isPicked ? 'Done / Picked' : 'Unpicked / Pending'),
-        reviewStatus: item.reviewStatus || '',
-        docLink: item.newDoc || '',
-        url: item.url || '',
-        wordCount: parseInt(item.wordCount, 10) || 0
+        docLink: item.docLink || '',
+        url: item.url || item.publishedUrl || item.draftUrl || '',
+        wordCount: 0
       });
     });
 
@@ -3063,7 +3072,7 @@
       if (state.discoverStatusFilter === 'unpicked' && item.isPicked) return false;
 
       // Source filter
-      if (state.discoverSourceFilter === 'workflow' && item.sourceTag !== 'Workflow') return false;
+      if (state.discoverSourceFilter === 'hindi' && item.sourceTag !== 'Hindi') return false;
       if (state.discoverSourceFilter === 'upcoming' && item.sourceTag !== 'Upcoming') return false;
 
       // Search filter
@@ -3257,9 +3266,9 @@
     }
 
     els.discoverArticlesTableBody.innerHTML = filtered.map((item, idx) => {
-      const sourceBadge = item.sourceTag === 'Workflow'
-        ? `<a href="${item.sourceUrl}" target="_blank" style="background:#f1f5f9; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">📋 Workflow &lt;OND&gt; ↗</a>`
-        : `<a href="${item.sourceUrl}" target="_blank" style="background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">⚡ Upcoming Events ↗</a>`;
+      const sourceBadge = item.sourceTag === 'Hindi'
+        ? `<a href="${item.sourceUrl}" target="_blank" style="background:#f5f3ff; color:#6d28d9; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">📄 Hindi SEO (gid: 557440598) ↗</a>`
+        : `<a href="${item.sourceUrl}" target="_blank" style="background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">⚡ New Content (gid: 1107724151) ↗</a>`;
 
       const statusBadge = item.isPicked
         ? `<span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✅ Picked</span>`
