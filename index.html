@@ -58,6 +58,7 @@
         <button class="tab-btn" data-tab="category" id="tabBtnCategory">📂 Category Wise Date</button>
         <button class="tab-btn" data-tab="upcoming" id="tabBtnUpcoming">⚡ Upcoming Events</button>
         <button class="tab-btn" data-tab="workflow" id="tabBtnWorkflow">📋 Workflow &lt;OND&gt;</button>
+        <button class="tab-btn" data-tab="discover" id="tabBtnDiscover">✨ Discover Dashboard</button>
         <button class="tab-btn" data-tab="calendar" id="tabBtnCalendar">🗓️ Event Calendar</button>
       </div>
 
@@ -520,6 +521,160 @@
     </section>
 
     <!-- =====================================================================
+         TAB: DISCOVER DASHBOARD (Live Tracking: Workflow <OND> & Upcoming Events)
+         ===================================================================== -->
+    <section id="sectionDiscover" style="display:none;">
+      
+      <!-- Summary Banner & Sheet Links -->
+      <div class="simple-banner" id="discoverBanner" style="display:flex; justify-content:space-between; align-items:center; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:8px; padding:0.85rem 1.25rem; margin-bottom:1.25rem;">
+        <div class="banner-left">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <span style="font-size:1.35rem;">✨</span>
+            <span style="font-size:1.1rem; font-weight:700; color:#4c1d95;">Discover Dashboard &amp; Trend Tracker</span>
+            <span class="simple-tag" style="background:#7c3aed; color:#fff; font-weight:700; font-size:0.7rem; padding:2px 8px; border-radius:12px;">1.5 Pts / Task</span>
+            <span class="simple-tag" style="background:#dcfce7; color:#15803d; font-weight:700; font-size:0.7rem; padding:2px 8px; border-radius:12px;" id="discoverLiveBadge">🟢 Live Synced</span>
+          </div>
+          <p style="margin:0.35rem 0 0; font-size:0.8rem; color:#6b21a8;">
+            Dual Data Sources: 
+            <a href="https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=436581067#gid=436581067" target="_blank" style="color:#6d28d9; text-decoration:underline; font-weight:600;">Workflow &lt;OND&gt; (gid: 436581067) ↗</a> 
+            &bull; 
+            <a href="https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=1107724151#gid=1107724151" target="_blank" style="color:#6d28d9; text-decoration:underline; font-weight:600;">Upcoming Events (gid: 1107724151) ↗</a>
+          </p>
+        </div>
+        <div class="banner-tags" style="display:flex; gap:0.5rem; align-items:center;">
+          <button class="btn-action" id="btnExportDiscoverCSV" style="background:#7c3aed; color:#fff; border:none; font-weight:600; font-size:0.78rem; padding:0.4rem 0.85rem; border-radius:6px; cursor:pointer;">📥 Export Discover CSV</button>
+        </div>
+      </div>
+
+      <!-- Executive KPI Cards -->
+      <div class="kpi-cards" id="discoverKpiCards"></div>
+
+      <!-- Filter & Controls Sub-Bar -->
+      <div class="sub-bar" style="flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; background:#ffffff; padding:0.75rem 1rem; border:1px solid #e2e8f0; border-radius:8px;">
+        <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+          
+          <!-- Date Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600; color:#334155;">📅 Date:</label>
+            <select class="select-simple" id="discoverDateFilter">
+              <option value="all" selected>All Dates</option>
+              <option value="today" id="optDiscoverToday">Today</option>
+              <option value="yesterday" id="optDiscoverYesterday">Yesterday</option>
+              <option value="last7days">Last 7 Days</option>
+              <option value="last14days">Last 14 Days</option>
+              <option value="last30days">Last 30 Days</option>
+            </select>
+          </div>
+
+          <!-- Category Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600; color:#334155;">📂 Category:</label>
+            <select class="select-simple" id="discoverCategoryFilter">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+
+          <!-- Status Filter (Picked vs Unpicked) -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600; color:#334155;">Status:</label>
+            <select class="select-simple" id="discoverStatusFilter">
+              <option value="all">All Statuses</option>
+              <option value="picked">✅ Picked / Done</option>
+              <option value="unpicked">⏳ Unpicked / Pending</option>
+            </select>
+          </div>
+
+          <!-- Source Sheet Filter -->
+          <div style="display:flex; align-items:center; gap:0.3rem;">
+            <label style="font-size:0.8rem; font-weight:600; color:#334155;">Sheet Source:</label>
+            <select class="select-simple" id="discoverSourceFilter">
+              <option value="all">All Sheets (Combined)</option>
+              <option value="workflow">Workflow &lt;OND&gt; (gid: 436581067)</option>
+              <option value="upcoming">Upcoming Events (gid: 1107724151)</option>
+            </select>
+          </div>
+
+          <!-- Search Input -->
+          <input type="text" class="input-simple" id="discoverSearch" placeholder="Search topic, category, writer..." style="width:230px;">
+          <span id="discoverCountLabel" style="font-size:0.75rem; color:#6b7280; font-weight:600;"></span>
+        </div>
+
+        <!-- View Mode Switcher -->
+        <div style="display:flex; align-items:center; gap:0.35rem; margin-left:auto;">
+          <button type="button" class="btn-action active" id="btnDiscoverViewMatrix" style="font-size:0.75rem; padding:0.35rem 0.65rem;">📅 Day-Wise Matrix</button>
+          <button type="button" class="btn-action" id="btnDiscoverViewSummary" style="font-size:0.75rem; padding:0.35rem 0.65rem;">📂 Category Summary</button>
+          <button type="button" class="btn-action" id="btnDiscoverViewArticles" style="font-size:0.75rem; padding:0.35rem 0.65rem;">📋 All Articles</button>
+        </div>
+      </div>
+
+      <!-- VIEW 1: Category-Wise, Articles Picked Day-Wise Matrix Table -->
+      <div id="discoverMatrixViewContainer" class="data-table-container" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto; margin-bottom:1.5rem;">
+        <div style="padding:0.75rem 1rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#faf5ff;">
+          <div>
+            <h4 style="margin:0; font-size:0.92rem; color:#4c1d95; font-weight:700;">📅 Category-Wise Articles Picked (Day-by-Day Breakdown Matrix)</h4>
+            <span style="font-size:0.72rem; color:#6b7280;">Number of Discover articles picked per category on each date</span>
+          </div>
+          <span id="discoverMatrixStatsLabel" style="font-size:0.75rem; font-weight:700; color:#5b21b6;"></span>
+        </div>
+        <table class="data-table" id="discoverMatrixTable" style="font-size:0.80rem; width:100%; white-space:nowrap;">
+          <thead id="discoverMatrixHead"></thead>
+          <tbody id="discoverMatrixBody"></tbody>
+        </table>
+      </div>
+
+      <!-- VIEW 2: Category Summary Breakdown Cards/Table -->
+      <div id="discoverSummaryViewContainer" class="data-table-container" style="display:none; background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto; margin-bottom:1.5rem;">
+        <div style="padding:0.75rem 1rem; border-bottom:1px solid #e2e8f0; background:#faf5ff;">
+          <h4 style="margin:0; font-size:0.92rem; color:#4c1d95; font-weight:700;">📂 Category Performance &amp; Pick Rate Summary</h4>
+          <span style="font-size:0.72rem; color:#6b7280;">Overview of total assigned vs picked Discover articles by exam vertical</span>
+        </div>
+        <table class="data-table" id="discoverCategorySummaryTable" style="font-size:0.82rem; width:100%;">
+          <thead>
+            <tr>
+              <th style="min-width:140px;">Category</th>
+              <th class="num-cell" style="min-width:90px;">Total Assigned</th>
+              <th class="num-cell" style="min-width:90px;">Articles Picked</th>
+              <th class="num-cell" style="min-width:90px;">Unpicked Queue</th>
+              <th class="num-cell" style="min-width:90px;">Pick Rate %</th>
+              <th style="min-width:160px;">Progress</th>
+              <th style="min-width:180px;">Active Writers</th>
+            </tr>
+          </thead>
+          <tbody id="discoverCategorySummaryBody"></tbody>
+        </table>
+      </div>
+
+      <!-- VIEW 3: All Discover Articles Drilldown / Table -->
+      <div id="discoverArticlesViewContainer" class="data-table-container" style="display:none; background:#fff; border:1px solid #e2e8f0; border-radius:8px; overflow-x:auto; margin-bottom:1.5rem;">
+        <div style="padding:0.75rem 1rem; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#faf5ff;">
+          <div>
+            <h4 style="margin:0; font-size:0.92rem; color:#4c1d95; font-weight:700;">📋 Discover Articles Inventory &amp; Submission List</h4>
+            <span style="font-size:0.72rem; color:#6b7280;">Detailed list of all Discover topics from Workflow &lt;OND&gt; &amp; Upcoming Events</span>
+          </div>
+          <span id="discoverArticlesCountBadge" style="font-size:0.75rem; font-weight:700; color:#5b21b6;"></span>
+        </div>
+        <table class="data-table" id="discoverArticlesTable" style="font-size:0.80rem; width:100%;">
+          <thead>
+            <tr>
+              <th style="width:35px;">#</th>
+              <th style="min-width:85px;">Date</th>
+              <th style="min-width:220px;">Topic</th>
+              <th style="min-width:110px;">Category</th>
+              <th style="min-width:130px;">Source Sheet</th>
+              <th style="min-width:100px;">Assigned By</th>
+              <th style="min-width:110px;">Picked By / Writer</th>
+              <th style="min-width:90px;">Status</th>
+              <th style="min-width:110px;">Doc Link</th>
+              <th style="min-width:110px;">Live URL</th>
+            </tr>
+          </thead>
+          <tbody id="discoverArticlesTableBody"></tbody>
+        </table>
+      </div>
+
+    </section>
+
+    <!-- =====================================================================
          TAB 6: EVENT CALENDAR (Combined Sheets & Category Filter)
          ===================================================================== -->
     <section id="sectionCalendar" style="display:none;">
@@ -975,14 +1130,14 @@
   </main>
 
   <!-- Data & Application Logic -->
-  <script src="roster-data.js?v=6.3"></script>
-  <script src="sheets-data.js?v=6.3"></script>
-  <script src="category-data.js?v=6.3"></script>
-  <script src="upcoming-data.js?v=6.3"></script>
-  <script src="workflow-data.js?v=6.3"></script>
-  <script src="calendar-data.js?v=6.3"></script>
-  <script src="news-data.js?v=6.3"></script>
-  <script src="sheets-client.js?v=6.3"></script>
-  <script src="app.js?v=6.3"></script>
+  <script src="roster-data.js?v=6.4"></script>
+  <script src="sheets-data.js?v=6.4"></script>
+  <script src="category-data.js?v=6.4"></script>
+  <script src="upcoming-data.js?v=6.4"></script>
+  <script src="workflow-data.js?v=6.4"></script>
+  <script src="calendar-data.js?v=6.4"></script>
+  <script src="news-data.js?v=6.4"></script>
+  <script src="sheets-client.js?v=6.4"></script>
+  <script src="app.js?v=6.4"></script>
 </body>
 </html>

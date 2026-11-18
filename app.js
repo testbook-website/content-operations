@@ -516,6 +516,12 @@
     calendarCategoryFilter: 'all', // 'all' (default combined) | 'Railway' | 'SSC' | 'Engineering' | 'Teaching' | 'State' | 'Police'
     calendarMonthFilter: 'all',
     calendarSearch: '',
+    discoverDateFilter: 'all', // 'all' | 'today' | 'yesterday' | 'last7days' | 'last14days' | 'last30days'
+    discoverCategoryFilter: 'all',
+    discoverStatusFilter: 'all', // 'all' | 'picked' | 'unpicked'
+    discoverSourceFilter: 'all', // 'all' | 'workflow' | 'upcoming'
+    discoverSearch: '',
+    discoverViewMode: 'matrix', // 'matrix' | 'summary' | 'articles'
     sheetsData: null,
     lastSyncTime: null
   };
@@ -680,7 +686,34 @@
     calendarTableBody: document.getElementById('calendarTableBody'),
     btnExportCalendarCSV: document.getElementById('btnExportCalendarCSV'),
     calendarLiveBadge: document.getElementById('calendarLiveBadge'),
-    calendarCategoryPills: document.getElementById('calendarCategoryPills')
+    calendarCategoryPills: document.getElementById('calendarCategoryPills'),
+
+    // Discover Dashboard
+    tabBtnDiscover: document.getElementById('tabBtnDiscover'),
+    sectionDiscover: document.getElementById('sectionDiscover'),
+    discoverKpiCards: document.getElementById('discoverKpiCards'),
+    discoverDateFilter: document.getElementById('discoverDateFilter'),
+    optDiscoverToday: document.getElementById('optDiscoverToday'),
+    optDiscoverYesterday: document.getElementById('optDiscoverYesterday'),
+    discoverCategoryFilter: document.getElementById('discoverCategoryFilter'),
+    discoverStatusFilter: document.getElementById('discoverStatusFilter'),
+    discoverSourceFilter: document.getElementById('discoverSourceFilter'),
+    discoverSearch: document.getElementById('discoverSearch'),
+    discoverCountLabel: document.getElementById('discoverCountLabel'),
+    discoverMatrixHead: document.getElementById('discoverMatrixHead'),
+    discoverMatrixBody: document.getElementById('discoverMatrixBody'),
+    discoverMatrixStatsLabel: document.getElementById('discoverMatrixStatsLabel'),
+    discoverCategorySummaryBody: document.getElementById('discoverCategorySummaryBody'),
+    discoverArticlesTableBody: document.getElementById('discoverArticlesTableBody'),
+    discoverArticlesCountBadge: document.getElementById('discoverArticlesCountBadge'),
+    btnExportDiscoverCSV: document.getElementById('btnExportDiscoverCSV'),
+    discoverLiveBadge: document.getElementById('discoverLiveBadge'),
+    btnDiscoverViewMatrix: document.getElementById('btnDiscoverViewMatrix'),
+    btnDiscoverViewSummary: document.getElementById('btnDiscoverViewSummary'),
+    btnDiscoverViewArticles: document.getElementById('btnDiscoverViewArticles'),
+    discoverMatrixViewContainer: document.getElementById('discoverMatrixViewContainer'),
+    discoverSummaryViewContainer: document.getElementById('discoverSummaryViewContainer'),
+    discoverArticlesViewContainer: document.getElementById('discoverArticlesViewContainer')
   };
 
   // =========================================================================
@@ -832,6 +865,7 @@
           if (state.activeNavTab === 'category') renderCategoryGrid();
           if (state.activeNavTab === 'upcoming') renderUpcomingEvents();
           if (state.activeNavTab === 'workflow') renderWorkflow();
+          if (state.activeNavTab === 'discover') renderDiscoverDashboard();
           if (state.activeNavTab === 'calendar') renderCalendar();
         }
       });
@@ -1036,6 +1070,64 @@
       els.btnExportCalendarCSV.addEventListener('click', exportCalendarCSV);
     }
 
+    // Discover Dashboard Controls
+    if (els.discoverDateFilter) {
+      els.discoverDateFilter.addEventListener('change', (e) => {
+        state.discoverDateFilter = e.target.value;
+        renderDiscoverDashboard(false);
+      });
+    }
+
+    if (els.discoverCategoryFilter) {
+      els.discoverCategoryFilter.addEventListener('change', (e) => {
+        state.discoverCategoryFilter = e.target.value;
+        renderDiscoverDashboard(false);
+      });
+    }
+
+    if (els.discoverStatusFilter) {
+      els.discoverStatusFilter.addEventListener('change', (e) => {
+        state.discoverStatusFilter = e.target.value;
+        renderDiscoverDashboard(false);
+      });
+    }
+
+    if (els.discoverSourceFilter) {
+      els.discoverSourceFilter.addEventListener('change', (e) => {
+        state.discoverSourceFilter = e.target.value;
+        renderDiscoverDashboard(false);
+      });
+    }
+
+    if (els.discoverSearch) {
+      els.discoverSearch.addEventListener('input', (e) => {
+        state.discoverSearch = e.target.value.toLowerCase().trim();
+        renderDiscoverDashboard(false);
+      });
+    }
+
+    if (els.btnExportDiscoverCSV) {
+      els.btnExportDiscoverCSV.addEventListener('click', exportDiscoverCSV);
+    }
+
+    if (els.btnDiscoverViewMatrix) {
+      els.btnDiscoverViewMatrix.addEventListener('click', () => {
+        setDiscoverViewMode('matrix');
+      });
+    }
+
+    if (els.btnDiscoverViewSummary) {
+      els.btnDiscoverViewSummary.addEventListener('click', () => {
+        setDiscoverViewMode('summary');
+      });
+    }
+
+    if (els.btnDiscoverViewArticles) {
+      els.btnDiscoverViewArticles.addEventListener('click', () => {
+        setDiscoverViewMode('articles');
+      });
+    }
+
     // News (N & U Daily) Controls
     if (els.newsDateFilter) {
       els.newsDateFilter.addEventListener('change', (e) => {
@@ -1225,6 +1317,7 @@
     if (els.sectionCategory) els.sectionCategory.style.display = tab === 'category' ? 'block' : 'none';
     if (els.sectionUpcoming) els.sectionUpcoming.style.display = tab === 'upcoming' ? 'block' : 'none';
     if (els.sectionWorkflow) els.sectionWorkflow.style.display = tab === 'workflow' ? 'block' : 'none';
+    if (els.sectionDiscover) els.sectionDiscover.style.display = tab === 'discover' ? 'block' : 'none';
     if (els.sectionCalendar) els.sectionCalendar.style.display = tab === 'calendar' ? 'block' : 'none';
 
     try {
@@ -1237,6 +1330,7 @@
       else if (tab === 'category') renderCategoryGrid();
       else if (tab === 'upcoming') renderUpcomingEvents();
       else if (tab === 'workflow') renderWorkflow();
+      else if (tab === 'discover') renderDiscoverDashboard();
       else if (tab === 'calendar') renderCalendar();
     } catch (err) {
       console.error(`Error rendering active tab ${tab}:`, err);
@@ -2728,6 +2822,503 @@
     });
 
     const filename = `Workflow_OND_${state.workflowDateFilter}_${state.workflowCategoryFilter}.csv`;
+    downloadCSV(csvLines.join('\n'), filename);
+  }
+
+  // =========================================================================
+  // TAB: DISCOVER DASHBOARD (Live Tracking: Workflow <OND> & Upcoming Events)
+  // =========================================================================
+  function normalizeDiscoverCategory(cat) {
+    if (!cat) return 'Others';
+    const c = String(cat).trim();
+    const lower = c.toLowerCase();
+    if (lower === 'railway' || lower === 'railways') return 'Railway';
+    if (lower === 'state' || lower === 'state exams' || lower === 'state exam') return 'State Exams';
+    if (lower === 'state psc' || lower === 'psc') return 'State PSC';
+    if (lower === 'teaching') return 'Teaching';
+    if (lower === 'police') return 'Police';
+    if (lower === 'ssc') return 'SSC';
+    if (lower === 'defence' || lower === 'defense') return 'Defence';
+    if (lower === 'banking' || lower === 'bank') return 'Banking';
+    if (lower === 'engineering') return 'Engineering';
+    if (lower === 'entrance') return 'Entrance';
+    if (lower === 'regulatory') return 'Regulatory';
+    if (lower === 'other' || lower === 'others' || lower === 'general') return 'Others';
+    return c;
+  }
+
+  function formatDiscoverDateKey(d) {
+    if (!d) return 'Undated';
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function formatDiscoverDateDisplay(d) {
+    if (!d) return 'Undated / Backlog';
+    const day = d.getDate();
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  function getDiscoverList() {
+    const items = [];
+
+    // Source 1: Upcoming Events (gid: 1107724151)
+    // Rule: column H discover in this sheet in column D if it is Picked then it means it is done
+    const upcomingList = getUpcomingEventsList();
+    upcomingList.forEach((item, idx) => {
+      const colH = (item.type || item.rawType || '').toString().toLowerCase().trim();
+      const topic = (item.topic || '').toString().toLowerCase().trim();
+      const isDiscover = colH.includes('discover') || topic === 'discover';
+      if (!isDiscover) return;
+
+      const rawPicked = (item.pickedBy || '').toString().trim();
+      const isPicked = Boolean(rawPicked && !['ditch', 'not required', 'event passed'].includes(rawPicked.toLowerCase()));
+      const datePicked = item.datePicked || (isPicked ? item.date : '');
+      const pDate = parseUpcomingDate(datePicked || item.date);
+
+      items.push({
+        id: `up_${idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`,
+        source: 'Upcoming Events (gid: 1107724151)',
+        sourceTag: 'Upcoming',
+        sourceUrl: 'https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=1107724151#gid=1107724151',
+        rawDate: item.date,
+        pDate: pDate,
+        topic: item.topic || '(Untitled Discover Task)',
+        category: normalizeDiscoverCategory(item.category),
+        assignedBy: item.assignedBy || 'Editorial Team',
+        pickedBy: isPicked ? normalizeWriterName(rawPicked) : '',
+        isPicked: isPicked,
+        status: isPicked ? 'Done / Picked' : (item.status || 'Unpicked / Pending'),
+        docLink: item.docLink || '',
+        url: item.url || '',
+        wordCount: 0
+      });
+    });
+
+    // Source 2: Workflow <OND> (gid: 436581067)
+    // Rule: task type filter with Discover
+    const workflowList = getWorkflowList();
+    workflowList.forEach((item, idx) => {
+      const tt = (item.taskType || '').toString().toLowerCase().trim();
+      const cl = (item.classification || '').toString().toLowerCase().trim();
+      const type = (item.type || '').toString().toLowerCase().trim();
+      const isDiscover = tt.includes('discover') || cl.includes('discover') || type.includes('discover');
+      if (!isDiscover) return;
+
+      const writer = (item.writer || '').toString().trim();
+      const isPicked = Boolean(writer && writer.toLowerCase() !== 'unassigned' && writer !== '-');
+      const pDate = parseWorkflowDate(item.date);
+
+      items.push({
+        id: `wf_${item.rowIndex || idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`,
+        source: 'Workflow <OND> (gid: 436581067)',
+        sourceTag: 'Workflow',
+        sourceUrl: 'https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=436581067#gid=436581067',
+        rawDate: item.date,
+        pDate: pDate,
+        topic: item.topic || '(Untitled Discover Article)',
+        category: normalizeDiscoverCategory(item.category),
+        assignedBy: 'Editorial Team',
+        pickedBy: isPicked ? normalizeWriterName(writer) : '',
+        isPicked: isPicked,
+        status: item.status || (isPicked ? 'Done / Picked' : 'Unpicked / Pending'),
+        reviewStatus: item.reviewStatus || '',
+        docLink: item.newDoc || '',
+        url: item.url || '',
+        wordCount: parseInt(item.wordCount, 10) || 0
+      });
+    });
+
+    return items;
+  }
+
+  function setDiscoverViewMode(mode) {
+    state.discoverViewMode = mode;
+    if (els.btnDiscoverViewMatrix) els.btnDiscoverViewMatrix.classList.toggle('active', mode === 'matrix');
+    if (els.btnDiscoverViewSummary) els.btnDiscoverViewSummary.classList.toggle('active', mode === 'summary');
+    if (els.btnDiscoverViewArticles) els.btnDiscoverViewArticles.classList.toggle('active', mode === 'articles');
+
+    if (els.discoverMatrixViewContainer) els.discoverMatrixViewContainer.style.display = mode === 'matrix' ? 'block' : 'none';
+    if (els.discoverSummaryViewContainer) els.discoverSummaryViewContainer.style.display = mode === 'summary' ? 'block' : 'none';
+    if (els.discoverArticlesViewContainer) els.discoverArticlesViewContainer.style.display = mode === 'articles' ? 'block' : 'none';
+  }
+
+  function renderDiscoverDashboard(rebuildCategories = true) {
+    const allItems = getDiscoverList();
+
+    // 1. Compute Today & Overall Metrics
+    const now = new Date();
+    const realToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const realYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+
+    let assignedToday = 0;
+    let pickedToday = 0;
+    let assignedYesterday = 0;
+    let pickedYesterday = 0;
+
+    allItems.forEach(item => {
+      const d = item.pDate;
+      if (d) {
+        if (d.getFullYear() === realToday.getFullYear() && d.getMonth() === realToday.getMonth() && d.getDate() === realToday.getDate()) {
+          assignedToday++;
+          if (item.isPicked) pickedToday++;
+        }
+        if (d.getFullYear() === realYesterday.getFullYear() && d.getMonth() === realYesterday.getMonth() && d.getDate() === realYesterday.getDate()) {
+          assignedYesterday++;
+          if (item.isPicked) pickedYesterday++;
+        }
+      }
+    });
+
+    const totalAssigned = allItems.length;
+    const totalPicked = allItems.filter(x => x.isPicked).length;
+    const unpickedQueue = totalAssigned - totalPicked;
+    const overallPickRate = totalAssigned > 0 ? Math.round((totalPicked / totalAssigned) * 100) : 0;
+    const todayPickRate = assignedToday > 0 ? Math.round((pickedToday / assignedToday) * 100) : 0;
+
+    // Update Date options text
+    if (els.optDiscoverToday) {
+      const dtStr = `${realToday.getDate()} ${realToday.toLocaleString('default', { month: 'short' })}`;
+      els.optDiscoverToday.textContent = `Today (${dtStr}) - ${assignedToday} Assigned`;
+    }
+    if (els.optDiscoverYesterday) {
+      const dtStr = `${realYesterday.getDate()} ${realYesterday.toLocaleString('default', { month: 'short' })}`;
+      els.optDiscoverYesterday.textContent = `Yesterday (${dtStr}) - ${assignedYesterday} Assigned`;
+    }
+
+    // 2. Render Executive KPI Cards
+    if (els.discoverKpiCards) {
+      els.discoverKpiCards.innerHTML = `
+        <div class="kpi-card" style="border-top:3px solid #7c3aed;">
+          <div class="kpi-val" style="color:#7c3aed;">${assignedToday}</div>
+          <div class="kpi-lbl">📅 Assigned Today</div>
+          <div style="font-size:0.7rem; color:#6b7280; margin-top:2px;">${realToday.getDate()} ${realToday.toLocaleString('default', { month: 'short' })}</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #059669;">
+          <div class="kpi-val" style="color:#059669;">${pickedToday}</div>
+          <div class="kpi-lbl">🎯 Picked Today</div>
+          <div style="font-size:0.7rem; color:#059669; font-weight:700; margin-top:2px;">${todayPickRate}% Throughput</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #2563eb;">
+          <div class="kpi-val" style="color:#2563eb;">${totalAssigned}</div>
+          <div class="kpi-lbl">📦 Total Assigned</div>
+          <div style="font-size:0.7rem; color:#6b7280; margin-top:2px;">Both Sheets (Q4)</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #16a34a;">
+          <div class="kpi-val" style="color:#16a34a;">${totalPicked}</div>
+          <div class="kpi-lbl">✅ Total Picked</div>
+          <div style="font-size:0.7rem; color:#16a34a; font-weight:700; margin-top:2px;">${overallPickRate}% Total Picked</div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #d97706;">
+          <div class="kpi-val" style="color:#d97706;">${unpickedQueue}</div>
+          <div class="kpi-lbl">⏳ Unpicked Queue</div>
+          <div style="font-size:0.7rem; color:#b45309; font-weight:600; margin-top:2px;">Awaiting Pick</div>
+        </div>
+      `;
+    }
+
+    // 3. Rebuild Category Dropdown if requested
+    const allCategoriesSet = new Set();
+    allItems.forEach(i => { if (i.category) allCategoriesSet.add(i.category); });
+    const allCategories = Array.from(allCategoriesSet).sort();
+
+    if (rebuildCategories && els.discoverCategoryFilter) {
+      const currentVal = state.discoverCategoryFilter || 'all';
+      let optionsHtml = '<option value="all">All Categories</option>';
+      allCategories.forEach(cat => {
+        optionsHtml += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+      });
+      els.discoverCategoryFilter.innerHTML = optionsHtml;
+      els.discoverCategoryFilter.value = currentVal;
+    }
+
+    // 4. Filter Items based on active filters
+    const filtered = allItems.filter(item => {
+      // Date filter
+      if (state.discoverDateFilter !== 'all') {
+        const d = item.pDate;
+        if (!d) return false;
+        const itemMid = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        const tToday = realToday.getTime();
+        const tYest = realYesterday.getTime();
+        const dayMs = 24 * 60 * 60 * 1000;
+
+        if (state.discoverDateFilter === 'today' && itemMid !== tToday) return false;
+        if (state.discoverDateFilter === 'yesterday' && itemMid !== tYest) return false;
+        if (state.discoverDateFilter === 'last7days' && itemMid < (tToday - 7 * dayMs)) return false;
+        if (state.discoverDateFilter === 'last14days' && itemMid < (tToday - 14 * dayMs)) return false;
+        if (state.discoverDateFilter === 'last30days' && itemMid < (tToday - 30 * dayMs)) return false;
+      }
+
+      // Category filter
+      if (state.discoverCategoryFilter !== 'all') {
+        if (item.category !== state.discoverCategoryFilter) return false;
+      }
+
+      // Status filter
+      if (state.discoverStatusFilter === 'picked' && !item.isPicked) return false;
+      if (state.discoverStatusFilter === 'unpicked' && item.isPicked) return false;
+
+      // Source filter
+      if (state.discoverSourceFilter === 'workflow' && item.sourceTag !== 'Workflow') return false;
+      if (state.discoverSourceFilter === 'upcoming' && item.sourceTag !== 'Upcoming') return false;
+
+      // Search filter
+      if (state.discoverSearch) {
+        const q = state.discoverSearch.toLowerCase();
+        const match = item.topic.toLowerCase().includes(q) ||
+                      item.category.toLowerCase().includes(q) ||
+                      item.pickedBy.toLowerCase().includes(q) ||
+                      item.assignedBy.toLowerCase().includes(q) ||
+                      item.rawDate.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+
+      return true;
+    });
+
+    if (els.discoverCountLabel) {
+      els.discoverCountLabel.textContent = `Showing ${filtered.length} of ${allItems.length} articles`;
+    }
+    if (els.discoverMatrixStatsLabel) {
+      els.discoverMatrixStatsLabel.textContent = `${filtered.filter(x => x.isPicked).length} Picked / ${filtered.length} Total`;
+    }
+    if (els.discoverArticlesCountBadge) {
+      els.discoverArticlesCountBadge.textContent = `${filtered.length} Articles Listed`;
+    }
+
+    // 5. Render VIEW 1: Category-Wise, Articles Picked Day-Wise Matrix Table
+    renderDiscoverMatrixTable(filtered, allCategories);
+
+    // 6. Render VIEW 2: Category Summary Breakdown Table
+    renderDiscoverCategorySummary(allItems, filtered, allCategories);
+
+    // 7. Render VIEW 3: Detailed Articles Submissions Table
+    renderDiscoverArticlesTable(filtered);
+  }
+
+  function renderDiscoverMatrixTable(filtered, allCategories) {
+    if (!els.discoverMatrixHead || !els.discoverMatrixBody) return;
+
+    const activeCats = allCategories.length > 0 ? allCategories : [
+      'Banking', 'Defence', 'Engineering', 'Entrance', 'Police', 'Railway', 'SSC', 'State Exams', 'State PSC', 'Teaching', 'Others'
+    ];
+
+    const dateMap = {};
+    const catTotals = {};
+    activeCats.forEach(c => { catTotals[c] = 0; });
+    let grandTotalPicked = 0;
+    let grandTotalAssigned = 0;
+
+    filtered.forEach(item => {
+      const k = formatDiscoverDateKey(item.pDate);
+      if (!dateMap[k]) {
+        dateMap[k] = {
+          dateKey: k,
+          dateDisplay: formatDiscoverDateDisplay(item.pDate),
+          pDate: item.pDate,
+          assignedTotal: 0,
+          pickedTotal: 0,
+          catPicked: {},
+          catAssigned: {}
+        };
+        activeCats.forEach(c => {
+          dateMap[k].catPicked[c] = 0;
+          dateMap[k].catAssigned[c] = 0;
+        });
+      }
+
+      dateMap[k].assignedTotal++;
+      grandTotalAssigned++;
+      dateMap[k].catAssigned[item.category] = (dateMap[k].catAssigned[item.category] || 0) + 1;
+
+      if (item.isPicked) {
+        dateMap[k].pickedTotal++;
+        grandTotalPicked++;
+        dateMap[k].catPicked[item.category] = (dateMap[k].catPicked[item.category] || 0) + 1;
+        catTotals[item.category] = (catTotals[item.category] || 0) + 1;
+      }
+    });
+
+    const sortedDates = Object.values(dateMap).sort((a, b) => {
+      const tA = a.pDate ? a.pDate.getTime() : 0;
+      const tB = b.pDate ? b.pDate.getTime() : 0;
+      return tB - tA; // Latest date first
+    });
+
+    // Render Table Header
+    els.discoverMatrixHead.innerHTML = `
+      <tr>
+        <th class="col-sticky" style="min-width:130px; background:#f8fafc; font-weight:700;">Date</th>
+        ${activeCats.map(c => `<th class="num-cell" style="min-width:85px; font-weight:700;">${escapeHtml(c)}</th>`).join('')}
+        <th class="num-cell" style="background:#f0fdf4; color:#15803d; min-width:95px; font-weight:800;">Total Picked</th>
+        <th class="num-cell" style="background:#f1f5f9; color:#0f172a; min-width:95px; font-weight:700;">Total Assigned</th>
+        <th class="num-cell" style="background:#faf5ff; color:#6b21a8; min-width:85px; font-weight:700;">Pick Rate</th>
+      </tr>
+    `;
+
+    // Render Grand Total Row at top of table
+    const grandRate = grandTotalAssigned > 0 ? Math.round((grandTotalPicked / grandTotalAssigned) * 100) : 0;
+    const totalsRow = `
+      <tr class="total-row" style="background:#f8fafc; border-bottom:2px solid #cbd5e1;">
+        <td class="col-sticky" style="font-weight:800; color:#0f172a;">TOTAL (${sortedDates.length} Days)</td>
+        ${activeCats.map(c => {
+          const val = catTotals[c] || 0;
+          return `<td class="num-cell" style="font-weight:700;">${val > 0 ? `<span class="pos-val" style="background:#dcfce7; color:#15803d; padding:2px 7px; border-radius:4px; font-weight:800;">${val}</span>` : '<span class="zero-val" style="color:#94a3b8;">-</span>'}</td>`;
+        }).join('')}
+        <td class="num-cell" style="color:#15803d; font-size:0.95rem; font-weight:800;">${grandTotalPicked}</td>
+        <td class="num-cell" style="color:#0f172a; font-size:0.95rem; font-weight:800;">${grandTotalAssigned}</td>
+        <td class="num-cell" style="color:#6b21a8; font-size:0.95rem; font-weight:800;">${grandRate}%</td>
+      </tr>
+    `;
+
+    // Render Daily Matrix Rows
+    const dataRows = sortedDates.map(r => {
+      const rate = r.assignedTotal > 0 ? Math.round((r.pickedTotal / r.assignedTotal) * 100) : 0;
+      return `
+        <tr>
+          <td class="col-sticky" style="font-weight:600; font-family:ui-monospace,monospace; color:#1e293b;">${escapeHtml(r.dateDisplay)}</td>
+          ${activeCats.map(c => {
+            const count = (r.catPicked && r.catPicked[c]) || 0;
+            return `<td class="num-cell">${count > 0 ? `<span class="pos-val" style="font-weight:700; color:#15803d; background:#ecfdf5; padding:1px 6px; border-radius:4px;">${count}</span>` : '<span class="zero-val" style="color:#cbd5e1;">-</span>'}</td>`;
+          }).join('')}
+          <td class="num-cell" style="font-weight:700; color:#15803d;">
+            ${r.pickedTotal > 0 ? `<span style="background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-weight:800;">${r.pickedTotal}</span>` : '<span class="zero-val" style="color:#cbd5e1;">0</span>'}
+          </td>
+          <td class="num-cell" style="font-weight:700; color:#0f172a;">${r.assignedTotal}</td>
+          <td class="num-cell" style="font-weight:600; color:#6b21a8;">${rate}%</td>
+        </tr>
+      `;
+    }).join('');
+
+    els.discoverMatrixBody.innerHTML = totalsRow + (dataRows || '<tr><td colspan="20" style="text-align:center; padding:1.5rem; color:#9ca3af;">No Discover articles match the selected filters.</td></tr>');
+  }
+
+  function renderDiscoverCategorySummary(allItems, filtered, allCategories) {
+    if (!els.discoverCategorySummaryBody) return;
+
+    const catStats = {};
+    allCategories.forEach(c => {
+      catStats[c] = { assigned: 0, picked: 0, writers: new Set() };
+    });
+
+    filtered.forEach(item => {
+      if (!catStats[item.category]) {
+        catStats[item.category] = { assigned: 0, picked: 0, writers: new Set() };
+      }
+      catStats[item.category].assigned++;
+      if (item.isPicked) {
+        catStats[item.category].picked++;
+        if (item.pickedBy) catStats[item.category].writers.add(item.pickedBy);
+      }
+    });
+
+    const rows = Object.keys(catStats).map(cat => {
+      const s = catStats[cat];
+      const unpicked = s.assigned - s.picked;
+      const rate = s.assigned > 0 ? Math.round((s.picked / s.assigned) * 100) : 0;
+      const writersList = Array.from(s.writers).sort().join(', ') || '—';
+      return {
+        cat,
+        assigned: s.assigned,
+        picked: s.picked,
+        unpicked,
+        rate,
+        writersList
+      };
+    }).sort((a, b) => b.assigned - a.assigned);
+
+    els.discoverCategorySummaryBody.innerHTML = rows.map(r => `
+      <tr>
+        <td style="font-weight:700; color:#0f172a;">${escapeHtml(r.cat)}</td>
+        <td class="num-cell" style="font-weight:700;">${r.assigned}</td>
+        <td class="num-cell" style="font-weight:800; color:#15803d;">${r.picked}</td>
+        <td class="num-cell" style="font-weight:600; color:#b45309;">${r.unpicked}</td>
+        <td class="num-cell" style="font-weight:800; color:#6b21a8;">${r.rate}%</td>
+        <td>
+          <div style="background:#e2e8f0; border-radius:999px; height:8px; width:100%; max-width:140px; overflow:hidden;">
+            <div style="background:#10b981; height:100%; width:${r.rate}%;"></div>
+          </div>
+        </td>
+        <td style="font-size:0.75rem; color:#475569;">${escapeHtml(r.writersList)}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:#9ca3af;">No category data.</td></tr>';
+  }
+
+  function renderDiscoverArticlesTable(filtered) {
+    if (!els.discoverArticlesTableBody) return;
+
+    if (filtered.length === 0) {
+      els.discoverArticlesTableBody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:2rem; color:#94a3b8;">No Discover articles found for current filter.</td></tr>';
+      return;
+    }
+
+    els.discoverArticlesTableBody.innerHTML = filtered.map((item, idx) => {
+      const sourceBadge = item.sourceTag === 'Workflow'
+        ? `<a href="${item.sourceUrl}" target="_blank" style="background:#f1f5f9; color:#0369a1; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">📋 Workflow &lt;OND&gt; ↗</a>`
+        : `<a href="${item.sourceUrl}" target="_blank" style="background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">⚡ Upcoming Events ↗</a>`;
+
+      const statusBadge = item.isPicked
+        ? `<span style="background:#dcfce7; color:#15803d; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">✅ Picked</span>`
+        : `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⏳ Unpicked</span>`;
+
+      const writerDisplay = item.pickedBy
+        ? `<span style="font-weight:700; color:#0f172a;">${escapeHtml(item.pickedBy)}</span>`
+        : `<span style="color:#94a3b8; font-style:italic;">Not Picked Yet</span>`;
+
+      const docLinkHtml = item.docLink && item.docLink.startsWith('http')
+        ? `<a href="${item.docLink}" target="_blank" style="color:#2563eb; font-size:0.75rem; text-decoration:underline;">📝 Google Doc ↗</a>`
+        : `<span style="color:#cbd5e1; font-size:0.75rem;">—</span>`;
+
+      const urlHtml = item.url && item.url.startsWith('http')
+        ? `<a href="${item.url}" target="_blank" style="color:#0284c7; font-size:0.75rem; text-decoration:underline;">🌐 Live URL ↗</a>`
+        : `<span style="color:#cbd5e1; font-size:0.75rem;">—</span>`;
+
+      return `
+        <tr>
+          <td style="color:#94a3b8; font-size:0.72rem; text-align:center;">${idx + 1}</td>
+          <td style="font-family:ui-monospace,monospace; font-size:0.75rem; white-space:nowrap;">${escapeHtml(item.rawDate || formatDiscoverDateDisplay(item.pDate))}</td>
+          <td style="font-weight:600; color:#0f172a;">${escapeHtml(item.topic)}</td>
+          <td><span style="background:#f3f4f6; color:#374151; font-weight:600; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${escapeHtml(item.category)}</span></td>
+          <td>${sourceBadge}</td>
+          <td style="font-size:0.75rem; color:#475569;">${escapeHtml(item.assignedBy)}</td>
+          <td>${writerDisplay}</td>
+          <td>${statusBadge}</td>
+          <td>${docLinkHtml}</td>
+          <td>${urlHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function exportDiscoverCSV() {
+    const allItems = getDiscoverList();
+    if (!allItems || allItems.length === 0) return;
+
+    const headers = ['#', 'Date', 'Topic', 'Category', 'Source Sheet', 'Assigned By', 'Picked By / Writer', 'Is Picked', 'Status', 'Doc Link', 'Live URL'];
+    const csvLines = [headers.join(',')];
+
+    allItems.forEach((e, idx) => {
+      const row = [
+        idx + 1,
+        `"${(e.rawDate || formatDiscoverDateDisplay(e.pDate) || '').replace(/"/g, '""')}"`,
+        `"${(e.topic || '').replace(/"/g, '""')}"`,
+        `"${(e.category || '').replace(/"/g, '""')}"`,
+        `"${(e.source || '').replace(/"/g, '""')}"`,
+        `"${(e.assignedBy || '').replace(/"/g, '""')}"`,
+        `"${(e.pickedBy || '').replace(/"/g, '""')}"`,
+        e.isPicked ? 'Yes' : 'No',
+        `"${(e.status || '').replace(/"/g, '""')}"`,
+        `"${(e.docLink || '').replace(/"/g, '""')}"`,
+        `"${(e.url || '').replace(/"/g, '""')}"`
+      ];
+      csvLines.push(row.join(','));
+    });
+
+    const filename = `Discover_Dashboard_Export_${new Date().toISOString().slice(0, 10)}.csv`;
     downloadCSV(csvLines.join('\n'), filename);
   }
 
