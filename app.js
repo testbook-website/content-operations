@@ -2890,16 +2890,21 @@
 
       const rawPicked = (item.pickedBy || '').toString().trim();
       const isPicked = Boolean(rawPicked && !['ditch', 'not required', 'event passed', '-', 'none', 'unassigned'].includes(rawPicked.toLowerCase()));
-      const datePicked = item.datePicked || (isPicked ? item.date : '');
-      const pDate = parseUpcomingDate(datePicked || item.date);
+      const rawAssignedDate = (item.date || '').toString().trim();
+      const rawPickedDate = (item.datePicked || '').toString().trim();
+      const assignedDate = parseUpcomingDate(rawAssignedDate);
+      const pickedDate = parseUpcomingDate(rawPickedDate || rawAssignedDate);
 
       items.push({
         id: `nc_${idx}_${(item.topic || '').replace(/\W/g, '').substring(0, 15)}`,
         source: 'New Content Sheet (gid: 1107724151)',
         sourceTag: 'Upcoming',
         sourceUrl: 'https://docs.google.com/spreadsheets/d/1ihLeB9ZOJdaF841qGLoTWBULSRNsF9BjtxUXRxKuK2A/edit?gid=1107724151#gid=1107724151',
-        rawDate: item.date,
-        pDate: pDate,
+        rawDate: rawAssignedDate,
+        rawPickedDate: rawPickedDate,
+        pDate: assignedDate, // Primary grouping date is the ASSIGNED DATE!
+        assignedDate: assignedDate,
+        pickedDate: pickedDate,
         topic: item.topic || '(Untitled Discover Task)',
         category: normalizeDiscoverCategory(item.category),
         assignedBy: item.assignedBy || 'Editorial Team',
@@ -2922,16 +2927,21 @@
 
       const rawPicked = (item.pickedBy || '').toString().trim();
       const isPicked = Boolean(rawPicked && !['-', 'none', 'unassigned'].includes(rawPicked.toLowerCase()));
-      const datePicked = item.datePicked || (isPicked ? item.date : '');
-      const pDate = parseUpcomingDate(datePicked || item.date);
+      const rawAssignedDate = (item.date || '').toString().trim();
+      const rawPickedDate = (item.datePicked || '').toString().trim();
+      const assignedDate = parseUpcomingDate(rawAssignedDate);
+      const pickedDate = parseUpcomingDate(rawPickedDate || rawAssignedDate);
 
       items.push({
         id: `hi_${idx}_${(item.topic || item.page || '').replace(/\W/g, '').substring(0, 15)}`,
         source: 'Hindi SEO Requirement (gid: 557440598)',
         sourceTag: 'Hindi',
         sourceUrl: 'https://docs.google.com/spreadsheets/d/18imVb9swd70AiRbQEyEgLoqOrxOzZSpuqiwbUcfmUHs/edit?gid=557440598#gid=557440598',
-        rawDate: item.date,
-        pDate: pDate,
+        rawDate: rawAssignedDate,
+        rawPickedDate: rawPickedDate,
+        pDate: assignedDate, // Primary grouping date is the ASSIGNED DATE!
+        assignedDate: assignedDate,
+        pickedDate: pickedDate,
         topic: item.page || item.seoSuggestion || item.topic || '(Untitled Discover Article)',
         category: normalizeDiscoverCategory(item.category),
         assignedBy: item.assignedBy || 'Editorial Team',
@@ -2966,21 +2976,43 @@
     const realToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const realYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
 
+    // Find latest assigned date in the dataset
+    let latestAssignedTime = 0;
+    let latestAssignedDateDisplay = '17 Nov 2026';
+    let latestAssignedCount = 0;
+    let latestAssignedPicked = 0;
+
     let assignedToday = 0;
     let pickedToday = 0;
     let assignedYesterday = 0;
     let pickedYesterday = 0;
 
     allItems.forEach(item => {
-      const d = item.pDate;
+      const d = item.assignedDate || item.pDate;
       if (d) {
-        if (d.getFullYear() === realToday.getFullYear() && d.getMonth() === realToday.getMonth() && d.getDate() === realToday.getDate()) {
+        const itemMid = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        if (itemMid > latestAssignedTime) {
+          latestAssignedTime = itemMid;
+          latestAssignedDateDisplay = formatDiscoverDateDisplay(d);
+        }
+      }
+    });
+
+    allItems.forEach(item => {
+      const d = item.assignedDate || item.pDate;
+      if (d) {
+        const itemMid = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+        if (itemMid === realToday.getTime()) {
           assignedToday++;
           if (item.isPicked) pickedToday++;
         }
-        if (d.getFullYear() === realYesterday.getFullYear() && d.getMonth() === realYesterday.getMonth() && d.getDate() === realYesterday.getDate()) {
+        if (itemMid === realYesterday.getTime()) {
           assignedYesterday++;
           if (item.isPicked) pickedYesterday++;
+        }
+        if (itemMid === latestAssignedTime) {
+          latestAssignedCount++;
+          if (item.isPicked) latestAssignedPicked++;
         }
       }
     });
@@ -2990,6 +3022,7 @@
     const unpickedQueue = totalAssigned - totalPicked;
     const overallPickRate = totalAssigned > 0 ? Math.round((totalPicked / totalAssigned) * 100) : 0;
     const todayPickRate = assignedToday > 0 ? Math.round((pickedToday / assignedToday) * 100) : 0;
+    const latestPickRate = latestAssignedCount > 0 ? Math.round((latestAssignedPicked / latestAssignedCount) * 100) : 0;
 
     // Update Date options text
     if (els.optDiscoverToday) {
@@ -3000,24 +3033,45 @@
       const dtStr = `${realYesterday.getDate()} ${realYesterday.toLocaleString('default', { month: 'short' })}`;
       els.optDiscoverYesterday.textContent = `Yesterday (${dtStr}) - ${assignedYesterday} Assigned`;
     }
+    const optLatest = document.getElementById('optDiscoverLatest');
+    if (optLatest) {
+      optLatest.textContent = `Latest Batch: ${latestAssignedDateDisplay} (${latestAssignedCount} Assigned)`;
+    }
 
     // 2. Render Executive KPI Cards
     if (els.discoverKpiCards) {
+      const card1Html = assignedToday > 0
+        ? `
+          <div class="kpi-card" style="border-top:3px solid #7c3aed;">
+            <div class="kpi-val" style="color:#7c3aed;">${assignedToday}</div>
+            <div class="kpi-lbl">📅 Assigned Today</div>
+            <div style="font-size:0.7rem; color:#6b7280; margin-top:2px;">${realToday.getDate()} ${realToday.toLocaleString('default', { month: 'short' })}</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid #059669;">
+            <div class="kpi-val" style="color:#059669;">${pickedToday}</div>
+            <div class="kpi-lbl">🎯 Picked Today</div>
+            <div style="font-size:0.7rem; color:#059669; font-weight:700; margin-top:2px;">${todayPickRate}% Throughput</div>
+          </div>
+        `
+        : `
+          <div class="kpi-card" style="border-top:3px solid #7c3aed;">
+            <div class="kpi-val" style="color:#7c3aed;">${latestAssignedCount}</div>
+            <div class="kpi-lbl">📅 Latest Batch Assigned</div>
+            <div style="font-size:0.7rem; color:#4c1d95; font-weight:700; margin-top:2px;">${escapeHtml(latestAssignedDateDisplay)} (${latestAssignedCount} Assigned)</div>
+          </div>
+          <div class="kpi-card" style="border-top:3px solid #059669;">
+            <div class="kpi-val" style="color:#059669;">${latestAssignedPicked}</div>
+            <div class="kpi-lbl">🎯 Picked in Latest Batch</div>
+            <div style="font-size:0.7rem; color:#059669; font-weight:700; margin-top:2px;">${latestPickRate}% Throughput (${latestAssignedPicked}/${latestAssignedCount})</div>
+          </div>
+        `;
+
       els.discoverKpiCards.innerHTML = `
-        <div class="kpi-card" style="border-top:3px solid #7c3aed;">
-          <div class="kpi-val" style="color:#7c3aed;">${assignedToday}</div>
-          <div class="kpi-lbl">📅 Assigned Today</div>
-          <div style="font-size:0.7rem; color:#6b7280; margin-top:2px;">${realToday.getDate()} ${realToday.toLocaleString('default', { month: 'short' })}</div>
-        </div>
-        <div class="kpi-card" style="border-top:3px solid #059669;">
-          <div class="kpi-val" style="color:#059669;">${pickedToday}</div>
-          <div class="kpi-lbl">🎯 Picked Today</div>
-          <div style="font-size:0.7rem; color:#059669; font-weight:700; margin-top:2px;">${todayPickRate}% Throughput</div>
-        </div>
+        ${card1Html}
         <div class="kpi-card" style="border-top:3px solid #2563eb;">
           <div class="kpi-val" style="color:#2563eb;">${totalAssigned}</div>
           <div class="kpi-lbl">📦 Total Assigned</div>
-          <div style="font-size:0.7rem; color:#6b7280; margin-top:2px;">Both Sheets (Q4)</div>
+          <div style="font-size:0.7rem; color:#6b7280; margin-top:2px;">Both Sheets (All Q4)</div>
         </div>
         <div class="kpi-card" style="border-top:3px solid #16a34a;">
           <div class="kpi-val" style="color:#16a34a;">${totalPicked}</div>
@@ -3051,13 +3105,14 @@
     const filtered = allItems.filter(item => {
       // Date filter
       if (state.discoverDateFilter !== 'all') {
-        const d = item.pDate;
+        const d = item.assignedDate || item.pDate;
         if (!d) return false;
         const itemMid = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
         const tToday = realToday.getTime();
         const tYest = realYesterday.getTime();
         const dayMs = 24 * 60 * 60 * 1000;
 
+        if (state.discoverDateFilter === 'latest' && itemMid !== latestAssignedTime) return false;
         if (state.discoverDateFilter === 'today' && itemMid !== tToday) return false;
         if (state.discoverDateFilter === 'yesterday' && itemMid !== tYest) return false;
         if (state.discoverDateFilter === 'last7days' && itemMid < (tToday - 7 * dayMs)) return false;
@@ -3120,8 +3175,12 @@
     ];
 
     const dateMap = {};
-    const catTotals = {};
-    activeCats.forEach(c => { catTotals[c] = 0; });
+    const catPickedTotals = {};
+    const catAssignedTotals = {};
+    activeCats.forEach(c => {
+      catPickedTotals[c] = 0;
+      catAssignedTotals[c] = 0;
+    });
     let grandTotalPicked = 0;
     let grandTotalAssigned = 0;
 
@@ -3146,19 +3205,22 @@
       dateMap[k].assignedTotal++;
       grandTotalAssigned++;
       dateMap[k].catAssigned[item.category] = (dateMap[k].catAssigned[item.category] || 0) + 1;
+      catAssignedTotals[item.category] = (catAssignedTotals[item.category] || 0) + 1;
 
       if (item.isPicked) {
         dateMap[k].pickedTotal++;
         grandTotalPicked++;
         dateMap[k].catPicked[item.category] = (dateMap[k].catPicked[item.category] || 0) + 1;
-        catTotals[item.category] = (catTotals[item.category] || 0) + 1;
+        catPickedTotals[item.category] = (catPickedTotals[item.category] || 0) + 1;
       }
     });
 
+    // Sort descending by timestamp; undated items go to the very bottom
     const sortedDates = Object.values(dateMap).sort((a, b) => {
-      const tA = a.pDate ? a.pDate.getTime() : 0;
-      const tB = b.pDate ? b.pDate.getTime() : 0;
-      return tB - tA; // Latest date first
+      if (!a.pDate && !b.pDate) return 0;
+      if (!a.pDate) return 1;
+      if (!b.pDate) return -1;
+      return b.pDate.getTime() - a.pDate.getTime(); // Latest date first
     });
 
     // Render Table Header
@@ -3178,8 +3240,10 @@
       <tr class="total-row" style="background:#f8fafc; border-bottom:2px solid #cbd5e1;">
         <td class="col-sticky" style="font-weight:800; color:#0f172a;">TOTAL (${sortedDates.length} Days)</td>
         ${activeCats.map(c => {
-          const val = catTotals[c] || 0;
-          return `<td class="num-cell" style="font-weight:700;">${val > 0 ? `<span class="pos-val" style="background:#dcfce7; color:#15803d; padding:2px 7px; border-radius:4px; font-weight:800;">${val}</span>` : '<span class="zero-val" style="color:#94a3b8;">-</span>'}</td>`;
+          const p = catPickedTotals[c] || 0;
+          const a = catAssignedTotals[c] || 0;
+          if (a === 0) return `<td class="num-cell"><span class="zero-val" style="color:#94a3b8;">-</span></td>`;
+          return `<td class="num-cell" style="font-weight:700;"><span class="pos-val" style="background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-weight:800;">${p}</span><span style="font-size:0.72rem; color:#64748b; font-weight:600;">/${a}</span></td>`;
         }).join('')}
         <td class="num-cell" style="color:#15803d; font-size:0.95rem; font-weight:800;">${grandTotalPicked}</td>
         <td class="num-cell" style="color:#0f172a; font-size:0.95rem; font-weight:800;">${grandTotalAssigned}</td>
@@ -3194,8 +3258,16 @@
         <tr>
           <td class="col-sticky" style="font-weight:600; font-family:ui-monospace,monospace; color:#1e293b;">${escapeHtml(r.dateDisplay)}</td>
           ${activeCats.map(c => {
-            const count = (r.catPicked && r.catPicked[c]) || 0;
-            return `<td class="num-cell">${count > 0 ? `<span class="pos-val" style="font-weight:700; color:#15803d; background:#ecfdf5; padding:1px 6px; border-radius:4px;">${count}</span>` : '<span class="zero-val" style="color:#cbd5e1;">-</span>'}</td>`;
+            const picked = (r.catPicked && r.catPicked[c]) || 0;
+            const assigned = (r.catAssigned && r.catAssigned[c]) || 0;
+            if (assigned === 0) {
+              return `<td class="num-cell"><span class="zero-val" style="color:#cbd5e1;">-</span></td>`;
+            }
+            if (picked > 0) {
+              return `<td class="num-cell"><span class="pos-val" style="font-weight:800; color:#15803d; background:#dcfce7; padding:2px 6px; border-radius:4px;">${picked}</span><span style="font-size:0.72rem; color:#64748b; font-weight:600;">/${assigned}</span></td>`;
+            } else {
+              return `<td class="num-cell"><span style="font-weight:700; color:#b45309; background:#fef3c7; padding:2px 6px; border-radius:4px; font-size:0.75rem;">0/${assigned}</span></td>`;
+            }
           }).join('')}
           <td class="num-cell" style="font-weight:700; color:#15803d;">
             ${r.pickedTotal > 0 ? `<span style="background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-weight:800;">${r.pickedTotal}</span>` : '<span class="zero-val" style="color:#cbd5e1;">0</span>'}
@@ -3268,7 +3340,14 @@
       return;
     }
 
-    els.discoverArticlesTableBody.innerHTML = filtered.map((item, idx) => {
+    // Sort latest assigned articles first so newest batch is on top
+    const sortedArticles = [...filtered].sort((a, b) => {
+      const tA = a.assignedDate ? a.assignedDate.getTime() : 0;
+      const tB = b.assignedDate ? b.assignedDate.getTime() : 0;
+      return tB - tA;
+    });
+
+    els.discoverArticlesTableBody.innerHTML = sortedArticles.map((item, idx) => {
       const sourceBadge = item.sourceTag === 'Hindi'
         ? `<a href="${item.sourceUrl}" target="_blank" style="background:#f5f3ff; color:#6d28d9; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">📄 Hindi SEO (gid: 557440598) ↗</a>`
         : `<a href="${item.sourceUrl}" target="_blank" style="background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600; text-decoration:none;">⚡ New Content (gid: 1107724151) ↗</a>`;
@@ -3278,7 +3357,7 @@
         : `<span style="background:#fef3c7; color:#b45309; font-weight:700; padding:2px 6px; border-radius:4px; font-size:0.7rem;">⏳ Unpicked</span>`;
 
       const writerDisplay = item.pickedBy
-        ? `<span style="font-weight:700; color:#0f172a;">${escapeHtml(item.pickedBy)}</span>`
+        ? `<div><strong style="color:#0f172a;">${escapeHtml(item.pickedBy)}</strong></div>${item.rawPickedDate ? `<div style="font-size:0.68rem; color:#059669; font-weight:600;">Picked: ${escapeHtml(item.rawPickedDate)}</div>` : ''}`
         : `<span style="color:#94a3b8; font-style:italic;">Not Picked Yet</span>`;
 
       const docLinkHtml = item.docLink && item.docLink.startsWith('http')

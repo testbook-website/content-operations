@@ -1,7 +1,7 @@
 /**
  * Baseline Snapshot of Hindi SEO Content Requirement - "New Content" (Google Sheet gid: 557440598)
  * Spreadsheet ID: 18imVb9swd70AiRbQEyEgLoqOrxOzZSpuqiwbUcfmUHs
- * Last Generated: 2026-11-18T06:53:21.718Z
+ * Last Generated: 2026-11-18T07:37:57.841Z
  */
 const BASELINE_HINDI_NEW_CONTENT_DATA = [
   {
@@ -54,47 +54,9 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "type": "Discover",
     "draftUrl": "",
     "docLink": "",
-    "url": "bpsc-tre-4-answer-key-2026-download-objection-process",
-    "publishedUrl": "",
-    "seoSuggestion": "BPSC TRE 4.0 Answer Key 2026: बिहार शिक्षक भर्ती परीक्षा की आंसर की जल्द होगी जारी, जानें डाउनलोड लिंक, रिस्पॉन्स शीट और आपत्ति दर्ज करने की प्रक्रिया।",
-    "status": "Pending",
-    "keywords": "",
-    "reference": ""
-  },
-  {
-    "date": "17th Nov 2026",
-    "assignedBy": "Ujjawal",
-    "datePicked": "",
-    "pickedBy": "",
-    "priority": "",
-    "category": "Teaching",
-    "page": "Discover",
-    "topic": "Discover",
-    "type": "Discover",
-    "draftUrl": "",
-    "docLink": "",
     "url": "rajasthan-vidya-sambal-yojana-required-documents-2026",
     "publishedUrl": "",
-    "seoSuggestion": "Rajasthan Vidya Sambal Yojana 2026: विद्या संबल योजना के लिए कौन-कौन से डॉक्यूमेंट चाहिए? देखें पूरी लिस��ट",
-    "status": "Pending",
-    "keywords": "",
-    "reference": ""
-  },
-  {
-    "date": "17th Nov 2026",
-    "assignedBy": "Ujjawal",
-    "datePicked": "",
-    "pickedBy": "",
-    "priority": "",
-    "category": "Teaching",
-    "page": "Discover",
-    "topic": "Discover",
-    "type": "Discover",
-    "draftUrl": "",
-    "docLink": "",
-    "url": "bpsc-tre-4-result-2026-cutoff-merit-list-scorecard",
-    "publishedUrl": "",
-    "seoSuggestion": "BPSC TRE 4.0 Result 2026: बिहार शिक्षक भर्ती का रिजल्ट जल्द होगा जारी, जानें रिजल्ट डेट, कटऑफ, मेरिट लिस्ट और स्कोरकार्ड डाउनलोड करने का तरीका।",
+    "seoSuggestion": "Rajasthan Vidya Sambal Yojana 2026: विद्या संबल योजना के लिए कौन-कौन से डॉक्यूमेंट चाहिए? देखें पूरी लिस्ट",
     "status": "Pending",
     "keywords": "",
     "reference": ""
@@ -119,6 +81,63 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "reference": ""
   },
   {
+    "date": "17th Nov 2026",
+    "assignedBy": "Ujjawal",
+    "datePicked": "18 November 2026",
+    "pickedBy": "Anshika",
+    "priority": "",
+    "category": "Teaching",
+    "page": "Discover",
+    "topic": "Discover",
+    "type": "Discover",
+    "draftUrl": "",
+    "docLink": "",
+    "url": "bpsc-tre-4-result-2026-cutoff-merit-list-scorecard",
+    "publishedUrl": "",
+    "seoSuggestion": "BPSC TRE 4.0 Result 2026: बिहार शिक्षक भर्ती का रिजल्ट जल्द होगा जारी, जानें रिजल्ट डेट, कटऑफ, मेरिट लिस्ट और स्कोरकार्ड डाउनलोड करने का तरीका।",
+    "status": "Done",
+    "keywords": "",
+    "reference": ""
+  },
+  {
+    "date": "17th Nov 2026",
+    "assignedBy": "Ujjawal",
+    "datePicked": "18 November 2026",
+    "pickedBy": "Anshika",
+    "priority": "",
+    "category": "Teaching",
+    "page": "Discover",
+    "topic": "Discover",
+    "type": "Discover",
+    "draftUrl": "",
+    "docLink": "",
+    "url": "bpsc-tre-4-answer-key-2026-download-objection-process",
+    "publishedUrl": "",
+    "seoSuggestion": "BPSC TRE 4.0 Answer Key 2026: बिहार शिक्षक भर्ती परीक्षा की आंसर की जल्द होगी जारी, जानें डाउनलोड लिंक, रिस्पॉन्स शीट और आपत्ति दर्ज करने की प्रक्रिया।",
+    "status": "Done",
+    "keywords": "",
+    "reference": ""
+  },
+  {
+    "date": "16th Nov 2026",
+    "assignedBy": "Ranjeet",
+    "datePicked": "18 November 2026",
+    "pickedBy": "Anshika",
+    "priority": "",
+    "category": "State Exams",
+    "page": "Discover",
+    "topic": "Discover",
+    "type": "Discover",
+    "draftUrl": "",
+    "docLink": "",
+    "url": "rajasthan-cet-2026-admit-card-kab-aayega",
+    "publishedUrl": "",
+    "seoSuggestion": "rajasthan cet ka admit card kab jari hoga",
+    "status": "Done",
+    "keywords": "",
+    "reference": ""
+  },
+  {
     "date": "16th Nov 2026",
     "assignedBy": "Ranjeet",
     "datePicked": "",
@@ -132,7 +151,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "rajasthan-cet-exam-centre-list-2026-27",
     "publishedUrl": "",
-    "seoSuggestion": "Rajasthan CET Exam Centre List 2026-27, राजस्थान सीईटी परीक्षा केंद्र��ं की पूरी लिस्ट",
+    "seoSuggestion": "Rajasthan CET Exam Centre List 2026-27, राजस्थान सीईटी परीक्षा केंद्रों की पूरी लिस्ट",
     "status": "Pending",
     "keywords": "",
     "reference": ""
@@ -190,25 +209,6 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "url": "rajasthan-gk-1000-question",
     "publishedUrl": "",
     "seoSuggestion": "राजस्थान जीके 1000 क्वेश्चन",
-    "status": "Pending",
-    "keywords": "",
-    "reference": ""
-  },
-  {
-    "date": "16th Nov 2026",
-    "assignedBy": "Ranjeet",
-    "datePicked": "",
-    "pickedBy": "",
-    "priority": "",
-    "category": "State Exams",
-    "page": "Discover",
-    "topic": "Discover",
-    "type": "Discover",
-    "draftUrl": "",
-    "docLink": "",
-    "url": "rajasthan-cet-2026-admit-card-kab-aayega",
-    "publishedUrl": "",
-    "seoSuggestion": "rajasthan cet ka admit card kab jari hoga",
     "status": "Pending",
     "keywords": "",
     "reference": ""
@@ -531,7 +531,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1H6bne99d1AdbgpI6BuBzeb7agFzNN5366zB6lWuiQW8/edit?tab=t.0#heading=h.gmdq8ui37gyc",
     "url": "upsssc-pet-result-2026-kab-aayega/",
     "publishedUrl": "https://testbook.com/news/upsssc-pet-result-2026-kab-aayega/",
-    "seoSuggestion": "UPSSSC पेट का रिजल्ट कब आएगा 2026",
+    "seoSuggestion": "UPSSSC पेट का रिज��्ट कब आएगा 2026",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -1956,7 +1956,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1WfWkQB-2NcjQE7PYZgp4mJ6L_8_9mad2XQ-Y70p1vdU/edit?tab=t.0",
     "url": "upsssc-pet-2026-admit-card-out-upsssc-gov-in",
     "publishedUrl": "",
-    "seoSuggestion": "यूपी पीईटी एडमिट कार्ड 2026 जारी  @upsssc.gov.in, प��ईटी हॉल टिकट PDF डाउनलोड करें",
+    "seoSuggestion": "यूपी पीईटी ���डमिट कार्ड 2026 जारी  @upsssc.gov.in, पीईटी हॉल टिकट PDF डाउनलोड करें",
     "status": "Drafted",
     "keywords": "",
     "reference": ""
@@ -1994,7 +1994,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1m8QQ4nLEk53ghBJI3HxJlLSjMApcsg034Q36WV1IUkg/edit?usp=sharing",
     "url": "up-govt-jobs-contract-workers-and-salary",
     "publishedUrl": "https://testbook.com/news/up-govt-jobs-contract-workers-and-salary/",
-    "seoSuggestion": "संविदा कर्मी में कौन-कौन से विभाग आते हैं, और सैलरी कितनी होती है?",
+    "seoSuggestion": "संविदा कर्मी में कौन-कौन से विभाग आते है��, और सैलरी कितनी होती है?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -2222,7 +2222,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/19o3qiBBFt2C9QzETcqiqysPfgBB8btSLuPs_sYuMLG4/edit?tab=t.0",
     "url": "mp-govt-jobs-2026",
     "publishedUrl": "https://testbook.com/news/mp-govt-jobs-2026/",
-    "seoSuggestion": "MP Govt Jobs 2026, मध्यप्रदेश में सरकारी नौकरी के लिए कौ���-कौन सी भर्तियां निकली है",
+    "seoSuggestion": "MP Govt Jobs 2026, मध्यप्रदे�� में सरकारी नौकरी के लिए कौन-कौन सी भर्तियां निकली है",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -2260,7 +2260,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1zX4AFS1W2rB8HT8JhawiGR6MQ3V0nPa7MRR1-y5capk/edit?usp=sharing",
     "url": "indian-army-agniveer-me-kitna-height-chahiye",
     "publishedUrl": "https://testbook.com/news/indian-army-agniveer-me-kitna-height-chahiye/",
-    "seoSuggestion": "Indian Army में भर्ती के लिए कितनी होनी चाहिए हाइट?",
+    "seoSuggestion": "Indian Army में भर्ती के लिए कितनी होनी च��हिए हाइट?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -2412,7 +2412,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1qdU2EeujBBEyXp1BJr3CUxkt-txoQEYQ03iuoEo0Flw/edit?usp=sharing",
     "url": "rajasthan-cet-passing-marks",
     "publishedUrl": "https://testbook.com/news/rajasthan-cet-passing-marks/",
-    "seoSuggestion": "rajasthan Cet ���ें कितने नंबर चाहिए पास होने के लिए?",
+    "seoSuggestion": "rajasthan Cet में कितने नंबर चाहिए पास होने के लिए?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -2754,7 +2754,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1XBFTlj_p7M_kkcueHfXczxOdixeKiDDmtACgq4ZlQeA/edit?usp=sharing",
     "url": "patwari-vs-net-exam-kaun-sa-kathin-hai",
     "publishedUrl": "https://testbook.com/news/patwari-vs-net-exam-kaun-sa-kathin-hai/",
-    "seoSuggestion": "पटवारी का पेपर और नेट का पेपर इन दोनों परीक्षाओं में से कठिन कौन सा होत��� है ?",
+    "seoSuggestion": "पटवारी का पेपर और नेट का पेपर इन दोनों परीक��षाओं में से कठिन कौन सा होता है ?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -3305,7 +3305,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1FoVskeS_YcfKXaympTtUaroi0G1ip49Hb4ijsbJnKxY/edit?pli=1&tab=t.0",
     "url": "/dmrc-je-bharti-2026/",
     "publishedUrl": "https://testbook.com/news/dmrc-je-bharti-2026/",
-    "seoSuggestion": "MT< H1- DMRC JE भर्ती 2026, दिल्ली मेट्रो में जेई कैसे बनते है, कैस��� पाएं नौकरी, जाने सैलरी",
+    "seoSuggestion": "MT< H1- DMRC JE भर्ती 2026, दि��्ली मेट्रो में जेई कैसे बनते है, कैसे पाएं नौकरी, जाने सैलरी",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -3457,7 +3457,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1MMx4bFJafjhGKO5rERYqtjc8GTPtOIySvl-z2oSXYTE/edit?usp=sharing",
     "url": "rrb-ntpc-ki-taiyari-kaise-kare/",
     "publishedUrl": "https://testbook.com/news/rrb-ntpc-ki-taiyari-kaise-kare/",
-    "seoSuggestion": "RRB NTPC की तैयारी क���से करें?",
+    "seoSuggestion": "RRB NTPC की तैयारी कैसे करें?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -3609,7 +3609,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1aM9QBckUIDErb0TnoTsll5lBmzUsEMCg-MRjKFE97oU/edit?usp=sharing",
     "url": "ibps-clerk-kya-hota-hai",
     "publishedUrl": "https://testbook.com/news/ibps-clerk-kya-hota-hai/",
-    "seoSuggestion": "IBPS Clerk Kya Hota Hai? योग्यता, सैलरी, काम, चयन प्रक्रिया और करियर की पू��ी जानकारी",
+    "seoSuggestion": "IBPS Clerk Kya Hota Hai? योग्यता, सैल���ी, काम, चयन प्रक्रिया और करियर की पूरी जानकारी",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -3951,7 +3951,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/15DBmHLNMy-BMkWFtMd9VahlooYxKV6x6hbZmsHaechY/edit?usp=sharing",
     "url": "uppsc-officer-salary-2026-pdf-allowances-responsibility-career-growth",
     "publishedUrl": "https://testbook.com/news/uppsc-officer-salary-2026-pdf-allowances-responsibility-career-growth/",
-    "seoSuggestion": "UPPCS अधिकारी की सैलर��� कितनी होती है? अधिकारी की जिम्मेदारियां क्या होती हैं?",
+    "seoSuggestion": "UPPCS अधिकारी की सैलरी कितनी होती है? अधिकारी की जिम्मेदारियां क्या होती हैं?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -3989,7 +3989,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1RRGTSjdNLHqBJX94utej-YmF4vD47WJmHbddiQQSwp8/edit?tab=t.0",
     "url": "uppsc-pcs-2026-expected-vacancy/",
     "publishedUrl": "https://testbook.com/news/uppsc-pcs-2026-expected-vacancy/",
-    "seoSuggestion": "MT: UPPSC PCS Vacancy Increase का चयन प्रक्रिया पर क्या प्रभाव होगा? H1: UPPSC अभ्यर्थियों के लि��� बड़ी उम्मीद! क्या बढ़ सकती हैं PCS की वैकेंसी?",
+    "seoSuggestion": "MT: UPPSC PCS Vacancy Increase का चयन प्रक्रिया पर क्य��� प्रभाव होगा? H1: UPPSC अभ्यर्थियों के लिए बड़ी उम्मीद! क्या बढ़ सकती हैं PCS की वैकेंसी?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -4160,7 +4160,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1X7JXepKq0lh8K0E81fwQGBW9RaBD08RXbvmoxwezbrE/edit?usp=sharing",
     "url": "uppsc-ro-aro-vacancy-2026",
     "publishedUrl": "https://testbook.com/news/uppsc-ro-aro-vacancy-2026/",
-    "seoSuggestion": "UPPSC RO ARO Ki Vacancy Kab Aayegi, जानें यूपी आरओ एआरओ के 428 ���दों  का पूरा विवरण",
+    "seoSuggestion": "UPPSC RO ARO Ki Vacancy Kab Aayegi, जानें यूपी आरओ एआरओ के 428 पदों  का पूरा विवरण",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -4198,7 +4198,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1XaRN6kZJtpxWIj3wcG6UYk_6PNN8We4XHmU2xQH0F-A/edit?usp=sharing",
     "url": "bihar-police-constable-operator-result-2026-out",
     "publishedUrl": "",
-    "seoSuggestion": "MT, H1- Bihar Police Constable Operator Result 2026 Out, बिहार पुलिस परिचालक स्कोरकार्ड , मेरिट लिस्ट पीडीएफ @csbc.bihar.gov.in",
+    "seoSuggestion": "MT, H1- Bihar Police Constable Operator Result 2026 Out, बिहार पुलिस परिचालक स्कोरकार्ड , मेरिट ���िस्ट पीडीएफ @csbc.bihar.gov.in",
     "status": "Drafted",
     "keywords": "",
     "reference": ""
@@ -4293,7 +4293,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1Y3TUu0tAp7RdeQfBS8GbXiE4puK6gPsjOqOzPQjrets/edit?usp=sharing",
     "url": "rajasthan-cet-12th-level-jobs-list",
     "publishedUrl": "https://testbook.com/news/rajasthan-cet-12th-level-jobs-list/",
-    "seoSuggestion": "राजस��थान CET 12वीं लेवल की नौकरियां 2026: पूरी लिस्ट और पदों की जानकारी",
+    "seoSuggestion": "राजस्थान CET 12वीं लेवल की नौकरियां 2026: पूरी लिस्ट और पदों की जानकारी",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -4540,7 +4540,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1SsXyv9Zi52kBx2D15F3z5SHK6B5SwmBO1IpDH6ST_V0/edit?usp=sharing",
     "url": "/polytechnic-railway-jobs/",
     "publishedUrl": "https://testbook.com/news/polytechnic-railway-jobs/",
-    "seoSuggestion": "Polytechnic Railway Jobs 2026: पॉलीटेक्निक करने के बा�� रेलवे में कौन कौन सी नौकरी आप कर सकते है",
+    "seoSuggestion": "Polytechnic Railway Jobs 2026: पॉलीटेक्निक करने के बाद रेलवे में कौन कौन सी नौकरी आप कर सकते है",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -5224,7 +5224,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1M9OGSOyaTXxuCTJI2DxWfF8jZDGmYcVo7OqcYED1QCQ/edit?tab=t.0#heading=h.w9vvjwxitlr",
     "url": "crpf-constable-exam-date-2026",
     "publishedUrl": "https://testbook.com/news/crpf-constable-exam-date-2026/",
-    "seoSuggestion": "MT, h1- CRPF Exam Date 2026: सीआरपीएफ का एग्जाम कब होगा, जाने पर���क्षा तिथि",
+    "seoSuggestion": "MT, h1- CRPF Exam Date 2026: सीआरपीएफ का एग्जाम कब होगा, जाने परीक्षा तिथि",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -5357,7 +5357,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1Mm9q5WDkKzU-g2wI7MBkxsMKzSo5NZeIrkgHZzK8DG8/edit?usp=sharing",
     "url": "rsmssb-forester-exam-day-guidelines-2026",
     "publishedUrl": "https://testbook.com/news/rsmssb-forester-exam-day-guidelines-2026/",
-    "seoSuggestion": "राजस्थान वनपाल एग्जाम डे गाइडलाइन��स 2026, रिपोर्टिंग समय, क्या ले जाना है या क्या नहीं ले जाना है",
+    "seoSuggestion": "राजस्थान वनपाल एग्जाम डे गाइडलाइन्स 2026, रिपोर्टिंग समय, क्या ले जाना है या क्या नहीं ले जाना है",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -5433,7 +5433,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1HouwjEYXKgT3OxIUHndTgqkZZfdw2cSZpRnEqqyja7o/edit?usp=sharing",
     "url": "bssc-cgl-exam-2026-kab-hoga",
     "publishedUrl": "https://testbook.com/news/bssc-cgl-exam-2026-kab-hoga/",
-    "seoSuggestion": "बिहार एसएससी सीजीएल 4 का एग्जाम कब होगा?",
+    "seoSuggestion": "बिहार एसएससी ���ीजीएल 4 का एग्जाम कब होगा?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -5718,7 +5718,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "ugc-net-vs-kvs-vs-nvs-which-to-prepare-for",
     "publishedUrl": "",
-    "seoSuggestion": "MT: UGC NET vs KVS/NVS: बेहतर शिक्षण क��ियर के लिए किस परीक्षा की तैयारी करनी चाहिए?",
+    "seoSuggestion": "MT: UGC NET vs KVS/NVS: बेहतर शिक्षण करियर के लिए किस परीक्षा की तैयारी करनी चाहिए?",
     "status": "Pending",
     "keywords": "",
     "reference": ""
@@ -5775,7 +5775,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "up-police-jail-warder-exam-date-2026-out",
     "publishedUrl": "",
-    "seoSuggestion": "MT, H1- UP Police Jail Warder Exam Date 2026 Out, यूपी पुलिस जेल वार्डर परीक्षा ति���ि जारी @uppbpb.gov.in",
+    "seoSuggestion": "MT, H1- UP Police Jail Warder Exam Date 2026 Out, यूपी पुलिस जेल वार्डर परीक्षा तिथि जारी @uppbpb.gov.in",
     "status": "Pending",
     "keywords": "",
     "reference": ""
@@ -5851,7 +5851,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1TZorDwGSv6m2329kbpJ5nW0yMHYeIVturIvP0tI2hlw/edit?usp=sharing",
     "url": "csbc-bihar-police-prohibition-constable-result-2026-out",
     "publishedUrl": "",
-    "seoSuggestion": "MT, H1- Bihar Police Prohibition Constable Result 2026 Out, बिहार पुलिस निषेध सिपाही  र���जल्ट डाउनलोड लिंक @csbc.bihar.gov.in",
+    "seoSuggestion": "MT, H1- Bihar Police Prohibition Constable Result 2026 Out, बिहार पुलिस निषेध सिपाही  रिजल्ट डाउनलोड लिंक @csbc.bihar.gov.in",
     "status": "Drafted",
     "keywords": "",
     "reference": ""
@@ -6060,7 +6060,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1Mktpc0Uzpf5Nrwb1RK_77rD8DhwCBJrV6htiAxjagno/edit?tab=t.0",
     "url": "rsmssb-forester-forest-guard-admit-card-2026-out",
     "publishedUrl": "",
-    "seoSuggestion": "राजस्थान वनप��ल वनरक्षक एडमिट कार्ड जारी @rssb.rajasthan.gov.in, हॉल टिकट PDF डाउनलोड करें",
+    "seoSuggestion": "राजस्थान वनपाल वनरक्षक एडमिट कार्ड जारी @rssb.rajasthan.gov.in, हॉल टिकट PDF डाउनलोड करें",
     "status": "Drafted",
     "keywords": "",
     "reference": ""
@@ -6193,7 +6193,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1DgulZbdfrv6FwwAxDQ-Uxlb722kCOschuLUDIGj_5wU/edit?usp=sharing",
     "url": "up-police-constable-answer-key-2026-out",
     "publishedUrl": "",
-    "seoSuggestion": "MT, H1- UP Police Constable Answer Key 2026 Out, यूपी प��लिस कांस्टेबल उत्तर कुंजी PDF @uppbpb.gov.in",
+    "seoSuggestion": "MT, H1- UP Police Constable Answer Key 2026 Out, यूपी पुलिस कांस्टेबल उत्तर कुंजी PDF @uppbpb.gov.in",
     "status": "Drafted",
     "keywords": "",
     "reference": ""
@@ -6250,7 +6250,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "up-police-constable-exam-analysis-2026",
     "publishedUrl": "",
-    "seoSuggestion": "MT, H1- UP Police Constable परीक्षा विश्लेषण 2025 लाइव, परीक्षा कठिनाई स्तर, ��्रश्न पत्र यहां से देखें!",
+    "seoSuggestion": "MT, H1- UP Police Constable परीक्षा विश्लेषण 2025 लाइव, परीक्���ा कठिनाई स्तर, प्रश्न पत्र यहां से देखें!",
     "status": "Pending",
     "keywords": "",
     "reference": ""
@@ -6554,7 +6554,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/17daPXuAsbx5PBeKpINs7_8dkcXF9yE_oKj3pN7u2lrk/edit?tab=t.0",
     "url": "upsssc-agriculture-technical-assistant-apply-online-2026",
     "publishedUrl": "",
-    "seoSuggestion": "UPSSSC AGTA Apply Online 2026, यूपी तकनीकी सहायक भर्ती के लिए आवेदन फार्म जारी, लिंक एक���टिव @upsssc.gov.in",
+    "seoSuggestion": "UPSSSC AGTA Apply Online 2026, यूपी तकनीकी सहायक भर्ती के लिए आवेदन फार्म जारी, लिंक एक्टिव @upsssc.gov.in",
     "status": "Drafted",
     "keywords": "upsssc.gov.in 2026, up agriculture vacancy 2026, agta vacancy 2026, up krishi vibhag vacancy 2026, up agta vacancy 2026, यूपीएसएसएससी ने टेक्निकल असिस्टेंट ग्रुप-सी के 2,759 पदों पर भर्ती निकाली है, आवेदन 22 मई से शुरू, krishi vibhag bharti 2026 up, यूपी कृषि विभाग भर्ती 2026",
     "reference": ""
@@ -8492,7 +8492,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/109hjzsH5q65YOutSorKXa6PTmEOZklO0E5Ge_h2hwyw/edit?usp=sharing",
     "url": "how-many-regiments-in-indian-army",
     "publishedUrl": "https://testbook.com/news/how-many-regiments-in-indian-army/",
-    "seoSuggestion": "MT, h1- How Many Regiment in Indian Army: भारतीय सेना में कुल कितने रेजिमेंट, देखें सूची",
+    "seoSuggestion": "MT, h1- How Many Regiment in Indian Army: भारतीय सेना मे��� कुल कितने रेजिमेंट, देखें सूची",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -8530,7 +8530,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/18mf-j2XS929_9dKPf6-KAUmdBwwhd7aNPfecuTyjSrA/edit?usp=sharing",
     "url": "indian-army-agniveer-security-force-deployed-on-border",
     "publishedUrl": "https://testbook.com/news/indian-army-agniveer-security-force-deployed-on-border/",
-    "seoSuggestion": "MT< h1- भारत की कौन सी फोर्स कौन से बॉर्डर पर रहती है तैनात?, जानिए देश की सुरक्षा का 'रोड ���ैप'",
+    "seoSuggestion": "MT< h1- भारत की कौन सी फोर्स कौन से बॉर्डर पर रहती है तैनात?, जानिए देश की सुरक्षा का 'रोड मैप'",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -8644,7 +8644,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1cFgr-KWaGc8m_Ta5kAdj2xsColPYfaUCg_zGNgIw6dA/edit?tab=t.0",
     "url": "benifits-of-ctet-exam-and-certificate",
     "publishedUrl": "https://testbook.com/news/benifits-of-ctet-exam-and-certificate/",
-    "seoSuggestion": "CTET करने के फायदे: जानें किन नौकरियों में मिलेगी प्राथमिकता, Certificate वैधता, सैलरी की पूरी जानकारी",
+    "seoSuggestion": "CTET करने के फायदे: जानें किन नौकरियों में मिलेगी प्राथमिकता, Certificate वैधता, सैलरी क��� पूरी जानकारी",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -8777,7 +8777,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "up-police-constable-exam-date-2026-out",
     "publishedUrl": "https://testbook.com/news/up-police-constable-exam-date-2026-out/",
-    "seoSuggestion": "MT, H1: UP Police Constable Exam Dates 2026 Out, यूपी पुलिस कांस्टेबल परीक्षा तिथि जारी @uppbpb.gov.in",
+    "seoSuggestion": "MT, H1: UP Police Constable Exam Dates 2026 Out, यूपी पुलिस कांस्टेबल परीक्��ा तिथि जारी @uppbpb.gov.in",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -8967,7 +8967,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/10nP3Zyl7q3JlDVM0c2eZWDcJx5c_EMD-jMAqH4FcctQ/edit?tab=t.0",
     "url": "how-to-correct-ugc-net-june-application-form-2026/",
     "publishedUrl": "https://testbook.com/news/how-to-correct-ugc-net-june-application-form-2026/",
-    "seoSuggestion": "UGC NET JUNE 2026 : FORM भरने में हो गई गलती ? ऐसे करें ���ीक",
+    "seoSuggestion": "UGC NET JUNE 2026 : FORM भरने में हो ग�� गलती ? ऐसे करें ठीक",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9024,7 +9024,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/10_0XxesA9YkVfMvnU63R2t0JMi60aSXglWulX6JIjUA/edit?usp=sharing",
     "url": "up-homeguard-2026-answer-key-kab-aayegi/",
     "publishedUrl": "https://testbook.com/news/up-homeguard-2026-answer-key-kab-aayegi/",
-    "seoSuggestion": "UP Home Guard 2026 Answer Key Kab Aayegi, जाने कब जारी होगी यूपी होमगार्ड की उत्तर कुंजी और कैसे करेंगे डाउनलोड",
+    "seoSuggestion": "UP Home Guard 2026 Answer Key Kab Aayegi, जाने कब जारी होगी यूपी होमगार्ड की ��त्तर कुंजी और कैसे करेंगे डाउनलोड",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9119,7 +9119,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1kj3gixfqnOsYrfL4kxZpKQ53prZIMJnPPP4ZYMgCaWk/edit?usp=sharing",
     "url": "upsssc-fireman-guard-2026-aavedan-9-june-se-suru",
     "publishedUrl": "https://testbook.com/news/upsssc-fireman-guard-2026-aavedan-9-june-se-suru/",
-    "seoSuggestion": "upsssc: विधान सभा में गार्ड/फायरमैन के लिए ऑनलाइन आवेदन 9 जून से शुरू",
+    "seoSuggestion": "upsssc: वि��ान सभा में गार्ड/फायरमैन के लिए ऑनलाइन आवेदन 9 जून से शुरू",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9366,7 +9366,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1ObfVOflqjPRO-l0bxn92p33iUl9VgfvSv4yhi35Q8gg/edit?tab=t.0#heading=h.ab8j7zym6q14",
     "url": "ugc-net-june-exam-date-2026",
     "publishedUrl": "https://testbook.com/news/ugc-net-june-exam-date-2026/",
-    "seoSuggestion": "UGC NET जून परीक्षा कब होगी? ज���नें UGC NET 2026 परीक्षा तिथि और परीक्षा शेड्यूल।",
+    "seoSuggestion": "UGC NET जून परीक्षा कब होगी? जानें UGC NET 2026 परीक्षा तिथि और परीक्षा शेड्यूल।",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9613,7 +9613,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1lF2Ae884yLu8XIh9Ihs4T9503WSlrJL0HchaAV5AsbM/edit?usp=sharing",
     "url": "z+security-vs-spg-security-know-which-is-better",
     "publishedUrl": "https://testbook.com/news/zsecurity-vs-spg-security-know-which-is-better/",
-    "seoSuggestion": "Z+ या SPG सुरक्षा में कौन बे��तर है? जानें दोनों में क्या है अंतर",
+    "seoSuggestion": "Z+ या SPG सुरक्षा में कौन बेहतर है? जानें दोनों में क्या है अंतर",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9651,7 +9651,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1WBpfJXeWFX57mQoJcCTqomJ1z7bB0MGIJ5r_q_1qWbY/edit?usp=sharing",
     "url": "crpf-constable-job-posting-work-and-job-profile/",
     "publishedUrl": "https://testbook.com/news/crpf-constable-job-posting-work-and-job-profile/",
-    "seoSuggestion": "CRPF की ड्यूटी कहाँ लगती है, जानिए ��ीआरपीएफ का काम और जॉब प्रोफाइल",
+    "seoSuggestion": "CRPF की ड्यूटी कहाँ लगती है, जानिए सीआरपीएफ का काम और जॉब प्रोफाइल",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9689,7 +9689,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1icg_8NRqL8LsBLamDxpuDYsApv6qb6yZNI9Vl9DqgbE/edit?tab=t.0#heading=h.4mm0jale1qa",
     "url": "mp-teacher-recruitment-vacany-2026/",
     "publishedUrl": "https://testbook.com/news/mp-teacher-recruitment-vacany-2026/",
-    "seoSuggestion": "Madhya Pradesh  Teacher Bharti 2026  वैकेंसी, योग्यता आवेदन प्रक्रिया एवं सैलरी के बारे में जानें!",
+    "seoSuggestion": "Madhya Pradesh  Teacher Bharti 2026  वैकेंसी, योग्यता आवेदन प्रक्रिया एवं स���लरी के बारे में जानें!",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -9727,7 +9727,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1f48ueMRuP8PftxZBdd8SwiZn6ILZBwyuTVf3XQ8Op7Q/edit?usp=sharing",
     "url": "up-homeguard-promotions-career-growth/",
     "publishedUrl": "https://testbook.com/news/up-homeguard-promotions-career-growth/",
-    "seoSuggestion": "क्या होमगार्ड को प्रमोशन मिलता है? जानिए होमगार्ड का करियर ग्रोथ",
+    "seoSuggestion": "क्या होमगार्ड को प्रमोशन मिलता है? जानिए हो��गार्ड का करियर ग्रोथ",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -10240,7 +10240,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/17HNzV85yHKedicIQEJmhTRp5F1GlHRMSCnZix7ZiI48/edit?tab=t.0",
     "url": "rrb-ntpc-gk-practice-set-2026/",
     "publishedUrl": "https://testbook.com/news/rrb-ntpc-gk-practice-set-2026/",
-    "seoSuggestion": "RRB NTPC GK Practice Set 2026 फ्री में करें तैयारी, PDF डाउनलोड करें",
+    "seoSuggestion": "RRB NTPC GK Practice Set 2026 फ्री में करे�� तैयारी, PDF डाउनलोड करें",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -10335,7 +10335,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/153CliSJfc-JIMGt4fHR_PziQw8qKILsRYkoKmEccdEc/edit?usp=sharing",
     "url": "bihar-lrc-bharti-2026",
     "publishedUrl": "https://testbook.com/news/bihar-lrc-bharti-2026/",
-    "seoSuggestion": "Bihar LRC 2026 Notification Soon, बिहार एलआरसी भर्ती 8000+ पदों के लिए जल्द जारी",
+    "seoSuggestion": "Bihar LRC 2026 Notification Soon, बिहार एलआरसी भर्ती 8000+ पद��ं के लिए जल्द जारी",
     "status": "Live",
     "keywords": "",
     "reference": "https://ranchiportal.in/bihar-amin-recruitment-2026/"
@@ -10373,7 +10373,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1li9T3HAJu2080qEQF3AJqdpUH4ZiOxi0l2K_3k8jAE4/edit?usp=sharing",
     "url": "uppsc-ro-aro-document-verification-kaise-hota-hai",
     "publishedUrl": "https://testbook.com/news/uppsc-ro-aro-document-verification-kaise-hota-hai/",
-    "seoSuggestion": "UPPSC RO ARO दस्तावेज़ सत्यापन कैसे होता है",
+    "seoSuggestion": "UPPSC RO ARO दस्तावेज़ सत्यापन कैसे होता ह���",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -10468,7 +10468,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1uRwph0PSkhbmjnjGym98KyQ6dSImEstkBtn2j4X_NWM/edit?tab=t.0",
     "url": "how-many-times-can-one-take-the-exam-to-become-an-ips-officer/",
     "publishedUrl": "https://testbook.com/news/how-many-times-can-one-take-the-exam-to-become-an-ips-officer/",
-    "seoSuggestion": "IPS ऑफिसर ब��ने के लिए कितनी बार दे सकते हैं एग्जाम",
+    "seoSuggestion": "IPS ऑफिसर बनने के लिए कितनी बार दे सकते हैं एग्जाम",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -10715,7 +10715,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1qBUTsUm3ulpxUezgQD2HEnxgqDfJlL1fSicoAYezs98/edit?usp=sharing",
     "url": "career-and-goverment-jobs-after-bed",
     "publishedUrl": "https://testbook.com/news/career-and-goverment-jobs-after-bed/",
-    "seoSuggestion": "B.ed के बाद सरकारी नौकरी कैसे ले और कौन-कौन नौकरी मिल सकती हैं?",
+    "seoSuggestion": "B.ed के बाद सरकारी नौकरी कैसे ले ��र कौन-कौन नौकरी मिल सकती हैं?",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -10810,7 +10810,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "patna-civil-court-peon-ka-cut-off-kitna-jayga/",
     "publishedUrl": "https://testbook.com/news/patna-civil-court-peon-ka-cut-off-kitna-jayga/",
-    "seoSuggestion": "बिहार सिविल कोर्ट के चपरासी का कट ऑफ कितना जाएगा",
+    "seoSuggestion": "बिहार सिविल कोर्ट के चपरासी का कट ऑफ कितना जाए���ा",
     "status": "Live",
     "keywords": "",
     "reference": ""
@@ -11000,7 +11000,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1ioGeakefZllo0agbqwPiNGJfWYv_lj9njE3S94qgZag/edit?usp=sharing",
     "url": "how-to-become-teacher-without-bed-degree/",
     "publishedUrl": "https://testbook.com/news/how-to-become-teacher-without-bed-degree/",
-    "seoSuggestion": "बिन��� B.Ed के टीचर बनने के तरीके",
+    "seoSuggestion": "बिना B.Ed के टीचर बनने के तरीके",
     "status": "Live",
     "keywords": "बिना B.Ed के टीचर बनने के तरीके",
     "reference": ""
@@ -11418,7 +11418,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1DA1fXxv9ub4RQxEyzcjMgWImWrpydctzd6MMMqi2zKQ/edit?tab=t.0",
     "url": "lekhpal-ka-kya-kaam-hota-hai",
     "publishedUrl": "https://testbook.com/news/lekhpal-ka-kya-kaam-hota-hai/",
-    "seoSuggestion": "Lekhpal का क्या काम होता है? जानिए पटवारी की सैलरी, ड��यूटी और पावर और प्रमोशन",
+    "seoSuggestion": "Lekhpal का क्या काम होता है? जानिए पटवारी की सैलरी, ड्यूटी और पावर और प्रमोशन",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -11456,7 +11456,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1ZLOzDCQxH2IpMHaZsC37tMZkkTwQ9b_N88oNMqyKVPg/edit?tab=t.0",
     "url": "up-lekhpal-banne-ke-liye-pet-me-kitne-number-hone-chahiye",
     "publishedUrl": "https://testbook.com/news/up-lekhpal-banne-ke-liye-pet-me-kitne-number-hone-chahiye/",
-    "seoSuggestion": "यूपी लेखपाल बनने के लिए पीईटी में कितने नंबर होने चाहिए, जा��े General, OBC, SC के लिए qualification Marks",
+    "seoSuggestion": "यूपी लेखपाल बनने के लिए पीईटी में कितने नंबर होने चाहिए, जाने General, OBC, SC के लिए qualification Marks",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -11494,7 +11494,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1PQJfqs-00nNGCa4l6U6YkBojtxSMWnt_PtBJcs0v_WE/edit?tab=t.0",
     "url": "agniveer-ki-salary-kitani-hoti-hai/",
     "publishedUrl": "https://testbook.com/news/agniveer-ki-salary-kitani-hoti-hai/",
-    "seoSuggestion": "अग्निवीर की सैलरी कितनी होती है?",
+    "seoSuggestion": "अग्नि���ीर की सैलरी कितनी होती है?",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -11646,7 +11646,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1UQvPIBZlT6PbkgOpM7LkkgV3Yz4jP46tu6sK-d3wI7s/edit?usp=sharing",
     "url": "uppsc-ro-aro-mains-answer-key-2026-out",
     "publishedUrl": "",
-    "seoSuggestion": "MT: UPPSC RO ARO Mains Answer Key 20226 Out, यूपीपीएससी आरओ एआरओ मेन्स उ��्तर कुंजी जारी, पीडीएफ डाउनलोड करें @uppsc.up.nic.in",
+    "seoSuggestion": "MT: UPPSC RO ARO Mains Answer Key 20226 Out, यूपीपीएससी आरओ एआरओ मेन्स उत्तर कुंजी जारी, पीडीएफ डाउनलोड करें @uppsc.up.nic.in",
     "status": "Publish",
     "keywords": "UPPSC RO ARO Answer Key 2026",
     "reference": ""
@@ -11684,7 +11684,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1ngHGbT26Rjt3C3Uoh_Yxv7ToPPvmXrIS_XoxkUy5HVw/edit?usp=sharing",
     "url": "/12th-ke-baad-army-join-kaise-kare",
     "publishedUrl": "https://testbook.com/news/12th-ke-baad-army-join-kaise-kare/",
-    "seoSuggestion": "12वीं के बाद आर्मी में भर्ती कैसे होती है?",
+    "seoSuggestion": "12वीं के बाद आर्म�� में भर्ती कैसे होती है?",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -11722,7 +11722,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "Cancel",
     "url": "/indian-army-me-jane-ke-liye-kya-yogyata-chahiye",
     "publishedUrl": "Cancel",
-    "seoSuggestion": "भारतीय सेना में जाने के लिए क्या योग्यता चाह���ए?",
+    "seoSuggestion": "भारतीय सेना में जाने के लिए क्या योग्यता चाहिए?",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -11969,7 +11969,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1gx1V2mwYsKQiaiRhviU-CaMi7KDJ1m398ExJatGT5MQ/edit?usp=sharing",
     "url": "up-police-si-2026-complete-revision-plan",
     "publishedUrl": "https://testbook.com/news/up-police-si-2026-complete-revision-plan/",
-    "seoSuggestion": "MT: ���ूपी पुलिस एसआई 2026 के लिए Revision कैसे करें, जानिए आखिरी 20 दिनों का Study Study Plan",
+    "seoSuggestion": "MT: यूपी पुलिस एसआई 2026 के लिए Revision कैसे करें, जानिए आखिरी 20 दिनों का Study Study Plan",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -12140,7 +12140,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1WDXlkHCog5Ed76TSebcRHFu1g1JQL2IIqdC9Tv7m9_s/edit?usp=sharing",
     "url": "how-to-become-railway-drm",
     "publishedUrl": "https://testbook.com/news/how-to-become-railway-drm/",
-    "seoSuggestion": "रेलवे में DRM कैसे बन��",
+    "seoSuggestion": "रेलवे में DRM कैसे बने",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -12520,7 +12520,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1V5H3y2YegMo-MHZSKS2GYCL2_8TvXxAySPzoYpG0LqI/edit?tab=t.0",
     "url": "bihar-stet-latest-news-2026",
     "publishedUrl": "https://testbook.com/news/bihar-stet-latest-news-2026/",
-    "seoSuggestion": "MT, H1- Bihar STET 2026 Latest News: बिहा��� में नहीं होगी एसटीईटी की परीक्षा, अब कैसे मिलेगी टीचर की नौकरी?",
+    "seoSuggestion": "MT, H1- Bihar STET 2026 Latest News: बिहार में नहीं होगी एसटीईटी की परीक्षा, अब कैसे मिलेगी टीचर की नौकरी?",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -12710,7 +12710,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "https://docs.google.com/document/d/1JyvRmaOKhe5Q0Aa9d8fzJpVR31nl9Csd6RiIJoO2YME/edit?tab=t.0#heading=h.vo6yfgf8ci3h",
     "url": "how-to-prepare-ssc-gd-exam",
     "publishedUrl": "https://testbook.com/news/how-to-prepare-ssc-gd-exam/",
-    "seoSuggestion": "SSC GD 2026 की तैयारी कैसे करें? 10 द��नों का स्टडी प्लान",
+    "seoSuggestion": "SSC GD 2026 की तैयारी कैसे करें? 10 दिनों का स्टडी प्लान",
     "status": "Publish",
     "keywords": "",
     "reference": ""
@@ -12883,7 +12883,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "publishedUrl": "https://testbook.com/news/rrb-section-controller-admit-card-2026/",
     "seoSuggestion": "MT: आरआरबी सेक्शन कंट्रोलर एडमिट कार्ड 2026 परीक्षा शहर स्लिप – PDF यहाँ डाउनलोड करें",
     "status": "Publish",
-    "keywords": "आरआरबी सेक्शन कंट्रोलर एडमिट कार्ड 2026 , आरआरबी सेक्शन कंट्रोलर एडमिट कार्ड 2026 परीक्षा शहर स्लिप\nआरआरबी सेक्शन कंट्रोल एडमिट कार्ड  download pdf",
+    "keywords": "आरआरबी सेक्शन कंट्रोलर एडमिट कार्ड 2026 , आरआरबी सेक्शन कंट्रोलर एडमिट कार्ड 2026 परीक्षा शहर स्लिप\nआरआरबी सेक्शन कं��्रोल एडमिट कार्ड  download pdf",
     "reference": ""
   },
   {
@@ -12921,7 +12921,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "publishedUrl": "",
     "seoSuggestion": "MT, H1- बीपीएससी टीआरई 4.0 अधिसूचना 2026 जारी, 40 हजार पदों के लिए भर्ती आवेदन शुरू\n\nurl- bihar-teacher-vacancy-2026-out\nComp ref- https://www.careerpower.in/blog/bpsc-tre-4-0-notification-2025",
     "status": "Publish",
-    "keywords": "2025 में बिहार में शिक्षक की वैकेंसी कब आएगी?\r\nबीपीएससी ट्रे 4 2026 क्या है?\r\nटीचर का फॉर्म कब निकलेगा 2025 में?\r\nबीपीएससी 4.0 टीचर भर्ती कब होगी?\n\nbihar teacher vacancy 2026\nBPSC TRE 4.0",
+    "keywords": "2025 में बिहार में शिक्षक की वैकेंसी कब आ���गी?\r\nबीपीएससी ट्रे 4 2026 क्या है?\r\nटीचर का फॉर्म कब निकलेगा 2025 में?\r\nबीपीएससी 4.0 टीचर भर्ती कब होगी?\n\nbihar teacher vacancy 2026\nBPSC TRE 4.0",
     "reference": ""
   },
   {
@@ -13166,7 +13166,7 @@ const BASELINE_HINDI_NEW_CONTENT_DATA = [
     "docLink": "",
     "url": "rsmssb-conductor-result-2026-out",
     "publishedUrl": "https://testbook.com/news/rsmssb-conductor-result-2026-out/",
-    "seoSuggestion": "MT, H1: Rajasthan Conductor Result 2026 Out, राजस्थान ���रिचालक रिजल्ट डाउनलोड लिंक @rssb.rajasthan.gov.in\n\nSlug: rsmssb-conductor-result-2026-out",
+    "seoSuggestion": "MT, H1: Rajasthan Conductor Result 2026 Out, राजस्थान परिचालक रिजल्ट डाउनलोड लिंक @rssb.rajasthan.gov.in\n\nSlug: rsmssb-conductor-result-2026-out",
     "status": "Publish",
     "keywords": "राजस्थान परिचालक रिजल्ट, rssb conductor result 2026, rsrtc conductor result, roadways conductor result 2026, rsmssb conductor result",
     "reference": ""
