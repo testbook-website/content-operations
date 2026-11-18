@@ -2864,8 +2864,11 @@
   }
 
   function getHindiNewContentList() {
-    if (client && client.data && client.data.hindi_new_content && client.data.hindi_new_content.length > 0) {
-      return client.data.hindi_new_content;
+    if (state.sheetsData && Array.isArray(state.sheetsData.hindi_new_content) && state.sheetsData.hindi_new_content.length > 0) {
+      return state.sheetsData.hindi_new_content;
+    }
+    if (typeof sheetsClient !== 'undefined' && sheetsClient.data && Array.isArray(sheetsClient.data.hindi_new_content) && sheetsClient.data.hindi_new_content.length > 0) {
+      return sheetsClient.data.hindi_new_content;
     }
     if (typeof BASELINE_HINDI_NEW_CONTENT_DATA !== 'undefined' && Array.isArray(BASELINE_HINDI_NEW_CONTENT_DATA)) {
       return BASELINE_HINDI_NEW_CONTENT_DATA;
