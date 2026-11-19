@@ -4617,18 +4617,23 @@
   }
 
   function getEffectiveReviewStatus(item) {
-    const hasDoc = Boolean((item.newDoc && String(item.newDoc).startsWith('http')) || (item.url && String(item.url).startsWith('http')));
     const raw = (item.reviewStatus || '').trim();
 
-    // Absolute Rule 1: Every submission requires a Google Doc or live URL.
-    // If missing, status is strictly 'Doc Missing' (Pending Submission).
-    // An item without a document can NEVER be Approved, and can NEVER be penalized as Needs Revision.
-    if (!hasDoc || raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc')) {
-      return 'Doc Missing';
-    }
-
+    // 0. Explicit review overrides in current session
     if (state.reviewOverrides && state.reviewOverrides[item.topic]) {
       return state.reviewOverrides[item.topic];
+    }
+
+    // 1. If sheet status is explicitly "Needs Revision" or "Rejected", preserve it as Needs Revision!
+    if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) {
+      return 'Needs Revision';
+    }
+
+    const hasDoc = Boolean((item.newDoc && String(item.newDoc).startsWith('http')) || (item.url && String(item.url).startsWith('http')));
+
+    // 2. An item without a document can NEVER be Approved, and becomes Doc Missing
+    if (!hasDoc || raw.toLowerCase().includes('doc missing') || raw.toLowerCase().includes('missing doc')) {
+      return 'Doc Missing';
     }
 
     const hasOldDoc = Boolean(item.oldDoc && String(item.oldDoc).startsWith('http'));
@@ -4650,13 +4655,13 @@
     const isExplicitNew = isDiscover || isTypeNew || isTtNew || isClNew || isDedicatedFreshWriter || isPrep;
     const isUpdateTask = (type === 'update' || type.includes('update') || tt.includes('optimi') || cl.includes('optimization')) && !isExplicitNew;
 
-    // Absolute Rule 2: Any task marked as 'Update' or 'Optimization' MUST have an Old Doc baseline in Column M!
-    // If Old Doc is missing, it CANNOT be Approved under any circumstances (even if sheet has legacy Approved).
+    // 3. Absolute Rule 2: Any task marked as 'Update' or 'Optimization' MUST have an Old Doc baseline in Column M!
+    // If Old Doc is missing, it CANNOT be Approved under any circumstances.
     if (isUpdateTask && !hasOldDoc) {
       return 'Doc Missing';
     }
 
-    // 1. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
+    // 4. If an explicit AI audit verdict exists in cache, trust the AI audit verdict directly
     const ai = (state.aiReviewCache && state.aiReviewCache[item.topic]) ? state.aiReviewCache[item.topic] : null;
     if (ai && ai.verdict && !ai.running) {
       const cText = (ai.docWordCountText || '') + (ai.justificationSummary || '') + JSON.stringify(ai.rejectionReasons || []);
@@ -4668,16 +4673,9 @@
       }
     }
 
-    // Check if sheet status has an explicit editorial review
+    // 5. Check if sheet status has an explicit editorial review
     if (raw.toLowerCase().includes('approv')) {
       return 'Approved';
-    }
-    if (raw.toLowerCase().includes('revis') || raw.toLowerCase().includes('reject')) {
-      // If the sheet note was the stale auto-pushed "Missing baseline Old Doc" note and item has Old Doc, is New, or is News, treat as Pending
-      if (item.reviewNotes && /missing.*old doc/i.test(item.reviewNotes) && (hasOldDoc || isExplicitNew || isNews)) {
-        return 'Pending Review';
-      }
-      return 'Needs Revision';
     }
 
     return 'Pending Review';
@@ -6189,7 +6187,7 @@
     if (status === 'Approved') return null;
 
     const rawStatus = (item.reviewStatus || '').toLowerCase();
-    const rawNotes = (item.notes || '').toLowerCase();
+    const rawNotes = (item.reviewNotes || item.notes || '').toLowerCase();
     const tt = (item.taskType || '').toLowerCase();
     const type = (item.type || '').toLowerCase();
     const cat = (item.category || '').toLowerCase();
@@ -6211,6 +6209,9 @@
                         (isUpdateOrOpt && !hasOldDoc) ||
                         rawStatus.includes('doc missing') || rawStatus.includes('missing doc') ||
                         rawStatus.includes('old doc') ||
+                        rawNotes.includes('403') || rawNotes.includes('restricted') ||
+                        rawNotes.includes('missing google doc') || rawNotes.includes('missing doc') ||
+                        rawNotes.includes('old doc') ||
                         aiJust.includes('doc missing') || aiJust.includes('missing doc') ||
                         aiJust.includes('old doc') ||
                         aiJust.includes('403') || aiJust.includes('restricted') ||
@@ -6226,7 +6227,8 @@
                            rejReasons.includes('350') || rejReasons.includes('500') || rejReasons.includes('700') || rejReasons.includes('800') ||
                            aiJust.includes('word') || aiJust.includes('depth') || aiJust.includes('shortfall') ||
                            aiJust.includes('minimum') || aiJust.includes('exceed') ||
-                           rawNotes.includes('shortfall') || rawNotes.includes('word') || rawNotes.includes('depth');
+                           rawNotes.includes('shortfall') || rawNotes.includes('word') || rawNotes.includes('depth') ||
+                           rawNotes.includes('deficit') || rawNotes.includes('rewrote');
     if (isQualityWords) return 'quality_words';
 
     // 3. Other Reasons

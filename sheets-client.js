@@ -842,8 +842,11 @@ Use these exact extracted word counts in your evaluation.`;
       let reviewStatus = getVal(15) || 'Pending Review';
       // Column Q (idx 16): Status
       const status = getVal(16) || 'Done';
+      
+      const isExplicitRejection = reviewStatus.toLowerCase().includes('revis') || reviewStatus.toLowerCase().includes('reject');
+
       // If no document link is attached and no live URL exists, status is strictly Doc Missing (cannot be Approved)
-      if (!newDoc && !url) {
+      if (!isExplicitRejection && !newDoc && !url) {
         reviewStatus = 'Doc Missing';
       }
 
@@ -884,21 +887,15 @@ Use these exact extracted word counts in your evaluation.`;
         tt === 'optimization'
       );
 
-      // Mandatory Old Doc check for all Update tasks:
-      if (isUpdateTask && !hasOldDoc) {
+      // Mandatory Old Doc check for all Update tasks (preserves explicit Needs Revision from sheet):
+      if (!isExplicitRejection && isUpdateTask && !hasOldDoc) {
         reviewStatus = 'Doc Missing';
-        reviewNotes = 'Missing baseline Old Doc link in Column M';
+        if (!reviewNotes) reviewNotes = 'Missing baseline Old Doc link in Column M';
       } else if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (!isUpdateTask || hasOldDoc || !newDoc)) {
         // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, is Prep, or not an update task:
         reviewNotes = '';
         if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
           reviewStatus = (!newDoc && !url) ? 'Doc Missing' : 'Pending Review';
-        }
-      } else if (isNews && reviewNotes && (/700|800|new prep length|optimization shortfall/i.test(reviewNotes) || (/shortfall|deficit/i.test(reviewNotes) && wordCount >= 300))) {
-        // News items strictly require only 350 words (300+ for micro news). They NEVER trigger 700-800w rules.
-        reviewNotes = '';
-        if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
-          reviewStatus = (newDoc || url) ? 'Approved' : 'Doc Missing';
         }
       }
       let points = 1.0;
