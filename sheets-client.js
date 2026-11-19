@@ -1232,36 +1232,130 @@ Use these exact extracted word counts in your evaluation.`;
     for (let i = 1; i < rows.length; i++) {
       const r = rows[i];
       if (!r || r.length === 0) continue;
-      const date = (r[0] || '').trim();
-      const topic = (r[1] || '').trim();
-      if (!topic || topic === '-' || topic.toLowerCase() === 'topic') continue;
 
-      const category = (r[5] || 'Others').trim() || 'Others';
-      const taskType = (r[6] || '').trim();
-      const type = (r[7] || '').trim();
-      const pageType = (r[8] || '').trim();
-      const writer = (r[9] || '').trim();
-      const fk = (r[10] || '').trim();
-      const wordCount = (r[11] || '').trim();
-      const oldDoc = (r[12] || '').trim();
-      const newDoc = (r[13] || '').trim();
-      const pdfLink = (r[27] || r[26] || '').trim();
-      let url = (r[14] || '').trim();
-      if (!url && r[3]) url = r[3].trim();
-      let reviewStatus = (r[15] || '').trim();
-      if (!newDoc && !url) {
+      const getVal = (idx) => (r[idx] !== undefined && r[idx] !== null) ? String(r[idx]).trim() : '';
+
+      const date = getVal(0);
+      const topic = getVal(1) || getVal(2);
+      if (!topic || topic === '-' || topic.toLowerCase() === 'topic' || topic.toLowerCase() === 'duplicate topic') continue;
+
+      const duplicateUrls = getVal(4) || getVal(3);
+      const category = getVal(5) || getVal(4) || 'General';
+      const taskType = getVal(6) || getVal(5) || 'Article';
+      const type = getVal(7) || getVal(6) || 'New';
+      const pageType = getVal(8) || getVal(7) || 'Blog';
+      const writer = getVal(9) || getVal(8) || 'Unassigned';
+      const fk = getVal(10) || topic;
+      const rawWc = getVal(11);
+      const wordCount = parseInt(rawWc, 10) || 0;
+
+      // Column M (idx 12): Old Content (Doc Link)
+      const rawOldDoc = getVal(12);
+      const oldDoc = (rawOldDoc && rawOldDoc.startsWith('http')) ? rawOldDoc : '';
+
+      // Column N (idx 13): New Content (Doc Link)
+      const rawNewDoc = getVal(13);
+      const newDoc = (rawNewDoc && rawNewDoc.startsWith('http')) ? rawNewDoc : '';
+
+      // Column AB (idx 27) or AA (idx 26): Official Notification PDF Link
+      const rawPdfLink = getVal(27) || getVal(26);
+      const pdfLink = (rawPdfLink && rawPdfLink.startsWith('http')) ? rawPdfLink : '';
+
+      // Column O (idx 14): Live URL
+      let url = getVal(14);
+      if (!url && getVal(3) && String(getVal(3)).startsWith('http')) url = getVal(3);
+
+      // Column P (idx 15): Review Status
+      let reviewStatus = getVal(15) || 'Pending Review';
+      // Column Q (idx 16): Status
+      const status = getVal(16) || 'Done';
+
+      const isExplicitRejection = reviewStatus.toLowerCase().includes('revis') || reviewStatus.toLowerCase().includes('reject');
+
+      // If no document link is attached and no live URL exists, status is strictly Doc Missing (cannot be Approved)
+      if (!isExplicitRejection && !newDoc && !url) {
         reviewStatus = 'Doc Missing';
-      } else if (!reviewStatus) {
-        reviewStatus = 'Pending Review';
       }
-      const status = (r[16] || '').trim();
-      const rawNotes = (r[18] || '').trim();
-      let reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || rawNotes.includes('syllabus tables'))) ? '' : rawNotes;
-      if (reviewNotes && /missing.*old doc/i.test(reviewNotes)) {
+
+      // Column S (idx 18): Review Notes / Rejection Reason (Strictly Column S, Never Column R)
+      const rawNotes = getVal(18);
+      let reviewNotes = (rawNotes && (/tables?\s*(&|and)?\s*faqs?/i.test(rawNotes) || String(rawNotes).includes('syllabus tables') || rawNotes === '-' || rawNotes === 'CLEAR')) ? '' : rawNotes;
+
+      // OND Framework Standard Point Matrix based directly on Column G (Task Type) & Column H (Type)
+      const tt = String(taskType || '').trim().toLowerCase();
+      const typeStr = String(type || '').trim().toLowerCase();
+      const ptStr = String(pageType || '').trim().toLowerCase();
+      const catStr = String(category || '').trim().toLowerCase();
+      const wLower = String(writer || '').trim().toLowerCase();
+      const topicLower = String(topic || '').trim().toLowerCase();
+
+      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
+
+      // News check: Any task labeled News, or in News category, or blog pageType, or matching news topic
+      const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news') || ptStr.includes('blog') || isNewsTopic;
+
+      // Prep concept tasks: engineering concepts, pedagogy, formulas
+      const isPrep = tt.includes('prep') || typeStr.includes('prep') || catStr.includes('prep');
+
+      // New check: Type or Task Type contains 'new' or 'fresh' (and NOT 'news') or Hindi/New Content writer or Prep concept
+      const isTypeNew = (typeStr.includes('new') && !typeStr.includes('news')) || typeStr.includes('fresh');
+      const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
+      const isNew = isTypeNew || isTtNew ||
+                    ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
+      const hasOldDoc = Boolean(oldDoc && oldDoc.startsWith('http'));
+
+      // An update task requiring Old Doc is when Type is Update or Task Type is Optimization:
+      const isUpdateTask = !isNew && (
+        typeStr === 'update' ||
+        typeStr.includes('update') ||
+        tt.includes('optimi') ||
+        tt === 'seo optimization' ||
+        tt === 'content optimization' ||
+        tt === 'optimization'
+      );
+
+      // Mandatory Old Doc check for all Update tasks (preserves explicit Needs Revision from sheet):
+      if (!isExplicitRejection && isUpdateTask && !hasOldDoc) {
+        reviewStatus = 'Doc Missing';
+        if (!reviewNotes) reviewNotes = 'Missing baseline Old Doc link in Column M';
+      } else if (reviewNotes && /missing.*old doc/i.test(reviewNotes) && (!isUpdateTask || hasOldDoc || !newDoc)) {
+        // If the sheet had stale "Missing baseline Old Doc link" note, but item has Old Doc, is New, is Prep, or not an update task:
         reviewNotes = '';
+        if (reviewStatus.toLowerCase().includes('revis') || !reviewStatus) {
+          reviewStatus = (!newDoc && !url) ? 'Doc Missing' : 'Pending Review';
+        }
+      }
+
+      let points = 1.0;
+      let classification = taskType || 'New Content';
+
+      if (isNews) {
+        if (wordCount >= 500) {
+          classification = 'Standard News';
+          points = 0.5;
+        } else {
+          classification = 'Micro News';
+          points = 0.25;
+        }
+      } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in')) {
+        classification = 'High Intent / PYP';
+        points = 1.5;
+      } else if (!isNew && !isNews && !isPrep && (tt.includes('optimi') || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization' || tt === 'content optimization')) {
+        classification = 'SEO Optimization';
+        points = 1.5;
+      } else if (isPrep) {
+        classification = 'Fresh Prep Article';
+        points = 2.0;
+      } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar')) {
+        classification = 'New Content';
+        points = 1.0;
+      } else {
+        classification = taskType || 'New Content';
+        points = 1.0;
       }
 
       items.push({
+        rowIndex: i + 1, // 1-based spreadsheet row
         date,
         topic,
         category,
@@ -1277,7 +1371,9 @@ Use these exact extracted word counts in your evaluation.`;
         url,
         reviewStatus,
         status,
-        reviewNotes
+        reviewNotes,
+        points,
+        classification
       });
     }
     return items;
@@ -1382,17 +1478,51 @@ Use these exact extracted word counts in your evaluation.`;
       }
 
       // 3. Fetch Workflow <OND> (gid: 436581067)
+      // Note: Google Visualization API (GViz) respects active UI filters in Google Sheets.
+      // If someone filters the sheet in Google Sheets (e.g. down to 20 rows), GViz only returns 20 rows.
+      // We first try /api/workflow-sheet which exports the full unfiltered sheet (3,000+ items).
+      // If running without API, we check GViz; if GViz is filtered (< 500 rows), we fall back to CSV export.
       try {
-        const tWorkflow = await this.fetchSheetGViz(SHEETS_CONFIG.workflowSpreadsheetId, SHEETS_CONFIG.workflow_gid, 35000);
-        workflow = this.parseGVizWorkflow(tWorkflow);
-        console.log(`✓ Workflow <OND> fetched successfully (${workflow?.length || 0} items)`);
-      } catch (wfErr) {
-        console.warn("Workflow GViz failed/timed out, trying CSV:", wfErr);
+        const respWf = await fetch('/api/workflow-sheet');
+        if (respWf.ok) {
+          const csvText = await respWf.text();
+          const items = this.parseWorkflowCSV(csvText);
+          if (items && items.length >= 500) {
+            workflow = items;
+            console.log(`✓ Workflow <OND> synced via /api/workflow-sheet (${workflow.length} items)`);
+          }
+        }
+      } catch (apiErr) {
+        // Fallback to GViz / direct CSV below
+      }
+
+      if (!workflow || workflow.length < 500) {
         try {
-          const csvWorkflow = await this.fetchSheetCSV(SHEETS_CONFIG.workflow_gid, SHEETS_CONFIG.workflowSpreadsheetId);
-          workflow = this.parseWorkflowCSV(csvWorkflow);
-        } catch (e) {
-          console.warn("Workflow CSV fallback failed:", e);
+          const tWorkflow = await this.fetchSheetGViz(SHEETS_CONFIG.workflowSpreadsheetId, SHEETS_CONFIG.workflow_gid, 35000);
+          const gvizItems = this.parseGVizWorkflow(tWorkflow);
+          if (gvizItems && gvizItems.length >= 500) {
+            workflow = gvizItems;
+            console.log(`✓ Workflow <OND> fetched via GViz (${workflow.length} items)`);
+          } else {
+            console.warn(`GViz returned only ${gvizItems?.length || 0} items (sheet has active UI filter). Fetching full CSV export...`);
+            const csvWorkflow = await this.fetchSheetCSV(SHEETS_CONFIG.workflow_gid, SHEETS_CONFIG.workflowSpreadsheetId);
+            const csvItems = this.parseWorkflowCSV(csvWorkflow);
+            if (csvItems && csvItems.length > (gvizItems?.length || 0)) {
+              workflow = csvItems;
+              console.log(`✓ Workflow <OND> fetched via direct CSV fallback (${workflow.length} items)`);
+            } else if (gvizItems && gvizItems.length > 0) {
+              workflow = gvizItems;
+            }
+          }
+        } catch (wfErr) {
+          console.warn("Workflow GViz failed/timed out, trying CSV fallback:", wfErr);
+          try {
+            const csvWorkflow = await this.fetchSheetCSV(SHEETS_CONFIG.workflow_gid, SHEETS_CONFIG.workflowSpreadsheetId);
+            workflow = this.parseWorkflowCSV(csvWorkflow);
+            console.log(`✓ Workflow <OND> fetched via CSV fallback (${workflow?.length || 0} items)`);
+          } catch (e) {
+            console.warn("Workflow CSV fallback failed:", e);
+          }
         }
       }
 
