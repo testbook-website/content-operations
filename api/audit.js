@@ -170,8 +170,8 @@ export default async function handler(req, res) {
     });
   }
 
-  // Strict Rule 2: For Update/Optimization tasks, BOTH Old Doc and New Doc are mandatory
-  if (isUpdateTask && !hasOldDocLink) {
+  // Strict Rule 2: For SEO Optimization / Deep Update tasks, BOTH Old Doc and New Doc are mandatory
+  if (!isNews && isUpdateTask && !hasOldDocLink) {
     return res.status(200).json({
       success: true,
       audit: {
@@ -183,8 +183,8 @@ export default async function handler(req, res) {
         oldDocWordCount: null,
         netWordDiff: null,
         docWordCountText: '🚫 Missing Old Doc',
-        justificationSummary: 'Doc Missing: Task is marked as "Update", but no baseline Old Doc was provided in Column M. An Old Doc baseline is strictly required for update tasks to verify rewritten content.',
-        rejectionReasons: ['Missing baseline Old Doc link for Update task in Column M.'],
+        justificationSummary: 'Doc Missing: Task is marked as "Update", but no baseline Old Doc was provided in Column M. An Old Doc baseline is strictly required for SEO optimization tasks to verify rewritten content.',
+        rejectionReasons: ['Missing baseline Old Doc link for SEO Update task in Column M.'],
         keyStrengths: [],
         improvementAreas: ['Attach baseline Old Doc in Column M so the update diff can be audited.']
       }
@@ -421,12 +421,15 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
     }
 
     // --- EXACT 4-TIER MATHEMATICAL QUALITY GUARDRAILS (UNIFIED NUMBERS) ---
-    const effectiveNewWc = parsed.newDocWordCount || (parseInt(item.wordCount, 10) || 0);
+    const sheetWc = parseInt(item.wordCount, 10) || 0;
+    const effectiveNewWc = parsed.newDocWordCount || sheetWc;
     const rwMatch = (diffMetrics?.summaryText || parsed.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (parsed.docWordCountText || '').match(/~(\d+)w Revamped/i);
     const effectiveRewritten = parsed.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
     const netDiff = (parsed.netWordDiff !== undefined && parsed.netWordDiff !== null) ? parsed.netWordDiff : 0;
     const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
     const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
+    // For updates, writer's Column L word count represents the actual update effort (preventing whole-doc inflation)
+    const updateVolume = sheetWc > 0 ? (effectiveRewritten > 0 ? Math.max(sheetWc, effectiveRewritten) : (netDiff > 0 ? Math.max(sheetWc, netDiff) : sheetWc)) : displayWc;
 
     const isDiscover = taskTypeLower.includes('discover') || classificationLower.includes('discover');
     const isNews = !isDiscover && (taskTypeLower.includes('news') || 
@@ -455,48 +458,49 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
         parsed.suggestedClassification = 'Discover Article';
       }
     }
-    // Rule 1: News Update (Must rewrite / add 350+ words, micro news approved at 300w+)
+    // Rule 1: News Update (Must write / rewrite 350+ words minimum)
     else if (isNews && isUpdateTask) {
-      if (displayWc < 300) {
+      if (updateVolume < 350) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `News Update shortfall: Found ${displayLabel} words (minimum 350+ words required).`;
+        const reason = `News Update shortfall: Found ${updateVolume} words (minimum 350 words required for updates).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = displayWc >= 500 ? 0.5 : 0.25;
-        parsed.suggestedClassification = displayWc >= 500 ? 'Standard News' : 'Micro News';
+        parsed.pointsAwarded = updateVolume >= 500 ? 0.5 : 0.25;
+        parsed.suggestedClassification = updateVolume >= 500 ? 'Standard News' : 'Micro News';
       }
     }
     // Rule 2: News New (350+ words for Micro News = 0.25 pts, 500+ words for Standard News = 0.5 pts)
     else if (isNews && !isUpdateTask) {
-      if (effectiveNewWc < 300) {
+      const newsVolume = (sheetWc > 0 && effectiveNewWc > 0) ? Math.min(sheetWc, effectiveNewWc) : (effectiveNewWc || sheetWc);
+      if (newsVolume < 350) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `News length shortfall: Found ${effectiveNewWc} words (minimum 350 words required).`;
+        const reason = `News length shortfall: Found ${newsVolume} words (minimum 350 words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
         parsed.isApproved = true;
         parsed.qualityVerdict = 'Approved';
-        parsed.pointsAwarded = effectiveNewWc >= 500 ? 0.5 : 0.25;
-        parsed.suggestedClassification = effectiveNewWc >= 500 ? 'Standard News' : 'Micro News';
+        parsed.pointsAwarded = newsVolume >= 500 ? 0.5 : 0.25;
+        parsed.suggestedClassification = newsVolume >= 500 ? 'Standard News' : 'Micro News';
       }
     }
     // Rule 3: Optimization / Update (Must rewrite / add 500+ words)
     else if (isUpdateTask) {
-      if (displayWc < 500) {
+      if (updateVolume < 500) {
         parsed.isApproved = false;
         parsed.qualityVerdict = 'Needs Revision';
         parsed.editorialScore = 4;
         parsed.pointsAwarded = 0;
-        const reason = `Optimization shortfall: Found ${displayLabel} words (minimum 500 words required).`;
+        const reason = `Optimization shortfall: Found ${updateVolume} words (minimum 500 words required).`;
         parsed.rejectionReasons = [reason];
         parsed.justificationSummary = `Needs Revision: ${reason}`;
       } else {
@@ -557,13 +561,17 @@ Use these exact extracted word counts, rewrite overhaul metrics, and official PD
       ptsAwarded = isApproved ? 1.5 : 0;
       if (!isApproved) rejectReason = `Discover shortfall: Found ${estNew}w (minimum 500 words required).`;
     } else if (isNews && (isUpdate || hasOldDocLink)) {
-      isApproved = effort >= 300;
-      ptsAwarded = isApproved ? (effort >= 500 ? 0.5 : 0.25) : 0;
-      if (!isApproved) rejectReason = `News Update shortfall: Writer rewrote/added only ~${effort}w (minimum 300–350+ rewritten/added words required).`;
+      const sheetWcFallback = parseInt(item.wordCount, 10) || 0;
+      const newsUpEffort = sheetWcFallback > 0 ? sheetWcFallback : effort;
+      isApproved = newsUpEffort >= 350;
+      ptsAwarded = isApproved ? (newsUpEffort >= 500 ? 0.5 : 0.25) : 0;
+      if (!isApproved) rejectReason = `News Update shortfall: Found ${newsUpEffort}w (minimum 350 words required for updates).`;
     } else if (isNews) {
-      isApproved = estNew >= 300;
-      ptsAwarded = isApproved ? (estNew >= 500 ? 0.5 : 0.25) : 0;
-      if (!isApproved) rejectReason = `New News shortfall: Found ${estNew}w (minimum 300–500 words required).`;
+      const sheetWcFallback = parseInt(item.wordCount, 10) || 0;
+      const newsEffort = (sheetWcFallback > 0 && estNew > 0) ? Math.min(sheetWcFallback, estNew) : (estNew || sheetWcFallback);
+      isApproved = newsEffort >= 350;
+      ptsAwarded = isApproved ? (newsEffort >= 500 ? 0.5 : 0.25) : 0;
+      if (!isApproved) rejectReason = `New News shortfall: Found ${newsEffort}w (minimum 350 words required).`;
     } else if (isUpdate) {
       isApproved = effort >= 500;
       ptsAwarded = isApproved ? 1.5 : 0;

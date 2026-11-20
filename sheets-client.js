@@ -244,7 +244,7 @@ class SheetsClient {
       };
     }
 
-    if (isUpdateTask && !hasOldDocLink) {
+    if (!isNews && isUpdateTask && !hasOldDocLink) {
       return {
         success: true,
         audit: {

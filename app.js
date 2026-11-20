@@ -75,18 +75,25 @@
           }
 
           const topicStr = (k || '').toLowerCase();
-          const isDiscover = (item.taskType && item.taskType.toLowerCase().includes('discover')) || item.classification === 'Discover Article' || summaryStr.includes('discover');
+          const taskTypeStr = (item.taskType || '').toLowerCase();
+          const typeStr = (item.type || '').toLowerCase();
+          const isDiscover = taskTypeStr.includes('discover') || item.classification === 'Discover Article' || summaryStr.includes('discover');
           const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicStr);
-          const isNews = !isDiscover && (item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news') || isNewsTopic);
+          const isNews = !isDiscover && (item.classification === 'Standard News' || item.classification === 'Micro News' || summaryStr.includes('news') || taskTypeStr.includes('news') || typeStr.includes('news') || isNewsTopic);
           const isPrep = !isDiscover && (item.classification === 'Fresh Prep Article' || summaryStr.includes('prep') || summaryStr.includes('ias') || (item.writer && ['lehron','dhananjay','falguni','swathi','sumit kumar','manicka','mahasetha'].some(p => item.writer.toLowerCase().includes(p))));
           const isExplicitNew = !isDiscover && (item.classification === 'New Content' || isPrep || summaryStr.includes('new content'));
           const isOpt = !isDiscover && !isNews && !isExplicitNew && !isPrep && (item.classification === 'SEO Optimization' || item.classification === 'Deep Optimization' || (item.oldDocWordCount > 0));
+          const isUpdate = typeStr.includes('update') || taskTypeStr.includes('update') || isOpt;
+
+          const sheetWc = parseInt(item.wordCount, 10) || 0;
           const rwMatch = (item.docWordCountText || '').match(/~(\d+)w Rewritten/i) || (item.docWordCountText || '').match(/~(\d+)w Revamped/i);
           const effectiveRewritten = item.rewrittenWords || (rwMatch ? parseInt(rwMatch[1], 10) : 0);
           const netDiff = item.netWordDiff !== undefined ? item.netWordDiff : 0;
           const effectiveNewWc = item.newDocWordCount || 0;
           const displayWc = effectiveRewritten > 0 ? effectiveRewritten : (netDiff > 0 ? netDiff : effectiveNewWc);
           const displayLabel = effectiveRewritten > 0 ? `~${effectiveRewritten} rewritten` : (netDiff > 0 ? `+${netDiff} net` : `${displayWc}`);
+          // For updates, Column L word count represents the actual update effort (preventing whole-doc inflation)
+          const updateVolume = sheetWc > 0 ? (effectiveRewritten > 0 ? Math.max(sheetWc, effectiveRewritten) : (netDiff > 0 ? Math.max(sheetWc, netDiff) : sheetWc)) : displayWc;
 
           if (isDiscover) {
             // Rule: Discover Articles (500+ Words = 1.5 Points)
@@ -105,50 +112,51 @@
               item.pointsAwarded = 1.5;
               item.rejectionReasons = [];
             }
-          } else if (isNews && (isOpt || item.oldDocWordCount > 0)) {
-            // Rule 1: News Update (Must rewrite/add 300–350+ words)
-            if (displayWc < 300) {
+          } else if (isNews && isUpdate) {
+            // Rule 1: News Update (Must write/rewrite 350+ words minimum)
+            if (updateVolume < 350) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
               item.pointsAwarded = 0;
-              item.justificationSummary = `Needs Revision: News Update shortfall: Found ${displayLabel} words (minimum 300–350+ words required).`;
-              item.rejectionReasons = [`News Update shortfall: Found ${displayLabel} words (minimum 300–350+ words required).`];
+              item.justificationSummary = `Needs Revision: News Update shortfall: Found ${updateVolume} words (minimum 350 words required for updates).`;
+              item.rejectionReasons = [`News Update shortfall: Found ${updateVolume} words (minimum 350 words required for updates).`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              item.points = displayWc >= 500 ? 0.5 : 0.25;
+              item.points = updateVolume >= 500 ? 0.5 : 0.25;
               item.pointsAwarded = item.points;
               item.rejectionReasons = [];
             }
           } else if (isNews) {
-            // Rule 2: News New (500 Words for 0.5p Standard News, 300+ Words for 0.25p Micro News Brief)
-            if (effectiveNewWc < 300) {
+            // Rule 2: News New (350+ words for Micro News = 0.25 pts, 500+ words for Standard News = 0.5 pts)
+            const newsVolume = (sheetWc > 0 && effectiveNewWc > 0) ? Math.min(sheetWc, effectiveNewWc) : (effectiveNewWc || sheetWc);
+            if (newsVolume < 350) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
               item.pointsAwarded = 0;
-              item.justificationSummary = `Needs Revision: News draft length shortfall (${effectiveNewWc}w). Minimum 300–500 words required.`;
-              item.rejectionReasons = [`News draft length shortfall (${effectiveNewWc}w). Minimum 300–500 words required.`];
+              item.justificationSummary = `Needs Revision: News draft length shortfall (${newsVolume}w). Minimum 350 words required.`;
+              item.rejectionReasons = [`News draft length shortfall (${newsVolume}w). Minimum 350 words required.`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
-              item.points = effectiveNewWc >= 500 ? 0.5 : 0.25;
+              item.points = newsVolume >= 500 ? 0.5 : 0.25;
               item.pointsAwarded = item.points;
               item.rejectionReasons = [];
             }
-          } else if (isOpt) {
-            // Rule 3: Optimization (Must rewrite/add 500+ Words)
-            if (displayWc < 500) {
+          } else if (isOpt || isUpdate) {
+            // Rule 3: Optimization / Update (Must rewrite/add 500+ Words)
+            if (updateVolume < 500) {
               item.isApproved = false;
               item.verdict = 'Needs Revision';
               item.score = 4;
               item.points = 0;
               item.pointsAwarded = 0;
-              item.justificationSummary = `Needs Revision: Optimization shortfall: Found ${displayLabel} words (minimum 500 words required).`;
-              item.rejectionReasons = [`Optimization shortfall: Found ${displayLabel} words (minimum 500 words required).`];
+              item.justificationSummary = `Needs Revision: Optimization shortfall: Found ${updateVolume} words (minimum 500 words required).`;
+              item.rejectionReasons = [`Optimization shortfall: Found ${updateVolume} words (minimum 500 words required).`];
             } else {
               item.isApproved = true;
               item.verdict = 'Approved';
