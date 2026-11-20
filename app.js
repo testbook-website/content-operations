@@ -4843,9 +4843,8 @@
   // =========================================================================
   function getItemKpiPointsNumber(item) {
     if (!item) return 1.0;
-    if (typeof item.points === 'number' && item.points > 0) return item.points;
     const ptInfo = calculateItemKpiPoints(item);
-    return (ptInfo && typeof ptInfo.points === 'number') ? ptInfo.points : 1.0;
+    return (ptInfo && typeof ptInfo.points === 'number') ? ptInfo.points : (typeof item.points === 'number' ? item.points : 1.0);
   }
 
   // =========================================================================
@@ -5038,21 +5037,14 @@
       const wLower = (item.writer || '').toLowerCase();
       const domain = (item.domain || '').toLowerCase();
 
-      const topicLower = (item.topic || '').toLowerCase();
-      const isDiscover = tt.includes('discover') || cl.includes('discover');
-      const isNewsTopic = !isDiscover && /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
-      const isNews = !isDiscover && (tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || pt.includes('news') || pt.includes('blog') || isNewsTopic || Boolean(item.isNewsTask));
-      const isPrep = !isDiscover && ((cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
-                     wLower === 'lehron' || wLower === 'dhananjay' || wLower === 'falguni' || wLower === 'swathi' || wLower === 'sumit kumar' || wLower.includes('manicka') || wLower === 'mahasetha') && !isNews);
-      const isTypeNew = (type.includes('new') && !type.includes('news')) || type.includes('fresh');
-      const isTtNew = (tt.includes('new') && !tt.includes('news')) || tt.includes('fresh');
-      const isClNew = (cl.includes('new') && !cl.includes('news')) || cl.includes('fresh');
-      const isExplicitNew = isDiscover || isTypeNew || isTtNew || isClNew || ['anshika', 'vidit', 'prabodh', 'archana', 'shilpa singh'].some(p => wLower.includes(p)) || isPrep;
-      const isOpt = !isDiscover && !isExplicitNew && (type === 'update' || type.includes('update') || tt.includes('optimi') || (item.oldDoc && item.oldDoc.startsWith('http')));
-      const isHighIntent = !isDiscover && ((tt.includes('high in') || tt.includes('pyp') || pt.includes('ts')) && !isNews);
-      const isFresh = (isPrep && !isOpt) || isExplicitNew;
-
-      const points = getItemKpiPointsNumber(item);
+      const ptInfo = calculateItemKpiPoints(item);
+      const points = (ptInfo && typeof ptInfo.points === 'number') ? ptInfo.points : 1.0;
+      const isDiscover = ptInfo.typeKey === 'discover';
+      const isPrep = ptInfo.typeKey === 'fresh_prep' || ptInfo.typeKey === 'prep_opt';
+      const isHighIntent = ptInfo.typeKey === 'high_intent';
+      const isOpt = ptInfo.typeKey === 'optimization' || ptInfo.typeKey === 'prep_opt';
+      const isNews = ptInfo.typeKey === 'standard_news' || ptInfo.typeKey === 'micro_news';
+      const isFresh = ptInfo.typeKey === 'fresh_prep' || ptInfo.typeKey === 'child_page';
 
       if (!writerScorecard[writer]) {
         writerScorecard[writer] = {
@@ -6033,28 +6025,17 @@
     const writer = (item.writer || '').toString().toLowerCase().trim();
     const wc = parseInt(item.wordCount, 10) || 0;
 
-    // Rule: Discover Articles in Task Type = 1.5 Points
+    // 1. Discover Article: 1.50 Points
     const isDiscover = tt.includes('discover') || cl.includes('discover');
     if (isDiscover) {
       return makePtResult(1.50, 'Discover Article', '#7c3aed', '#f5f3ff', 'discover');
     }
 
-    // Rule: Everything which comes as News in Task Type, Category, Type, or Classification is News
-    const isNews = tt.includes('news') || type.includes('news') || cat.includes('news') || cl.includes('news') || topic.includes('news') || pt.includes('news') || Boolean(item.isNewsTask);
-
-    if (isNews) {
-      if (tt.includes('lms') || wc < 500) {
-        return makePtResult(0.25, 'Micro News Brief', '#64748b', '#f1f5f9', 'micro_news');
-      } else {
-        return makePtResult(0.50, 'Standard News & Updates', '#475569', '#f8fafc', 'standard_news');
-      }
-    }
-
     // Explicit new indicators (Strict check: 'new' must NOT match 'news')
     const isExplicitNew = (type.includes('new') && !type.includes('news')) || (tt.includes('new') && !tt.includes('news')) || type.includes('fresh') || tt.includes('fresh') || cl.includes('fresh');
 
-    // Prep check: Category/task/domain contains 'prep' (e.g. IAS Prep, Exam Prep), or assigned to Prep Writer
-    const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') ||
+    // 2. Prep check: Category/task/domain contains 'prep' (e.g. IAS Prep, Exam Prep), or assigned to Prep Writer
+    const isPrep = cat.includes('prep') || tt.includes('prep') || pt.includes('prep') || domain.includes('prep') || cl.includes('prep') ||
                    writer === 'lehron' || writer === 'dhananjay' || writer === 'falguni' || writer === 'swathi' || writer === 'sumit kumar' || writer.includes('manicka') || writer === 'mahasetha';
 
     const isOpt = !isExplicitNew && (type === 'update' || tt.includes('optimi') || cl.includes('optimization') || cl.includes('refresh') || (item.oldDoc && item.oldDoc.startsWith('http')));
@@ -6069,18 +6050,29 @@
       }
     }
 
-    // High Intent / PYP / Mock Test Landing Page: 1.5 Points (High Intent structured Q&A, exam patterns)
-    const isHighIntentPyp = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || cl.includes('high intent') || topic.includes('mock') || topic.includes('previous year');
-    if (isHighIntentPyp) {
+    // 3. High Intent / PYP / Mock Test Landing Page: 1.50 Points (Prioritized above generic news checks)
+    const isHighIntentPyp = tt.includes('high in') || tt.includes('pyp') || pt.includes('ts') || pt.includes('pyp') || cl.includes('high intent') || cl.includes('pyp') || topic.includes('mock test') || topic.includes('previous year paper');
+    if (isHighIntentPyp && !tt.includes('news') && !type.includes('news')) {
       return makePtResult(1.50, 'PYP / Mock Test Landing Page', '#1d4ed8', '#eff6ff', 'high_intent');
     }
 
-    // Data-Backed Content Optimization / Refresh: 1.5 Points (Requires baseline Old Doc)
-    if (isOpt) {
+    // 4. Data-Backed Content Optimization / Refresh: 1.50 Points (Requires baseline Old Doc)
+    if (isOpt && !tt.includes('news') && !type.includes('news')) {
       return makePtResult(1.50, 'SEO Optimization & Refresh', '#b45309', '#fef3c7', 'optimization');
     }
 
-    // New Child Pages / New Content: 1.0 Point
+    // 5. News / Event Pages: 0.50 Points (>=500w) or 0.25 Points (<500w)
+    // Strictly when task is News/Event Pages, or Type/Category is News
+    const isNews = tt.includes('news') || tt.includes('event') || type.includes('news') || cat.includes('news') || cl.includes('news') || Boolean(item.isNewsTask);
+    if (isNews && !isExplicitNew) {
+      if (tt.includes('lms') || wc < 500) {
+        return makePtResult(0.25, 'Micro News Brief', '#64748b', '#f1f5f9', 'micro_news');
+      } else {
+        return makePtResult(0.50, 'Standard News & Updates', '#475569', '#f8fafc', 'standard_news');
+      }
+    }
+
+    // 6. New Child Pages / New Content: 1.00 Point
     return makePtResult(1.00, 'New Content / Child Page', '#15803d', '#f0fdf4', 'child_page');
   }
 

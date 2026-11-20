@@ -862,10 +862,8 @@ Use these exact extracted word counts in your evaluation.`;
       const wLower = String(writer || '').trim().toLowerCase();
       const topicLower = String(topic || '').trim().toLowerCase();
 
-      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
-
-      // News check: Any task labeled News, or in News category, or blog pageType, or matching news topic
-      const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news') || ptStr.includes('blog') || isNewsTopic;
+      // News check: strictly when task is News/Event Pages, or Type/Category is News
+      const isNews = tt.includes('news') || tt.includes('event') || typeStr.includes('news') || catStr.includes('news');
       
       // Prep concept tasks: engineering concepts, pedagogy, formulas
       const isPrep = tt.includes('prep') || typeStr.includes('prep') || catStr.includes('prep');
@@ -901,7 +899,24 @@ Use these exact extracted word counts in your evaluation.`;
       let points = 1.0;
       let classification = taskType || 'New Content';
 
-      if (isNews) {
+      if (tt.includes('discover')) {
+        classification = 'Discover Article';
+        points = 1.5;
+      } else if (isPrep) {
+        if (isUpdateTask) {
+          classification = 'Prep Optimization';
+          points = 1.5;
+        } else {
+          classification = 'Fresh Prep Article';
+          points = 2.0;
+        }
+      } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in') || ptStr.includes('ts') || ptStr.includes('pyp')) {
+        classification = 'High Intent / PYP';
+        points = 1.5;
+      } else if (!isNew && !isNews && !isPrep && (tt.includes('optimi') || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization' || tt === 'content optimization')) {
+        classification = 'SEO Optimization';
+        points = 1.5;
+      } else if (isNews) {
         if (wordCount >= 500) {
           classification = 'Standard News';
           points = 0.5;
@@ -909,16 +924,7 @@ Use these exact extracted word counts in your evaluation.`;
           classification = 'Micro News';
           points = 0.25;
         }
-      } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in')) {
-        classification = 'High Intent / PYP';
-        points = 1.5;
-      } else if (!isNew && !isNews && !isPrep && (tt.includes('optimi') || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization' || tt === 'content optimization')) {
-        classification = 'SEO Optimization';
-        points = 1.5;
-      } else if (isPrep) {
-        classification = 'Fresh Prep Article';
-        points = 2.0;
-      } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar')) {
+      } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar') || ptStr.includes('child')) {
         classification = 'New Content';
         points = 1.0;
       } else {
@@ -1289,10 +1295,8 @@ Use these exact extracted word counts in your evaluation.`;
       const wLower = String(writer || '').trim().toLowerCase();
       const topicLower = String(topic || '').trim().toLowerCase();
 
-      const isNewsTopic = /admit card|result|answer key|cut off|exam date|merit list|city intimation|city slip|notification|apply online|recruitment|vacancy|cbt|score card|interview|date sheet|counselling|paper analysis|exam analysis|hall ticket|call letter|syllabus|eligibility|salary|previous year paper|pyp|mock test|live update/i.test(topicLower);
-
-      // News check: Any task labeled News, or in News category, or blog pageType, or matching news topic
-      const isNews = tt.includes('news') || typeStr.includes('news') || catStr.includes('news') || ptStr.includes('blog') || isNewsTopic;
+      // News check: strictly when task is News/Event Pages, or Type/Category is News
+      const isNews = tt.includes('news') || tt.includes('event') || typeStr.includes('news') || catStr.includes('news');
 
       // Prep concept tasks: engineering concepts, pedagogy, formulas
       const isPrep = tt.includes('prep') || typeStr.includes('prep') || catStr.includes('prep');
@@ -1329,7 +1333,24 @@ Use these exact extracted word counts in your evaluation.`;
       let points = 1.0;
       let classification = taskType || 'New Content';
 
-      if (isNews) {
+      if (tt.includes('discover')) {
+        classification = 'Discover Article';
+        points = 1.5;
+      } else if (isPrep) {
+        if (isUpdateTask) {
+          classification = 'Prep Optimization';
+          points = 1.5;
+        } else {
+          classification = 'Fresh Prep Article';
+          points = 2.0;
+        }
+      } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in') || ptStr.includes('ts') || ptStr.includes('pyp')) {
+        classification = 'High Intent / PYP';
+        points = 1.5;
+      } else if (!isNew && !isNews && !isPrep && (tt.includes('optimi') || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization' || tt === 'content optimization')) {
+        classification = 'SEO Optimization';
+        points = 1.5;
+      } else if (isNews) {
         if (wordCount >= 500) {
           classification = 'Standard News';
           points = 0.5;
@@ -1337,16 +1358,7 @@ Use these exact extracted word counts in your evaluation.`;
           classification = 'Micro News';
           points = 0.25;
         }
-      } else if (tt.includes('high in') || tt.includes('pyp') || typeStr.includes('high in')) {
-        classification = 'High Intent / PYP';
-        points = 1.5;
-      } else if (!isNew && !isNews && !isPrep && (tt.includes('optimi') || typeStr.includes('optimi') || typeStr.includes('refresh') || tt === 'content update' || tt === 'seo optimization' || tt === 'content optimization')) {
-        classification = 'SEO Optimization';
-        points = 1.5;
-      } else if (isPrep) {
-        classification = 'Fresh Prep Article';
-        points = 2.0;
-      } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar')) {
+      } else if (isNew || ptStr.includes('target') || ptStr.includes('pillar') || ptStr.includes('child')) {
         classification = 'New Content';
         points = 1.0;
       } else {
